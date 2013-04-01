@@ -71,6 +71,8 @@ Ember.Model.reopenClass({
   find: function(id) {
     if (!arguments.length) {
       return this.findAll();
+    } else if (typeof id === 'object') {
+      return this.findQuery(id);
     } else {
       return this.findById(id);
     }
@@ -81,9 +83,9 @@ Ember.Model.reopenClass({
 
     if (!this.recordArrays) { this.recordArrays = []; }
     this.recordArrays.push(records);
-    
+
     this.adapter.findAll(this, records);
-    
+
     return records;
   },
 
@@ -91,6 +93,17 @@ Ember.Model.reopenClass({
     var record = this.cachedRecordForId(id);
     get(this, 'adapter').find(record, id);
     return record;
+  },
+
+  findQuery: function(params) {
+    var records = Ember.RecordArray.create();
+
+    if (!this.recordArrays) { this.recordArrays = []; }
+    this.recordArrays.push(records);
+
+    this.adapter.findQuery(this, records, params);
+
+    return records;
   },
 
   cachedRecordForId: function(id) {
@@ -144,5 +157,5 @@ Ember.Model.reopenClass({
     ids.map(function(id) {
       return this.recordCache[parseInt(id)];
     }, this).forEach(callback);
-  } 
+  }
 });
