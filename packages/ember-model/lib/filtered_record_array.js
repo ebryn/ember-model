@@ -19,7 +19,6 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
     var self = this,
         results = [];
     this.get('modelClass').forEachCachedRecord(function(record) {
-      debugger;
       if (self.filterFunction(record)) {
         results.push(record);
       }

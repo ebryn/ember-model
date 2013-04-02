@@ -41,7 +41,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   didCreateRecord: function() {
-    // debugger;
     set(this, 'isNew', false);
     this.load(this.get('id'), this.getProperties(this.attributes));
     this.constructor.addToRecordArrays(this);
@@ -79,10 +78,9 @@ Ember.Model.reopenClass({
   },
 
   findAll: function() {
-    var records = Ember.RecordArray.create();
+    if (this._findAllRecordArray) { return this._findAllRecordArray; }
 
-    if (!this.recordArrays) { this.recordArrays = []; }
-    this.recordArrays.push(records);
+    var records = this._findAllRecordArray = Ember.RecordArray.create();
 
     this.adapter.findAll(this, records);
 
