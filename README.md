@@ -124,4 +124,4 @@ App.RESTAdapter = Ember.Adapter.extend
 
 ### Special Thanks
 
-Yehuda Katz (@wycats), Tom Dale (@tomdale), Igor Terzic (@igorT), and company for their amazing work on Ember Data. I believe it's the most ambitious JS product today. I can't wait until we all crack the nut and I can throw this code away. :heart:
+Yehuda Katz (@wycats), Tom Dale (@tomdale), Igor Terzic (@igorT), and company for their amazing work on Ember Data. I believe it's the most ambitious JS project today. I can't wait until we all crack the nut and I can throw this code away. :heart:
