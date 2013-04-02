@@ -15,7 +15,7 @@ EM is still very much a work in progress, but it's flexible enough to be used in
 
 ## When you should use EM
 
-EM is great for apps dealing mostly with read-only data and that don't embed data frequently. If you've got a Rails-style RESTful API, it should be pretty easy to get up and running.
+EM is great for apps dealing mostly with read-only data. If you've got a Rails-style RESTful API, it should be pretty easy to get up and running.
 
 ## Features
 
