@@ -25,12 +25,18 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
   },
 
   createRecord: function(record) {
-    var deferred = Ember.Deferred.create();
+    var klass = record.constructor,
+        fixtures = klass.FIXTURES,
+        deferred = Ember.Deferred.create();
+
     deferred.then(function() {
       record.didCreateRecord();
     });
     setTimeout(function() {
-      Ember.run(deferred, deferred.resolve, record);
+      Ember.run(function() {
+        fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
+        deferred.resolve(record);
+      });
     });
     return deferred;
   },
