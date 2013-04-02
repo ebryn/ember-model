@@ -1,0 +1,29 @@
+module("Ember.Model: findQuery");
+
+test(".find({}) delegates to the adapter's findQuery method", function() {
+  expect(6);
+
+  var Model = Ember.Model.extend();
+  Model.adapter = {
+    findQuery: function(klass, records, params) {
+      equal(klass, Model, "Class is passed into Adapter#findQuery");
+      ok(records instanceof Ember.RecordArray, "RecordArray is passed into Adapter#findQuery");
+      deepEqual(params, {query: "derp"}, "Query params are passed into Adapter#findQuery");
+
+      setTimeout(function() {
+        Ember.run(records, records.load, klass, []);
+      });
+    }
+  };
+
+  var records = Model.find({query: "derp"});
+  ok(records instanceof Ember.RecordArray, "RecordArray is returned");
+  ok(!records.get('isLoaded'), "RecordArray isn't initially loaded");
+
+  stop();
+  Ember.run(records, records.then, function() {
+    start();
+    ok(records.get('isLoaded'), "RecordArray is loaded after resolved");
+  });
+});
+
