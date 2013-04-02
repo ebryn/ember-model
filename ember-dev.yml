@@ -7,6 +7,5 @@ testing_suites:
   all:
     - "package=all"
     - "package=all&extendprototypes=true&nojshint=true"
-    - "package=all&dist=build&nojshint=true"
 testing_packages:
   - ember-model
