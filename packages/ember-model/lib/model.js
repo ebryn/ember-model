@@ -112,6 +112,9 @@ Ember.Model.reopenClass({
   },
 
   addToRecordArrays: function(record) {
+    if (this._findAllRecordArray) {
+      this._findAllRecordArray.pushObject(record);
+    }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
         if (recordArray.filterFunction) { // FIXME
@@ -124,6 +127,9 @@ Ember.Model.reopenClass({
   },
 
   removeFromRecordArrays: function(record) {
+    if (this._findAllRecordArray) {
+      this._findAllRecordArray.removeObject(record);
+    }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
         recordArray.removeObject(record);
@@ -153,7 +159,7 @@ Ember.Model.reopenClass({
     if (!this.recordCache) { return Ember.A([]); }
     var ids = Object.keys(this.recordCache);
     ids.map(function(id) {
-      return this.recordCache[parseInt(id)];
+      return this.recordCache[parseInt(id, 10)];
     }, this).forEach(callback);
   }
 });

@@ -41,25 +41,6 @@ test(".find(id) delegates to the adapter's find method", function() {
   });
 });
 
-test(".find() delegates to the adapter's findAll method", function() {
-  expect(7);
-
-  var records = Model.find();
-  ok(records instanceof Ember.RecordArray, "RecordArray is returned");
-  ok(!records.get('isLoaded'));
-  ok(records.get('isLoading'));
-  stop();
-
-  records.on('didLoad', function() {
-    start();
-    // equal(records.get('firstObject.id'), 1); // TODO: built-in CP for primaryKey
-    equal(records.get('firstObject.name'), 'Erik');
-    ok(records.get('firstObject.isLoaded'));
-    ok(records.get('isLoaded'));
-    ok(!records.get('isLoading'));
-  });
-});
-
 test(".find(id) called multiple times returns the same object (identity map)", function() {
   expect(1);
 
@@ -81,7 +62,7 @@ test("creating a new record adds it to existing record arrays", function() {
     start();
     equal(records.get('length'), 2, "The record array was updated");
   });
-  
+
 });
 
 test("destroying a record removes it from record arrays", function() {
@@ -237,10 +218,10 @@ test("Model#create() works as expected", function() {
 
 // TODO: test that creating a record calls load
 
-test('Model#registerRecordArray', function(){
+// test('Model#registerRecordArray', function(){
 
-});
+// });
 
-test('Model#unregisterRecordArray', function(){
+// test('Model#unregisterRecordArray', function(){
 
-});
+// });

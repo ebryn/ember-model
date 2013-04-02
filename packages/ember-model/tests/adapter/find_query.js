@@ -1,4 +1,4 @@
-module("Ember.Model: findQuery");
+module("Ember.Adapter#findQuery");
 
 test(".find({}) delegates to the adapter's findQuery method", function() {
   expect(6);
