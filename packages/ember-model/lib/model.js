@@ -89,7 +89,9 @@ Ember.Model.reopenClass({
 
   findById: function(id) {
     var record = this.cachedRecordForId(id);
-    get(this, 'adapter').find(record, id);
+    if (!get(record, 'isLoaded')) {
+      get(this, 'adapter').find(record, id);
+    }
     return record;
   },
 
@@ -106,7 +108,8 @@ Ember.Model.reopenClass({
 
   cachedRecordForId: function(id) {
     if (!this.recordCache) { this.recordCache = {}; }
-    var record = this.recordCache[id] || this.create({isLoaded: false});
+    var sideloadedData = this.sideloadedData && this.sideloadedData[id];
+    var record = this.recordCache[id] || (sideloadedData ? this.create(sideloadedData) : this.create({isLoaded: false}));
     if (!this.recordCache[id]) { this.recordCache[id] = record; }
     return record;
   },
@@ -162,5 +165,13 @@ Ember.Model.reopenClass({
     ids.map(function(id) {
       return this.recordCache[parseInt(id, 10)];
     }, this).forEach(callback);
+  },
+
+  load: function(hashes) {
+    if (!this.sideloadedData) { this.sideloadedData = {}; }
+    for (var i = 0, l = hashes.length; i < l; i++) {
+      var hash = hashes[i];
+      this.sideloadedData[hash.id] = hash; // FIXME: hardcoding `id` property
+    }
   }
 });
