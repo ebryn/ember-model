@@ -1,4 +1,4 @@
-# Ember.Model
+# Ember.Model [![Build Status](https://travis-ci.org/ebryn/ember-model.png?branch=master)](https://travis-ci.org/ebryn/ember-model)
 
 ## Introduction
 
