@@ -4,6 +4,8 @@ require('ember-model/record_array');
 var get = Ember.get,
     set = Ember.set;
 
+Ember.run.queues.push('data');
+
 Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   isLoaded: true,
   isLoading: Ember.computed.not('isLoaded'),
@@ -87,12 +89,32 @@ Ember.Model.reopenClass({
     return records;
   },
 
+  _currentBatchIds: null,
+
   findById: function(id) {
-    var record = this.cachedRecordForId(id);
+    var record = this.cachedRecordForId(id),
+        adapter = get(this, 'adapter');
+
     if (!get(record, 'isLoaded')) {
-      get(this, 'adapter').find(record, id);
+      if (adapter.findMany) {
+        if (this._currentBatchIds) {
+          this._currentBatchIds.push(id);
+        } else {
+          this._currentBatchIds = [id];
+        }
+
+        Ember.run.scheduleOnce('data', this, this._executeBatch);
+      } else {
+        adapter.find(record, id);
+      }
     }
     return record;
+  },
+
+  _executeBatch: function() {
+    var records = Ember.RecordArray.create();
+    get(this, 'adapter').findMany(this, records, this._currentBatchIds);
+    this._currentBatchIds = null;
   },
 
   findQuery: function(params) {
