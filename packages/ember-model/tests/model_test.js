@@ -27,7 +27,7 @@ test("can define attributes with Ember.attr, data is accessible", function() {
 test(".find(id) delegates to the adapter's find method", function() {
   expect(6);
 
-  var record = Model.find(1);
+  var record = Ember.run(Model, Model.find, 1);
   ok(record, "Record was returned by find");
   ok(!record.get('isLoaded'));
   ok(record.get('isLoading'));
@@ -44,8 +44,8 @@ test(".find(id) delegates to the adapter's find method", function() {
 test(".find(id) called multiple times returns the same object (identity map)", function() {
   expect(1);
 
-  var first = Model.find(1),
-      second = Model.find(1);
+  var first = Ember.run(Model, Model.find, 1),
+      second = Ember.run(Model, Model.find, 1);
 
   equal(first, second);
 });
@@ -106,7 +106,7 @@ test("record isNew & isSaving flags", function() {
 test("record.toJSON() is generated from Ember.attr definitions", function() {
   expect(1);
 
-  var record = Model.find(1);
+  var record = Ember.run(Model, Model.find, 1);
   record.on('didLoad', function() {
     start();
     deepEqual(record.toJSON(), {name: 'Erik'});
@@ -118,7 +118,7 @@ test("record.toJSON() is generated from Ember.attr definitions", function() {
 test("Model.find() returns a deferred", function() {
   expect(2);
 
-  var records = Model.find();
+  var records = Ember.run(Model, Model.find);
   records.then(function(data) {
     start();
     equal(records, data);
@@ -130,7 +130,7 @@ test("Model.find() returns a deferred", function() {
 test("Model.find(id) returns a deferred", function() {
   expect(2);
 
-  var record = Model.find(1);
+  var record = Ember.run(Model, Model.find, 1);
   record.then(function(data) {
     start();
     equal(record, data);
@@ -142,7 +142,7 @@ test("Model.find(id) returns a deferred", function() {
 test("Model#save() returns a deferred", function() {
   expect(2);
 
-  var record = Model.find(1);
+  var record = Ember.run(Model, Model.find, 1);
   record.then(function(data) {
     start();
     record.set('name', 'Stefan');
@@ -159,7 +159,7 @@ test("Model#save() returns a deferred", function() {
 test("Model#deleteRecord() returns a deferred", function() {
   expect(2);
 
-  var record = Model.find(1);
+  var record = Ember.run(Model, Model.find, 1);
   record.then(function(data) {
     start();
     record.deleteRecord().then(function(data) {
@@ -175,8 +175,8 @@ test("Model#deleteRecord() returns a deferred", function() {
 test("Model#save() works as expected", function() {
   expect(2);
 
-  var records = Model.find();
-  var record = Model.find(1);
+  var records = Ember.run(Model, Model.find);
+  var record = Ember.run(Model, Model.find, 1);
 
   records.then(function() {
     start();

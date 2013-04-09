@@ -22,3 +22,25 @@ test("multiple calls to Model#find within the same run loop coalesce into a find
     Model.find(3);
   });
 });
+
+test("calls to Model#find and Model#findMany within the same run loop coalesce into a single findMany call", function() {
+  expect(2);
+
+  var Model = Ember.Model.extend();
+
+  Model.adapter = {
+    find: function() {
+      ok(false, "find was called");
+    },
+
+    findMany: function(klass, records, ids) {
+      ok(true, "findMany was called");
+      deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
+    }
+  };
+
+  Ember.run(function() {
+    Model.find(1);
+    Model.find([2, 3]);
+  });
+});

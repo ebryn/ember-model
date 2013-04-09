@@ -72,11 +72,32 @@ Ember.Model.reopenClass({
   find: function(id) {
     if (!arguments.length) {
       return this.findAll();
+    } else if (Ember.typeOf(id) === 'array') {
+      return this.findMany(id);
     } else if (typeof id === 'object') {
       return this.findQuery(id);
     } else {
       return this.findById(id);
     }
+  },
+
+  findMany: function(ids) {
+    var records = Ember.RecordArray.create();
+
+    if (!this.recordArrays) { this.recordArrays = []; }
+    this.recordArrays.push(records);
+
+    if (this._currentBatchIds) {
+      this._currentBatchIds = this._currentBatchIds.concat(ids);
+      this._currentBatchRecordArrays.push(records);
+    } else {
+      this._currentBatchIds = ids;
+      this._currentBatchRecordArrays = [records];
+    }
+
+    Ember.run.scheduleOnce('data', this, this._executeBatch);
+
+    return records;
   },
 
   findAll: function() {
@@ -90,6 +111,7 @@ Ember.Model.reopenClass({
   },
 
   _currentBatchIds: null,
+  _currentBatchRecordArrays: null,
 
   findById: function(id) {
     var record = this.cachedRecordForId(id),
@@ -101,6 +123,7 @@ Ember.Model.reopenClass({
           this._currentBatchIds.push(id);
         } else {
           this._currentBatchIds = [id];
+          this._currentBatchRecordArrays = [];
         }
 
         Ember.run.scheduleOnce('data', this, this._executeBatch);
@@ -112,9 +135,24 @@ Ember.Model.reopenClass({
   },
 
   _executeBatch: function() {
-    var records = Ember.RecordArray.create();
-    get(this, 'adapter').findMany(this, records, this._currentBatchIds);
+    var batchIds = this._currentBatchIds,
+        batchRecordArrays = this._currentBatchRecordArrays,
+        records;
+
     this._currentBatchIds = null;
+    this._currentBatchRecordArrays = null;
+
+    if (batchIds.length === 1) {
+      get(this, 'adapter').find(this.recordCache[batchIds[0]], batchIds[0]);
+    } else {
+      records = Ember.RecordArray.create(),
+      get(this, 'adapter').findMany(this, records, batchIds);
+      records.then(function() {
+        for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
+          batchRecordArrays[i].notifyLoaded();
+        }
+      });
+    }
   },
 
   findQuery: function(params) {

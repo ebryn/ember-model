@@ -4,6 +4,10 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, Ember.DeferredMixin, 
 
   load: function(klass, data) {
     this.set('content', this.materializeData(klass, data));
+    this.notifyLoaded();
+  },
+
+  notifyLoaded: function() {
     this.set('isLoaded', true);
     this.trigger('didLoad');
     this.resolve(this);
