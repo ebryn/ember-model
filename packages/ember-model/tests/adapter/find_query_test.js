@@ -1,7 +1,7 @@
 module("Ember.Adapter#findQuery");
 
 test(".find({}) delegates to the adapter's findQuery method", function() {
-  expect(6);
+  expect(7);
 
   var Model = Ember.Model.extend();
   Model.adapter = {
@@ -19,6 +19,7 @@ test(".find({}) delegates to the adapter's findQuery method", function() {
   var records = Model.find({query: "derp"});
   ok(records instanceof Ember.RecordArray, "RecordArray is returned");
   ok(!records.get('isLoaded'), "RecordArray isn't initially loaded");
+  ok(!(Model.recordArrays || Ember.A()).contains(records), "The RecordArray created by a findQuery should not be registered");
 
   stop();
   Ember.run(records, records.then, function() {

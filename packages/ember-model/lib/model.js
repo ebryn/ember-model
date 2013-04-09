@@ -158,9 +158,6 @@ Ember.Model.reopenClass({
   findQuery: function(params) {
     var records = Ember.RecordArray.create();
 
-    if (!this.recordArrays) { this.recordArrays = []; }
-    this.recordArrays.push(records);
-
     this.adapter.findQuery(this, records, params);
 
     return records;
