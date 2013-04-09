@@ -4,6 +4,22 @@ require('ember-model/record_array');
 var get = Ember.get,
     set = Ember.set;
 
+function contains(array, element) {
+  for (var i = 0, l = array.length; i < l; i++) {
+    if (array[i] === element) { return true; }
+  }
+  return false;
+}
+
+function concatUnique(toArray, fromArray) {
+  var e;
+  for (var i = 0, l = fromArray.length; i < l; i++) {
+    e = fromArray[i];
+    if (!contains(toArray, e)) { toArray.push(e); }
+  }
+  return toArray;
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
@@ -88,10 +104,10 @@ Ember.Model.reopenClass({
     this.recordArrays.push(records);
 
     if (this._currentBatchIds) {
-      this._currentBatchIds = this._currentBatchIds.concat(ids);
+      concatUnique(this._currentBatchIds, ids);
       this._currentBatchRecordArrays.push(records);
     } else {
-      this._currentBatchIds = ids;
+      this._currentBatchIds = concatUnique([], ids);
       this._currentBatchRecordArrays = [records];
     }
 
@@ -120,7 +136,7 @@ Ember.Model.reopenClass({
     if (!get(record, 'isLoaded')) {
       if (adapter.findMany) {
         if (this._currentBatchIds) {
-          this._currentBatchIds.push(id);
+          if (!contains(this._currentBatchIds, id)) { this._currentBatchIds.push(id); }
         } else {
           this._currentBatchIds = [id];
           this._currentBatchRecordArrays = [];
@@ -143,7 +159,7 @@ Ember.Model.reopenClass({
     this._currentBatchRecordArrays = null;
 
     if (batchIds.length === 1) {
-      get(this, 'adapter').find(this.recordCache[batchIds[0]], batchIds[0]);
+      get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
     } else {
       records = Ember.RecordArray.create(),
       get(this, 'adapter').findMany(this, records, batchIds);
