@@ -98,7 +98,7 @@ Ember.Model.reopenClass({
   },
 
   findMany: function(ids) {
-    var records = Ember.RecordArray.create();
+    var records = Ember.RecordArray.create({_ids: ids});
 
     if (!this.recordArrays) { this.recordArrays = []; }
     this.recordArrays.push(records);
@@ -153,6 +153,7 @@ Ember.Model.reopenClass({
   _executeBatch: function() {
     var batchIds = this._currentBatchIds,
         batchRecordArrays = this._currentBatchRecordArrays,
+        self = this,
         records;
 
     this._currentBatchIds = null;
@@ -161,11 +162,11 @@ Ember.Model.reopenClass({
     if (batchIds.length === 1) {
       get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
     } else {
-      records = Ember.RecordArray.create(),
+      records = Ember.RecordArray.create({_ids: batchIds}),
       get(this, 'adapter').findMany(this, records, batchIds);
       records.then(function() {
         for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
-          batchRecordArrays[i].notifyLoaded();
+          batchRecordArrays[i].loadForFindMany(self);
         }
       });
     }

@@ -7,20 +7,29 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
     if (!record.get('isLoaded')) {
       setTimeout(function() {
-        Ember.run(function() {
-          record.load(id, data);
-        });
+        Ember.run(record, record.load, id, data);
       });
     }
+  },
+
+  findMany: function(klass, records, ids) {
+    var fixtures = klass.FIXTURES,
+        requestedData = [];
+
+    for (var i = 0, l = ids.length; i < l; i++) {
+      requestedData.push(fixtures[i]);
+    }
+
+    setTimeout(function() {
+      Ember.run(records, records.load, klass, requestedData);
+    });
   },
 
   findAll: function(klass, records) {
     var fixtures = klass.FIXTURES;
 
     setTimeout(function() {
-      Ember.run(function() {
-        records.load(klass, fixtures);
-      });
+      Ember.run(records, records.load, klass, fixtures);
     });
   },
 

@@ -1,14 +1,29 @@
+var get = Ember.get,
+    set = Ember.set;
+
 Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, Ember.DeferredMixin, {
   isLoaded: false,
   isLoading: Ember.computed.not('isLoaded'),
 
+  length: Ember.computed(function() {
+    var idsLength = get(this, '_ids.length');
+    if (idsLength) { return idsLength; }
+    return get(this, 'content.length');
+  }).property('_ids', 'content.length'),
+
   load: function(klass, data) {
-    this.set('content', this.materializeData(klass, data));
+    set(this, 'content', this.materializeData(klass, data));
+    this.notifyLoaded();
+  },
+
+  loadForFindMany: function(klass) {
+    var content = get(this, '_ids').map(function(id) { return klass.cachedRecordForId(id); });
+    set(this, 'content', Ember.A(content));
     this.notifyLoaded();
   },
 
   notifyLoaded: function() {
-    this.set('isLoaded', true);
+    set(this, 'isLoaded', true);
     this.trigger('didLoad');
     this.resolve(this);
   },

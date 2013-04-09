@@ -11,7 +11,7 @@ test("Model.find() delegates to Adapter#findAll", function() {
     {id: 1, name: 'Erik'}
   ];
 
-  var records = Model.find();
+  var records = Ember.run(Model, Model.find);
   ok(records instanceof Ember.RecordArray, "RecordArray is returned");
   ok(!records.get('isLoaded'));
   ok(records.get('isLoading'));
