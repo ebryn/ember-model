@@ -66,3 +66,35 @@ test("when properties are changed back to the loaded value, isDirty should be fa
   ok(!obj.get('isDirty'));
   deepEqual(obj._dirtyAttributes, [], "There shouldn't be any dirty attributes");
 });
+
+test("after saving, the model shouldn't be dirty", function() {
+  expect(3);
+
+  var Model = Ember.Model.extend({
+    name: attr()
+  });
+
+  Model.adapter = {
+    saveRecord: function(record) {
+      ok(true, "saveRecord was called");
+      var deferred = Ember.Deferred.create();
+      deferred.then(function() {
+        record.didSaveRecord();
+      });
+      deferred.resolve(record);
+      return deferred;
+  }
+  };
+
+  var obj = Model.create({isNew: false});
+  obj.set('name', 'Erik');
+  ok(obj.get('isDirty'));
+
+  stop();
+  Ember.run(function() {
+    obj.save().then(function() {
+      start();
+      ok(!obj.get('isDirty'), "The record is no longer dirty");
+    });
+  });
+});

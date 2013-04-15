@@ -79,6 +79,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   didSaveRecord: function() {
     set(this, 'isSaving', false);
     this.trigger('didSaveRecord');
+    this._copyDirtyAttributesToData();
   },
 
   deleteRecord: function() {
@@ -89,6 +90,23 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     this.constructor.removeFromRecordArrays(this);
     set(this, 'isDeleted', true);
     this.trigger('didDeleteRecord');
+  },
+
+  _copyDirtyAttributesToData: function() {
+    if (!this._dirtyAttributes) { return; }
+    var dirtyAttributes = this._dirtyAttributes,
+        data = get(this, 'data'),
+        key;
+
+    if (!data) {
+      data = {};
+    }
+    for (var i = 0, l = dirtyAttributes.length; i < l; i++) {
+      key = dirtyAttributes[i];
+      data[key] = this.cacheFor(key);
+    }
+    set(this, 'data', data);
+    set(this, 'isDirty', false);
   }
 });
 
