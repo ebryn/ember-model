@@ -27,6 +27,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   isLoading: Ember.computed.not('isLoaded'),
   isNew: true,
   isDeleted: false,
+  isDirty: false,
+  _dirtyAttributes: null,
 
   load: function(id, hash) {
     var data = Ember.merge({id: id}, hash);
@@ -55,7 +57,15 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   save: function() {
     var adapter = this.constructor.adapter;
     set(this, 'isSaving', true);
-    return get(this, 'isNew') ? adapter.createRecord(this) : adapter.saveRecord(this);
+    if (get(this, 'isNew')) {
+      return adapter.createRecord(this);
+    } else if (get(this, 'isDirty')) {
+      return adapter.saveRecord(this);
+    } else {
+      var deferred = Ember.Deferred.create();
+      deferred.resolve(this);
+      return deferred;
+    }
   },
 
   didCreateRecord: function() {
