@@ -27,8 +27,14 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   isLoading: Ember.computed.not('isLoaded'),
   isNew: true,
   isDeleted: false,
-  isDirty: false,
   _dirtyAttributes: null,
+
+  // TODO: rewrite w/o volatile
+  isDirty: Ember.computed(function() {
+    var dirtyAttributes = this._dirtyAttributes;
+    return dirtyAttributes && dirtyAttributes.length !== 0;
+  }).property().volatile(),
+
 
   load: function(id, hash) {
     var data = Ember.merge({id: id}, hash);
@@ -105,8 +111,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       key = dirtyAttributes[i];
       data[key] = this.cacheFor(key);
     }
+    this._dirtyAttributes = [];
     set(this, 'data', data);
-    set(this, 'isDirty', false);
   }
 });
 

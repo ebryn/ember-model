@@ -19,11 +19,9 @@ Ember.attr = function(type) {
       }
 
       if (dataValue !== value) {
-        set(this, 'isDirty', true);
         if (!this._dirtyAttributes) { this._dirtyAttributes = Ember.A(); }
         this._dirtyAttributes.push(key);
       } else {
-        set(this, 'isDirty', false);
         if (this._dirtyAttributes) { this._dirtyAttributes.removeObject(key); }
       }
       return value;
