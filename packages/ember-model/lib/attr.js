@@ -18,7 +18,14 @@ Ember.attr = function(type) {
         return value;
       }
 
-      if (dataValue !== value) {
+      var isEqual;
+      if (type && type.isEqual) {
+        isEqual = type.isEqual(dataValue, value);
+      } else {
+        isEqual = dataValue === value;
+      }
+
+      if (!isEqual) {
         if (!this._dirtyAttributes) { this._dirtyAttributes = Ember.A(); }
         this._dirtyAttributes.push(key);
       } else {
@@ -27,6 +34,9 @@ Ember.attr = function(type) {
       return value;
     }
 
-    return data && data[key];
-  }).property('data').meta({isAttribute: true});
+    if (typeof dataValue === 'object') {
+      dataValue = Object.create(dataValue);
+    }
+    return dataValue;
+  }).property('data').meta({isAttribute: true, type: type});
 };

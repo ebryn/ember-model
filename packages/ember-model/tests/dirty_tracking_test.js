@@ -98,3 +98,43 @@ test("after saving, the model shouldn't be dirty", function() {
     });
   });
 });
+
+test("a type can be specfied to attr which can determine the dirty behavior", function() {
+  var NameType = {
+    isEqual: function(oldValue, newValue) {
+      return newValue.indexOf(oldValue) !== -1;
+    }
+  };
+
+  var Model = Ember.Model.extend({
+    name: attr(NameType)
+  });
+  var obj = Model.create({name: "Erik"});
+  ok(!obj.get('isDirty'));
+  obj.set('name', "Erik Jon");
+  ok(!obj.get('isDirty'));
+});
+
+test("a type can be specfied to attr which can determine the dirty behavior and it works with embedded objects", function() {
+  var AuthorType = {
+    isEqual: function(oldValue, newValue) {
+      return newValue.name.indexOf(oldValue.name) !== -1;
+    }
+  };
+
+  var Model = Ember.Model.extend({
+    author: attr(AuthorType),
+    authorName: Ember.computed.alias('author.name')
+  });
+
+  var obj = Model.create();
+  Ember.run(function() {
+    obj.load(1, {author: {id: 1, name: "Erik"}});
+  });
+
+  ok(!obj.get('isDirty'));
+  obj.set('authorName', "Erik Jon");
+  ok(!obj.get('isDirty'));
+  obj.set('authorName', "Yehuda");
+  ok(obj.get('isDirty'));
+});

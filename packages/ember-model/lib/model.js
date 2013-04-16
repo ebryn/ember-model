@@ -2,7 +2,8 @@ require('ember-model/adapter');
 require('ember-model/record_array');
 
 var get = Ember.get,
-    set = Ember.set;
+    set = Ember.set,
+    meta = Ember.meta;
 
 function contains(array, element) {
   for (var i = 0, l = array.length; i < l; i++) {
@@ -31,7 +32,27 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
   // TODO: rewrite w/o volatile
   isDirty: Ember.computed(function() {
-    var dirtyAttributes = this._dirtyAttributes;
+    var attributes = this.attributes,
+        dirtyAttributes = this._dirtyAttributes,
+        key, cachedValue, dataValue, desc, descMeta, type, isDirty;
+    for (var i = 0, l = attributes.length; i < l; i++) {
+      key = attributes[i];
+      cachedValue = this.cacheFor(key);
+      dataValue = get(this, 'data.'+key);
+      desc = meta(this).descs[key];
+      descMeta = desc && desc.meta();
+      type = descMeta.type;
+      isDirty = dirtyAttributes && dirtyAttributes.indexOf(key) !== -1;
+      if (!isDirty && type && type.isEqual) {
+        if (!type.isEqual(dataValue, cachedValue || dataValue)) { // computed property won't have a value when just loaded
+          if (!dirtyAttributes) {
+            dirtyAttributes = this._dirtyAttributes = Ember.A();
+          }
+          dirtyAttributes.push(key);
+        }
+      }
+
+    }
     return dirtyAttributes && dirtyAttributes.length !== 0;
   }).property().volatile(),
 
@@ -106,13 +127,14 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
     if (!data) {
       data = {};
+      set(this, 'data', data);
     }
     for (var i = 0, l = dirtyAttributes.length; i < l; i++) {
+      // TODO: merge Object.create'd object into prototype
       key = dirtyAttributes[i];
       data[key] = this.cacheFor(key);
     }
     this._dirtyAttributes = [];
-    set(this, 'data', data);
   }
 });
 
