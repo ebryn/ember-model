@@ -7,7 +7,7 @@ distros = {
 output "dist"
 
 distros.each do |name, modules|
-  name = "ember-dev-package"
+  name = "ember-model"
 
   input "dist/modules" do
     module_paths = modules.map{|m| "#{m}.js" }
