@@ -53,6 +53,11 @@ App.WeighIn.adapter = Ember.FixtureAdapter.create()
 App.WeighIn.FIXTURES = [
   {id: 1, user_id: 1, weight: 210}
 ]
+
+andre_the_giant_weigh_in = App.WeighIn.create
+  id: 2, user_id: 2, weight: 640
+
+andre_the_giant_weigh_in.save()
 ```
 
 ## Adapter API
