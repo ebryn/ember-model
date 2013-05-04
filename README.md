@@ -17,45 +17,30 @@ EM is still very much a work in progress, but it's flexible enough to be used in
 - Fixtures
 - Identity map (per class)
 - Promises everywhere
-- RESTAdapter coming soon
+- Customizable RESTAdapter
 
 If you want more features than Ember Model provides, file an issue. Feature requests/contributions are welcome but the goal is to keep things simple and fast.
 
 ## Example usage
 
-```coffeescript
-attr = Ember.attr
+```javascript
+var attr = Ember.attr;
 
-App.User = Ember.Model.extend
-  id: attr()
+App.User = Ember.Model.extend({
+  id: attr(),
   name: attr()
-  goal: attr()
-  lastWeight: attr()
+});
 
-App.User.adapter = Ember.Adapter.create
-  findAll: (klass, recordArray) ->
-    $.getJSON("/users").then (data) ->
-      recordArray.load klass, data
+App.User.url = "/users";
+App.User.adapter = Ember.RESTAdapter.create();
 
-App.WeighIn = Ember.Model.extend
-  id: attr()
-  user_id: attr()
-  weight: attr()
+var newUser = App.User.create({name: "Erik"});
+newUser.save(); // POST to /users.json
 
-App.WeighIn.adapter = Ember.FixtureAdapter.create()
-
-App.WeighIn.FIXTURES = [
-  {id: 1, user_id: 1, weight: 210}
-]
-
-firstWeighIn = App.WeighIn.find(1)
-firstWeighIn.set 'weight', 200
-firstWeighIn.save()
-
-newWeighIn = App.WeighIn.create(id: 2, user_id: 2, weight: 180)
-newWeighIn.save()
-
-
+var existingUser = App.User.find(1); // GET /users/1.json
+existingUser.set('name', 'Kris');
+existingUser.get('isDirty'); // => true
+existingUser.save(); // PUT /users/1.json
 ```
 
 ## Model API
