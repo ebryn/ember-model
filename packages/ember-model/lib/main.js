@@ -4,3 +4,4 @@ require('ember-model/record_array');
 require('ember-model/filtered_record_array');
 require('ember-model/model');
 require('ember-model/attr');
+require('ember-model/rest_adapter');

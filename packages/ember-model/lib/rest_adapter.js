@@ -4,32 +4,73 @@ var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
   find: function(record, id) {
-    var url = get(record.constructor, 'url') + "/" + id + ".json";
-    Ember.$.getJSON(url, function(data) {
-      Ember.run(function() {
-        record.load(data);
-      });
+    var url = this.buildURL(record.constructor, id);
+
+    return this.ajax(url).then(function(data) {
+      Ember.run(record, record.load, data);
     });
   },
 
   findAll: function(klass, records) {
-    var url = get(klass, 'url') + ".json";
-    Ember.$.getJSON(url, function(data) {
-      Ember.run(function() {
-        records.load(klass, data);
-      });
+    var url = this.buildURL(klass);
+
+    return this.ajax(url).then(function(data) {
+      Ember.run(records, records.load, klass, data);
+    });
+  },
+
+  findQuery: function(klass, records, params) {
+    var url = this.buildURL(klass);
+
+    return this.ajax(url, params).then(function(data) {
+      Ember.run(records, records.load, klass, data);
     });
   },
 
   createRecord: function(record) {
+    var url = this.buildURL(record.constructor);
 
+    return this.ajax(url, record.toJSON(), "POST").then(function(data) {
+      Ember.run(function() {
+        debugger;
+        record.load(data.id, data); // FIXME: hardcoded ID
+        record.didCreateRecord();
+      });
+    });
   },
 
   saveRecord: function(record) {
+    var url = this.buildURL(record.constructor, get(record, 'id'));
 
+    return this.ajax(url, record.toJSON(), "PUT").then(function() {  // TODO: Some APIs may or may not return data
+      Ember.run(record, record.didSaveRecord);
+    });
   },
 
   deleteRecord: function(record) {
+    var url = this.buildURL(record.constructor, get(record, 'id'));
 
+    return this.ajax(url, record.toJSON(), "DELETE").then(function() {  // TODO: Some APIs may or may not return data
+      Ember.run(record, record.didDeleteRecord);
+    });
+  },
+
+  ajax: function(url, params, method) {
+    return this._ajax(url, params, method || "GET");
+  },
+
+  buildURL: function(klass, id) {
+    var urlRoot = get(klass, 'url');
+    if (!urlRoot) { throw new Error('Ember.RESTAdapter requires a `url` property to be specified'); }
+
+    if (id) {
+      return urlRoot + "/" + id + ".json";
+    } else {
+      return urlRoot + ".json";
+    }
+  },
+
+  _ajax: function(url, params, method) {
+    return Ember.$.ajax(url, params, method);
   }
 });
