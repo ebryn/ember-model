@@ -13,6 +13,7 @@ EM is still very much a work in progress, but it's flexible enough to be used in
 - BYO$A (bring your own $.ajax)
 - Focused on performance
 - Automatic coalescing of multiple findById calls into a single findMany
+- Customizable dirty tracking (great for embedded objects)
 - Fixtures
 - Identity map (per class)
 - Promises everywhere
