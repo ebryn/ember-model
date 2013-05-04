@@ -56,6 +56,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     return dirtyAttributes && dirtyAttributes.length !== 0;
   }).property().volatile(),
 
+  init: function() {
+    if (!get(this, 'isNew')) { this.resolve(this); }
+    this._super();
+  },
 
   load: function(id, hash) {
     var data = Ember.merge({id: id}, hash);

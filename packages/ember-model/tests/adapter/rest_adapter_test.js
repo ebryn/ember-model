@@ -100,7 +100,7 @@ test("createRecord", function() {
 test("saveRecord", function() {
   expect(5);
 
-  var record = RESTModel.create({id: 1, name: "Erik", isNew: false});
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false});
 
   record.set('name', "Kris");
   ok(record.get('isDirty'), "Record should be dirty");
@@ -120,7 +120,7 @@ test("saveRecord", function() {
 test("deleteRecord", function() {
   expect(5);
 
-  var record = RESTModel.create({id: 1, name: "Erik", isNew: false});
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false});
   ok(!record.get('isDeleted'), "Record should not be deleted");
 
   adapter._ajax = function(url, params, method) {

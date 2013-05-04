@@ -13,7 +13,7 @@ test("when no properties have changed on a model, save should noop", function() 
     }
   };
 
-  var obj = Model.create({isNew: false});
+  var obj = Ember.run(Model, Model.create, {isNew: false});
   ok(!obj.get('isDirty'));
 
   Ember.run(obj, obj.save);
@@ -32,7 +32,7 @@ test("when properties have changed on a model, isDirty should be set", function(
     }
   };
 
-  var obj = Model.create({isNew: false});
+  var obj = Ember.run(Model, Model.create, {isNew: false});
   ok(!obj.get('isDirty'));
 
   obj.set('name', 'Jeffrey');
@@ -54,7 +54,7 @@ test("when properties are changed back to the loaded value, isDirty should be fa
     }
   };
 
-  var obj = Model.create({isNew: false, name: 'Erik'});
+  var obj = Ember.run(Model, Model.create, {isNew: false, name: 'Erik'});
   ok(!obj.get('isDirty'));
   equal(obj._dirtyAttributes, null, "There shouldn't be any dirty attributes");
 
@@ -83,10 +83,10 @@ test("after saving, the model shouldn't be dirty", function() {
       });
       deferred.resolve(record);
       return deferred;
-  }
+    }
   };
 
-  var obj = Model.create({isNew: false});
+  var obj = Ember.run(Model, Model.create, {isNew: false});
   obj.set('name', 'Erik');
   ok(obj.get('isDirty'));
 

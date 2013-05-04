@@ -32,7 +32,6 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return this.ajax(url, record.toJSON(), "POST").then(function(data) {
       Ember.run(function() {
-        debugger;
         record.load(data.id, data); // FIXME: hardcoded ID
         record.didCreateRecord();
       });
