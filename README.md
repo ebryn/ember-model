@@ -56,9 +56,9 @@ App.WeighIn.FIXTURES = [
 
 `Model#load` - load JSON into the record (typically used inside adapter definition)
 
-`Model#toJSON` - get the 
+`Model#toJSON` - serialize the record to JSON
 
-`Model.find()` - find all
+`Model.find()` - find all records
 
 `Model.find(<String|Number>)` - find by ID (multiple calls within a single run loop can coalesce to a findMany)
 
