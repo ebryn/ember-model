@@ -7,7 +7,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var url = this.buildURL(record.constructor, id);
 
     return this.ajax(url).then(function(data) {
-      Ember.run(record, record.load, data);
+      Ember.run(record, record.load, id, data);
     });
   },
 
