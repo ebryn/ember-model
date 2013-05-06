@@ -55,15 +55,23 @@ test("findAll", function() {
 });
 
 test("findById", function() {
-  expect(3);
+  expect(4);
+
+  var data = { id: 1, title: "Test Title" },
+      record;
 
   adapter._ajax = function(url, params, method) {
     equal(url, "/posts/1.json");
     equal(params, undefined);
     equal(method, "GET");
-    return ajaxSuccess();
+    return ajaxSuccess(data);
   };
-  Ember.run(RESTModel, RESTModel.find, 1);
+
+  Ember.run(function() {
+    record = RESTModel.find(1);
+  });
+
+  deepEqual(record.get('data'), data, "The data should be properly loaded");
 });
 
 test("findQuery", function() {
