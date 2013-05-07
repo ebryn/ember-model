@@ -27,6 +27,19 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     });
   },
 
+  findMany: function(klass, records) {
+    var url = this.buildURL(klass),
+        params = {
+          data: {
+            ids: records._ids
+          }
+        };
+
+    return this.ajax(url, params).then(function(data) {
+      Ember.run(records, records.load, klass, data);
+    });
+  },
+
   createRecord: function(record) {
     var url = this.buildURL(record.constructor);
 

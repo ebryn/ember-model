@@ -86,6 +86,18 @@ test("findQuery", function() {
   Ember.run(RESTModel, RESTModel.find, {foo: 'bar'});
 });
 
+test("findMany", function() {
+  expect(3);
+
+  adapter._ajax = function(url, params, method) {
+    equal(url, "/posts.json");
+    deepEqual(params, {data: {ids: [1,2]}});
+    equal(method, "GET");
+    return ajaxSuccess();
+  };
+  Ember.run(RESTModel, RESTModel.findMany, [1,2]);
+});
+
 test("createRecord", function() {
   expect(5);
 
