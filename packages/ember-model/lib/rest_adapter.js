@@ -70,6 +70,17 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   _ajax: function(url, params, method) {
-    return Ember.$.ajax(url, params, method);
+    var settings = {
+      url: url,
+      type: method,
+      dataType: "json"
+    };
+
+    if (params && method !== "GET") {
+      settings.contentType = "application/json; charset=utf-8";
+      settings.data = JSON.stringify(params);
+    }
+
+    return Ember.$.ajax(settings);
   }
 });
