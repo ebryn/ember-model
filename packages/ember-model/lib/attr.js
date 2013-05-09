@@ -35,7 +35,7 @@ Ember.attr = function(type) {
     }
 
     if (typeof dataValue === 'object') {
-      dataValue = Object.create(dataValue);
+      dataValue = Ember.create(dataValue);
     }
     return dataValue;
   }).property('data').meta({isAttribute: true, type: type});
