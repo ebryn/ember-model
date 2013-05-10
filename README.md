@@ -81,6 +81,11 @@ Ember.Adapter = Ember.Object.extend({
 });
 ```
 
+## Building Ember-Model
+
+To build Ember-Model, clone the repository, run `bundle` then `rake dist`. Unminified and minified builds of Ember-Model will be placed in the `dist` directory.
+
+
 ### Special Thanks
 
 Yehuda Katz (@wycats), Tom Dale (@tomdale), Igor Terzic (@igorT), and company for their amazing work on Ember Data. I believe it's the most ambitious JS project today. The goal is someday everyone's JSON APIs will be conventional enough that Ember Data will be the best choice of data library for Ember. Until then, Ember Model will make it easy to get up and running quickly with Ember.
