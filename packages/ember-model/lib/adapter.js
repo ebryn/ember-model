@@ -3,11 +3,11 @@ Ember.Adapter = Ember.Object.extend({
     throw new Error('Ember.Adapter subclasses must implement find');
   },
 
-  findQuery: function(record, id) {
+  findQuery: function(klass, records, params) {
     throw new Error('Ember.Adapter subclasses must implement findQuery');
   },
 
-  findMany: function(record, id) {
+  findMany: function(klass, records, ids) {
     throw new Error('Ember.Adapter subclasses must implement findMany');
   },
 
