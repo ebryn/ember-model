@@ -37,9 +37,21 @@ module("Ember.RESTAdapter - with a url specified", {
       name: Ember.attr()
     });
     RESTModel.url = "/posts";
+    RESTModel.collectionKey = "posts";
+    RESTModel.rootKey = "post";
     adapter = RESTModel.adapter = Ember.RESTAdapter.create();
     _ajax = adapter._ajax;
   }
+});
+
+test("findAll throws an error if collectionKey isn't specified", function() {
+  expect(1);
+
+  RESTModel.collectionKey = null;
+
+  throws(function() {
+    Ember.run(RESTModel, RESTModel.find);
+  }, /requires a `collectionKey` property to be specified/);
 });
 
 test("findAll", function() {
@@ -52,6 +64,16 @@ test("findAll", function() {
     return ajaxSuccess();
   };
   Ember.run(RESTModel, RESTModel.find);
+});
+
+test("findById throws an error if rootKey isn't specified", function() {
+  expect(1);
+
+  RESTModel.rootKey = null;
+
+  throws(function() {
+    Ember.run(RESTModel, RESTModel.find, 1);
+  }, /requires a `rootKey` property to be specified/);
 });
 
 test("findById", function() {

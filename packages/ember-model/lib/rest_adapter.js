@@ -4,7 +4,12 @@ var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
   find: function(record, id) {
-    var url = this.buildURL(record.constructor, id);
+    var url = this.buildURL(record.constructor, id),
+        rootKey = record.constructor.rootKey;
+
+    if (!rootKey) {
+      throw new Error('Ember.RESTAdapter requires a `rootKey` property to be specified');
+    }
 
     return this.ajax(url).then(function(data) {
       Ember.run(record, record.load, id, data);
@@ -12,10 +17,15 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   findAll: function(klass, records) {
-    var url = this.buildURL(klass);
+    var url = this.buildURL(klass),
+        collectionKey = klass.collectionKey;
+
+    if (!collectionKey) {
+      throw new Error('Ember.RESTAdapter requires a `collectionKey` property to be specified');
+    }
 
     return this.ajax(url).then(function(data) {
-      Ember.run(records, records.load, klass, data);
+      Ember.run(records, records.load, klass, data[collectionKey]);
     });
   },
 
