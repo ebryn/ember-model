@@ -85,8 +85,25 @@ Ember.Adapter = Ember.Object.extend({
 
 To build Ember-Model, clone the repository, run `bundle` then `rake dist`. Unminified and minified builds of Ember-Model will be placed in the `dist` directory.
 
+## How to Run Unit Tests
 
-### Special Thanks
+### Setup
+
+1. Install Ruby 1.9.2+. There are many resources on the web can help;
+one of the best is [rvm](https://rvm.io/).
+
+2. Install Bundler: `gem install bundler`
+
+3. Run `bundle` inside the project root to install the gem dependencies.
+
+### In Your Browser
+
+1. To start the development server, run `rackup`.
+
+2. Then visit: `http://localhost:9292`.
+
+
+## Special Thanks
 
 Yehuda Katz (@wycats), Tom Dale (@tomdale), Igor Terzic (@igorT), and company for their amazing work on Ember Data. I believe it's the most ambitious JS project today. The goal is someday everyone's JSON APIs will be conventional enough that Ember Data will be the best choice of data library for Ember. Until then, Ember Model will make it easy to get up and running quickly with Ember.
 
