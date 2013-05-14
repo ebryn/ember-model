@@ -16,14 +16,14 @@ module("Ember.RecordArray", {
   teardown: function() { }
 });
 
-test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function() {
-  var records = Ember.run(Model, Model.find, [1,2,3]);
-
 // test("must be created with a modelClass property", function() {
 //   throws(function() {
 //     Ember.RecordArray.create();
 //   }, /RecordArrays must be created with a modelClass/);
 // });
+
+test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function() {
+  var records = Ember.run(Model, Model.find, [1,2,3]);
 
   deepEqual(records.get('_ids'), [1,2,3]);
   equal(records.get('length'), 0);
