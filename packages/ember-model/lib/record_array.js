@@ -5,12 +5,6 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, Ember.DeferredMixin, 
   isLoaded: false,
   isLoading: Ember.computed.not('isLoaded'),
 
-  length: Ember.computed(function() {
-    var idsLength = get(this, '_ids.length');
-    if (idsLength) { return idsLength; }
-    return get(this, 'content.length');
-  }).property('_ids', 'content.length'),
-
   load: function(klass, data) {
     set(this, 'content', this.materializeData(klass, data));
     this.notifyLoaded();

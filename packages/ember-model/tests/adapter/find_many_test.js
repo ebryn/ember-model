@@ -1,7 +1,7 @@
 module("Ember.Adapter#findMany");
 
 test(".find([]) delegates to the adapter's findMany method", function() {
-  expect(6);
+  expect(8);
 
   var Model = Ember.Model.extend();
   Model.adapter = {
@@ -24,10 +24,12 @@ test(".find([]) delegates to the adapter's findMany method", function() {
 
   ok(records instanceof Ember.RecordArray, "RecordArray is returned");
   ok(!records.get('isLoaded'), "RecordArray isn't initially loaded");
+  equal(records.get('length'), 0, "RecordArray is empty when not resolved yet");
 
   stop();
   Ember.run(records, records.then, function() {
     start();
+    equal(records.get('length'), 3, "RecordArray#length is 3 after resolved");
     ok(records.get('isLoaded'), "RecordArray is loaded after resolved");
   });
 });
