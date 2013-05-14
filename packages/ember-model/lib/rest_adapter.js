@@ -7,12 +7,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var url = this.buildURL(record.constructor, id),
         rootKey = record.constructor.rootKey;
 
-    if (!rootKey) {
-      throw new Error('Ember.RESTAdapter requires a `rootKey` property to be specified');
-    }
-
     return this.ajax(url).then(function(data) {
-      Ember.run(record, record.load, id, data);
+      var dataToLoad = rootKey ? data[rootKey] : data;
+      Ember.run(record, record.load, id, dataToLoad);
     });
   },
 

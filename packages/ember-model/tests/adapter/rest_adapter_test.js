@@ -66,20 +66,15 @@ test("findAll", function() {
   Ember.run(RESTModel, RESTModel.find);
 });
 
-test("findById throws an error if rootKey isn't specified", function() {
-  expect(1);
-
-  RESTModel.rootKey = null;
-
-  throws(function() {
-    Ember.run(RESTModel, RESTModel.find, 1);
-  }, /requires a `rootKey` property to be specified/);
-});
-
 test("findById", function() {
   expect(4);
 
-  var data = { id: 1, title: "Test Title" },
+  var data = {
+        post: {
+          id: 1, 
+          name: "Test Title"
+        }
+      },
       record;
 
   adapter._ajax = function(url, params, method) {
@@ -93,7 +88,48 @@ test("findById", function() {
     record = RESTModel.find(1);
   });
 
-  deepEqual(record.get('data'), data, "The data should be properly loaded");
+  deepEqual(record.get('data'), data.post, "The data should be properly loaded");
+});
+
+test("findById loads the full JSON payload when rootKey isn't specified", function() {
+  expect(1);
+  
+  var data = {id: 1, name: "Erik"},
+      record;
+  RESTModel.rootKey = undefined;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    record = RESTModel.find(1);
+  });
+
+  equal(record.get('name'), data.name, "The data should be properly loaded");
+});
+
+test("findById loads the proper JSON payload subset when rootKey is specified", function() {
+  expect(1);
+  
+  var data = {
+        post: {
+          id: 1,
+          name: "Erik"
+        }
+      },
+    record;
+  RESTModel.rootKey = "post";
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    record = RESTModel.find(1);
+  });
+
+  equal(record.get('name'), data.post.name, "The data should be properly loaded");
 });
 
 test("findQuery", function() {
