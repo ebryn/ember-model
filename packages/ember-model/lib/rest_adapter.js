@@ -17,12 +17,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var url = this.buildURL(klass),
         collectionKey = klass.collectionKey;
 
-    if (!collectionKey) {
-      throw new Error('Ember.RESTAdapter requires a `collectionKey` property to be specified');
-    }
-
     return this.ajax(url).then(function(data) {
-      Ember.run(records, records.load, klass, data[collectionKey]);
+      var dataToLoad = collectionKey ? data[collectionKey] : data;
+      Ember.run(records, records.load, klass, dataToLoad);
     });
   },
 
