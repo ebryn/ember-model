@@ -44,16 +44,6 @@ module("Ember.RESTAdapter - with a url specified", {
   }
 });
 
-test("findAll throws an error if collectionKey isn't specified", function() {
-  expect(1);
-
-  RESTModel.collectionKey = null;
-
-  throws(function() {
-    Ember.run(RESTModel, RESTModel.find);
-  }, /requires a `collectionKey` property to be specified/);
-});
-
 test("findAll", function() {
   expect(3);
 
@@ -64,6 +54,50 @@ test("findAll", function() {
     return ajaxSuccess();
   };
   Ember.run(RESTModel, RESTModel.find);
+});
+
+test("findAll loads the full JSON payload when collectionKey isn't specified", function() {
+  expect(1);
+
+  var data = [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ],
+      records;
+      RESTModel.collectionKey = undefined;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
+});
+
+test("findAll loads the proper JSON payload subset when collectionKey is specified", function() {
+  expect(1);
+
+  var data = {
+        posts: [
+          {id: 1, name: 'Erik'},
+          {id: 2, name: 'Aaron'}
+        ]
+      },
+      records;
+      RESTModel.collectionKey = "posts";
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
 test("findById", function() {
