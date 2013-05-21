@@ -62,7 +62,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   load: function(id, hash) {
-    var data = Ember.merge({id: id}, hash);
+    var data = Ember.merge({'id': id}, hash);
     set(this, 'data', data);
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
