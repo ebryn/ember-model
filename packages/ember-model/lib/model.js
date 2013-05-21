@@ -21,7 +21,7 @@ function concatUnique(toArray, fromArray) {
   return toArray;
 }
 
-Ember.run.queues.push('data');
+Ember.run.backburner.queueNames.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   isLoaded: true,
