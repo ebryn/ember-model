@@ -105,7 +105,7 @@ test("findById", function() {
 
   var data = {
         post: {
-          id: 1, 
+          id: 1,
           name: "Test Title"
         }
       },
@@ -127,7 +127,7 @@ test("findById", function() {
 
 test("findById loads the full JSON payload when rootKey isn't specified", function() {
   expect(1);
-  
+
   var data = {id: 1, name: "Erik"},
       record;
   RESTModel.rootKey = undefined;
@@ -145,7 +145,7 @@ test("findById loads the full JSON payload when rootKey isn't specified", functi
 
 test("findById loads the proper JSON payload subset when rootKey is specified", function() {
   expect(1);
-  
+
   var data = {
         post: {
           id: 1,
@@ -176,6 +176,17 @@ test("findQuery", function() {
     return ajaxSuccess();
   };
   Ember.run(RESTModel, RESTModel.find, {foo: 'bar'});
+});
+
+test("findQuery with params", function() {
+  expect(1);
+
+  Ember.$.ajax = function(settings) {
+    equal(settings.data, "foo=bar&num=42");
+    return ajaxSuccess();
+  };
+
+  Ember.run(RESTModel, RESTModel.find, {foo: 'bar', num: 42});
 });
 
 test("createRecord", function() {

@@ -80,9 +80,13 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       dataType: "json"
     };
 
-    if (params && method !== "GET") {
-      settings.contentType = "application/json; charset=utf-8";
-      settings.data = JSON.stringify(params);
+    if (params) {
+      if (method === "GET") {
+        settings.data = Ember.$.param(params);
+      } else {
+        settings.contentType = "application/json; charset=utf-8";
+        settings.data = JSON.stringify(params);
+      }
     }
 
     return Ember.$.ajax(settings);
