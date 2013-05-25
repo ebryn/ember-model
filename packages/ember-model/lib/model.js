@@ -148,7 +148,7 @@ Ember.Model.reopenClass({
   find: function(id) {
     if (!arguments.length) {
       return this.findAll();
-    } else if (Ember.typeOf(id) === 'array') {
+    } else if (Ember.isArray(id)) {
       return this.findMany(id);
     } else if (typeof id === 'object') {
       return this.findQuery(id);
@@ -158,6 +158,8 @@ Ember.Model.reopenClass({
   },
 
   findMany: function(ids) {
+    Ember.assert("findMany requires an array", Ember.isArray(ids));
+
     var records = Ember.RecordArray.create({_ids: ids});
 
     if (!this.recordArrays) { this.recordArrays = []; }
