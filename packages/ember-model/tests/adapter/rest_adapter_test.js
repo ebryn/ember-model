@@ -105,7 +105,7 @@ test("findById", function() {
 
   var data = {
         post: {
-          id: 1, 
+          id: 1,
           name: "Test Title"
         }
       },
@@ -127,7 +127,7 @@ test("findById", function() {
 
 test("findById loads the full JSON payload when rootKey isn't specified", function() {
   expect(1);
-  
+
   var data = {id: 1, name: "Erik"},
       record;
   RESTModel.rootKey = undefined;
@@ -145,7 +145,7 @@ test("findById loads the full JSON payload when rootKey isn't specified", functi
 
 test("findById loads the proper JSON payload subset when rootKey is specified", function() {
   expect(1);
-  
+
   var data = {
         post: {
           id: 1,
@@ -176,6 +176,50 @@ test("findQuery", function() {
     return ajaxSuccess();
   };
   Ember.run(RESTModel, RESTModel.find, {foo: 'bar'});
+});
+
+test("findQuery loads the full JSON payload when collectionKey isn't specified", function() {
+  expect(1);
+
+  var data = [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ],
+      records;
+      RESTModel.collectionKey = undefined;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery();
+  });
+
+  equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
+});
+
+test("findAll loads the data from a specified collectionKey", function() {
+  expect(1);
+
+  var data = {
+        people: [
+          {id: 1, name: 'Erik'},
+          {id: 2, name: 'Aaron'}
+        ]
+      },
+      records;
+      RESTModel.collectionKey = "people";
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery();
+  });
+
+  equal(records.get('length'), data.people.length, "The proper number of items should have been loaded.");
 });
 
 test("createRecord", function() {
