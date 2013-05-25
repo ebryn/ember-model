@@ -24,10 +24,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   findQuery: function(klass, records, params) {
-    var url = this.buildURL(klass);
+    var url = this.buildURL(klass),
+        collectionKey = klass.collectionKey;
 
     return this.ajax(url, params).then(function(data) {
-      Ember.run(records, records.load, klass, data);
+      var dataToLoad = collectionKey ? data[collectionKey] : data;
+      Ember.run(records, records.load, klass, dataToLoad);
     });
   },
 
@@ -79,6 +81,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       type: method,
       dataType: "json"
     };
+
+    if (params) {
+      settings.data = params;
+    }
 
     if (params && method !== "GET") {
       settings.contentType = "application/json; charset=utf-8";
