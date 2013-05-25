@@ -178,6 +178,50 @@ test("findQuery", function() {
   Ember.run(RESTModel, RESTModel.find, {foo: 'bar'});
 });
 
+test("findQuery loads the full JSON payload when collectionKey isn't specified", function() {
+  expect(1);
+
+  var data = [
+        {id: 5, name: 'Erik'},
+        {id: 6, name: 'Aaron'}
+      ],
+      records;
+      RESTModel.collectionKey = undefined;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery({me: "me"});
+  });
+
+  equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
+});
+
+test("findQuery loads the proper JSON payload subset when collectionKey is specified", function() {
+  expect(1);
+
+  var data = {
+        posts: [
+          {id: 7, name: 'Erik'},
+          {id: 8, name: 'Aaron'}
+        ]
+      },
+      records;
+      RESTModel.collectionKey = "posts";
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery({me: "me"});
+  });
+  
+  equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
+});
+
 test("createRecord", function() {
   expect(5);
 
