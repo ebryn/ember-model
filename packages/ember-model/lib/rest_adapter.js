@@ -5,7 +5,7 @@ var get = Ember.get;
 Ember.RESTAdapter = Ember.Adapter.extend({
   find: function(record, id) {
     var url = this.buildURL(record.constructor, id),
-        rootKey = record.constructor.rootKey;
+        rootKey = get(record.constructor, 'rootKey');
 
     return this.ajax(url).then(function(data) {
       var dataToLoad = rootKey ? data[rootKey] : data;
@@ -15,7 +15,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   findAll: function(klass, records) {
     var url = this.buildURL(klass),
-        collectionKey = klass.collectionKey;
+        collectionKey = get(klass, 'collectionKey');
 
     return this.ajax(url).then(function(data) {
       var dataToLoad = collectionKey ? data[collectionKey] : data;
@@ -25,7 +25,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   findQuery: function(klass, records, params) {
     var url = this.buildURL(klass),
-        collectionKey = klass.collectionKey;
+        collectionKey = get(klass, 'collectionKey');
 
     return this.ajax(url, params).then(function(data) {
       var dataToLoad = collectionKey ? data[collectionKey] : data;

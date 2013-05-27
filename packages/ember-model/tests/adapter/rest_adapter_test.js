@@ -100,6 +100,35 @@ test("findAll loads the proper JSON payload subset when collectionKey is specifi
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
+test("findAll uses Ember.get for collectionKey", function() {
+  expect(1);
+
+  var AModel = Ember.Model.extend();
+  AModel.reopenClass({
+    collectionKey: Ember.computed(function() {
+      return 'posts';
+    })
+  });
+
+  var data = {
+        posts: [
+          {id: 1, name: 'Erik'},
+          {id: 2, name: 'Aaron'}
+        ]
+      },
+      records;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
+});
+
 test("findById", function() {
   expect(4);
 
@@ -166,6 +195,35 @@ test("findById loads the proper JSON payload subset when rootKey is specified", 
   equal(record.get('name'), data.post.name, "The data should be properly loaded");
 });
 
+test("findById uses Ember.get to fetch rootKey", function() {
+  expect(1);
+
+  var AModel = Ember.Model.extend();
+  AModel.reopenClass({
+    rootKey: Ember.computed(function() {
+      return 'post';
+    })
+  });
+
+  var data = {
+        post: {
+          id: 1,
+          name: "Erik"
+        }
+      },
+    record;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    record = RESTModel.find(1);
+  });
+
+  equal(record.get('name'), data.post.name, "The data should be properly loaded");
+});
+
 test("findQuery", function() {
   expect(3);
 
@@ -199,7 +257,7 @@ test("findQuery loads the full JSON payload when collectionKey isn't specified",
   equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
 });
 
-test("findAll loads the data from a specified collectionKey", function() {
+test("findQuery loads the data from a specified collectionKey", function() {
   expect(1);
 
   var data = {
@@ -220,6 +278,35 @@ test("findAll loads the data from a specified collectionKey", function() {
   });
 
   equal(records.get('length'), data.people.length, "The proper number of items should have been loaded.");
+});
+
+test("findQuery uses Ember.get for collectionKey", function() {
+  expect(1);
+
+  var AModel = Ember.Model.extend();
+  AModel.reopenClass({
+    collectionKey: Ember.computed(function() {
+      return 'posts';
+    })
+  });
+
+  var data = {
+        posts: [
+          {id: 1, name: 'Erik'},
+          {id: 2, name: 'Aaron'}
+        ]
+      },
+      records;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery();
+  });
+
+  equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
 test("createRecord", function() {
