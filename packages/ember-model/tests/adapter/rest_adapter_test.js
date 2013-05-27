@@ -128,6 +128,36 @@ test("findAll uses Ember.get for a collectionKey", function() {
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
+test("findAll calls didFindAll callback after finishing", function() {
+  expect(3);
+
+  var data = {
+        posts: [
+          {id: 1, name: 'Erik'},
+          {id: 2, name: 'Aaron'}
+        ]
+      },
+      records, args, didFindAll = adapter.didFindAll;
+
+  RESTModel.collectionKey = 'posts';
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  adapter.didFindAll = function() {
+    args = [].slice.call(arguments);
+    didFindAll.apply(adapter, arguments);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
+  ok(args, "didFindAll callback should have been called");
+  deepEqual(args, [RESTModel, records, data], "didFindAll callback should have been called with proper arguments.");
+});
+
 test("findById", function() {
   expect(4);
 
@@ -222,6 +252,38 @@ test("findById uses Ember.get to fetch rootKey", function() {
   equal(record.get('name'), data.post.name, "The data should be properly loaded");
 });
 
+test("find calls didFind after finishing", function() {
+  expect(3);
+
+  var data = {
+        post: {
+          id: 1,
+          name: "Erik"
+        }
+      },
+    record, didFind = adapter.didFind, args,
+    id = 1;
+
+  RESTModel.rootKey = "post";
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  adapter.didFind = function() {
+    args = [].slice.call(arguments);
+    didFind.apply(adapter, arguments);
+  };
+
+  Ember.run(function() {
+    record = RESTModel.find(1);
+  });
+
+  equal(record.get('name'), data.post.name, "The data should be properly loaded");
+  ok(args, "didFind callback should have been called");
+  deepEqual(args, [record, id, data], "didFind callback should have been called with proper arguments.");
+});
+
 test("findQuery", function() {
   expect(3);
 
@@ -306,6 +368,37 @@ test("findQuery uses Ember.get for a collectionKey", function() {
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
+test("findQuery calls didFindQuery callback after finishing", function() {
+  expect(3);
+
+  var data = {
+        posts: [
+          {id: 1, name: 'Erik'},
+          {id: 2, name: 'Aaron'}
+        ]
+      },
+      records, args, didFindQuery = adapter.didFindQuery,
+      params = { foo: 'bar' };
+
+  RESTModel.collectionKey = 'posts';
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  adapter.didFindQuery = function(klass, records, params, data) {
+    args = [].slice.call(arguments);
+    didFindQuery.apply(adapter, arguments);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery(params);
+  });
+
+  equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
+  ok(args, "didFindQuery callback should have been called");
+  deepEqual(args, [RESTModel, records, params, data], "didFindQuery callback should have been called with proper arguments.");
+});
+
 test("createRecord", function() {
   expect(5);
 
@@ -323,6 +416,32 @@ test("createRecord", function() {
   Ember.run(record, record.save);
 
   ok(!record.get('isNew'), "Record should not be new");
+});
+
+test("createRecord calls didCreateRecord", function() {
+  expect(4);
+
+  var record = RESTModel.create({name: "Erik"}),
+      args, didCreateRecord = adapter.didCreateRecord,
+      data = {id: 1, name: "Erik"};
+
+  // ok(record.get('isDirty'), "Record should be dirty");
+  ok(record.get('isNew'), "Record should be new");
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  adapter.didCreateRecord = function(record, data) {
+    args = [].slice.call(arguments);
+    didCreateRecord.apply(adapter, arguments);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isNew'), "Record should not be new");
+  ok(args, "didCreateRecord callback should have been called");
+  deepEqual(args, [record, data], "didCreateRecord callback should have been called with proper arguments.");
 });
 
 test("saveRecord", function() {
@@ -345,6 +464,31 @@ test("saveRecord", function() {
   ok(!record.get('isDirty'), "Record should not be dirty");
 });
 
+test("saveRecord calls didSaveRecord after saving record", function() {
+  expect(4);
+
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      data = {id: 1, name: "Erik"}, args, didSaveRecord = adapter.didSaveRecord;
+
+  record.set('name', "Kris");
+  ok(record.get('isDirty'), "Record should be dirty");
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  adapter.didSaveRecord = function(record, data) {
+    args = [].slice.call(arguments);
+    didSaveRecord.apply(adapter, arguments);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), "Record should not be dirty");
+  ok(args, "didSaveRecord callback should have been called");
+  deepEqual(args, [record, data], "didSaveRecord callback should have been called with proper arguments.");
+});
+
 test("deleteRecord", function() {
   expect(5);
 
@@ -361,4 +505,28 @@ test("deleteRecord", function() {
   Ember.run(record, record.deleteRecord);
 
   ok(record.get('isDeleted'), "Record should be deleted");
+});
+
+test("deleteRecord calls didDeleteRecord after deleting", function() {
+  expect(4);
+
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      args, didDeleteRecord = adapter.didDeleteRecord, data = { ok: true };
+
+  ok(!record.get('isDeleted'), "Record should not be deleted");
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  adapter.didDeleteRecord = function(record, data) {
+    args = [].slice.call(arguments);
+    didDeleteRecord.apply(adapter, arguments);
+  };
+
+  Ember.run(record, record.deleteRecord);
+
+  ok(record.get('isDeleted'), "Record should be deleted");
+  ok(args, "didDeleteRecord callback should have been called");
+  deepEqual(args, [record, data], "didDeleteRecord callback should have been called with proper arguments.");
 });
