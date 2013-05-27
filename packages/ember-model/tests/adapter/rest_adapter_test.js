@@ -100,11 +100,10 @@ test("findAll loads the proper JSON payload subset when collectionKey is specifi
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
-test("findAll uses Ember.get for collectionKey", function() {
+test("findAll uses Ember.get for a collectionKey", function() {
   expect(1);
 
-  var AModel = Ember.Model.extend();
-  AModel.reopenClass({
+  RESTModel.reopenClass({
     collectionKey: Ember.computed(function() {
       return 'posts';
     })
@@ -198,8 +197,7 @@ test("findById loads the proper JSON payload subset when rootKey is specified", 
 test("findById uses Ember.get to fetch rootKey", function() {
   expect(1);
 
-  var AModel = Ember.Model.extend();
-  AModel.reopenClass({
+  RESTModel.reopenClass({
     rootKey: Ember.computed(function() {
       return 'post';
     })
@@ -280,11 +278,10 @@ test("findQuery loads the data from a specified collectionKey", function() {
   equal(records.get('length'), data.people.length, "The proper number of items should have been loaded.");
 });
 
-test("findQuery uses Ember.get for collectionKey", function() {
+test("findQuery uses Ember.get for a collectionKey", function() {
   expect(1);
 
-  var AModel = Ember.Model.extend();
-  AModel.reopenClass({
+  RESTModel.reopenClass({
     collectionKey: Ember.computed(function() {
       return 'posts';
     })
