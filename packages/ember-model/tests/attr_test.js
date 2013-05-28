@@ -16,3 +16,17 @@ test("when the attr is specified on an object it should Object.create the object
   var newAuthorObject = page.get('author');
   ok(newAuthorObject !== originalAuthorObject, "The objects shouldn't be the same");
 });
+
+test("it should recognize array values and convert them to Ember.A", function() {
+  var Page = Ember.Model.extend({
+    authors: attr()
+  });
+
+  var page = Page.create();
+
+  Ember.run(function() {
+    page.load(1, { authors: ["Erik", "Eryk"] });
+  });
+
+  equal(Ember.typeOf(page.get("authors")), "array");
+});
