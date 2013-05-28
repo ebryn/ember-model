@@ -31,6 +31,21 @@ test("attr should not change null to object", function() {
   equal(author, null, "author should be set to null");
 });
 
+test("it should recognize array values and clone the whole array", function() {
+  var Page = Ember.Model.extend({
+    authors: attr()
+  });
+
+  var page = Page.create(),
+      origArray = ["Erik", "Eryk"];
+
+  Ember.run(function() {
+    page.load(1, { authors: origArray });
+  });
+
+  ok(page.get("authors") !== origArray, "attribute's data array should be cloned");
+  equal(Ember.typeOf(page.get("authors")), "array");
+});
 
 test("attr should camelize attributes when reading", function() {
   var Page = Ember.Model.extend({
@@ -47,7 +62,6 @@ test("attr should camelize attributes when reading", function() {
   var someAuthor = page.get('someAuthor');
   equal(someAuthor, "Alex", "author should be set to Alex");
 });
-
 
 test("attr should camelize attributes when writing", function() {
   var Page = Ember.Model.extend({

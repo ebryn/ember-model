@@ -2,6 +2,23 @@ var get = Ember.get,
     set = Ember.set,
     meta = Ember.meta;
 
+function wrapObject(value) {
+  if (Ember.isArray(value)) {
+    return value.slice();
+  } else if (value && typeof value === "object") {
+    var clone = Ember.create(value), property;
+
+    for (property in value) {
+      if (value.hasOwnProperty(property)) {
+        clone[property] = wrapObject(value[property]);
+      }
+    }
+    return clone;
+  } else {
+    return value;
+  }
+}
+
 Ember.attr = function(type) {
   return Ember.computed(function(key, value) {
     var data = get(this, 'data'),
@@ -35,9 +52,6 @@ Ember.attr = function(type) {
       return value;
     }
 
-    if (dataValue && typeof dataValue === 'object') {
-      dataValue = Ember.create(dataValue);
-    }
-    return dataValue;
+    return wrapObject(dataValue);
   }).property('data').meta({isAttribute: true, type: type});
 };
