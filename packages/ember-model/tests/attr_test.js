@@ -30,3 +30,19 @@ test("attr should not change null to object", function() {
   var author = page.get('author');
   equal(author, null, "author should be set to null");
 });
+
+test("it should recognize array values and clone the whole array", function() {
+  var Page = Ember.Model.extend({
+    authors: attr()
+  });
+
+  var page = Page.create(),
+      origArray = ["Erik", "Eryk"];
+
+  Ember.run(function() {
+    page.load(1, { authors: origArray });
+  });
+
+  ok(page.get("authors") !== origArray, "attribute's data array should be cloned");
+  equal(Ember.typeOf(page.get("authors")), "array");
+});
