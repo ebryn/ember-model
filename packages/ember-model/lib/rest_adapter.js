@@ -8,7 +8,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url).then(function(data) {
-      self.didFind.call(this, record, id, data);
+      self.didFind.call(self, record, id, data);
     });
   },
 
@@ -72,7 +72,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
-      self.didSaveRecord.call(this, record, data);
+      self.didSaveRecord.call(self, record, data);
     });
   },
 
@@ -85,7 +85,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data
-      self.didDeleteRecord.call(this, record, data);
+      self.didDeleteRecord.call(self, record, data);
     });
   },
 
