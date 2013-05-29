@@ -129,7 +129,7 @@ test("findAll uses Ember.get for a collectionKey", function() {
 });
 
 test("findAll calls didFindAll callback after finishing", function() {
-  expect(3);
+  expect(4);
 
   var data = {
         posts: [
@@ -137,7 +137,8 @@ test("findAll calls didFindAll callback after finishing", function() {
           {id: 2, name: 'Aaron'}
         ]
       },
-      records, args, didFindAll = adapter.didFindAll;
+      records, args, context,
+      didFindAll = adapter.didFindAll;
 
   RESTModel.collectionKey = 'posts';
   adapter._ajax = function(url, params, method) {
@@ -145,6 +146,7 @@ test("findAll calls didFindAll callback after finishing", function() {
   };
 
   adapter.didFindAll = function() {
+    context = this;
     args = [].slice.call(arguments);
     didFindAll.apply(adapter, arguments);
   };
@@ -156,6 +158,7 @@ test("findAll calls didFindAll callback after finishing", function() {
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
   ok(args, "didFindAll callback should have been called");
   deepEqual(args, [RESTModel, records, data], "didFindAll callback should have been called with proper arguments.");
+  equal(context, adapter, "context of didFindAll should have been set to adapter");
 });
 
 test("findById", function() {
@@ -253,7 +256,7 @@ test("findById uses Ember.get to fetch rootKey", function() {
 });
 
 test("find calls didFind after finishing", function() {
-  expect(3);
+  expect(4);
 
   var data = {
         post: {
@@ -261,7 +264,8 @@ test("find calls didFind after finishing", function() {
           name: "Erik"
         }
       },
-    record, didFind = adapter.didFind, args,
+    record, args, context,
+    didFind = adapter.didFind,
     id = 1;
 
   RESTModel.rootKey = "post";
@@ -271,6 +275,7 @@ test("find calls didFind after finishing", function() {
   };
 
   adapter.didFind = function() {
+    context = this;
     args = [].slice.call(arguments);
     didFind.apply(adapter, arguments);
   };
@@ -282,6 +287,7 @@ test("find calls didFind after finishing", function() {
   equal(record.get('name'), data.post.name, "The data should be properly loaded");
   ok(args, "didFind callback should have been called");
   deepEqual(args, [record, id, data], "didFind callback should have been called with proper arguments.");
+  equal(context, adapter, "context of didFind should have been set to adapter");
 });
 
 test("findQuery", function() {
@@ -369,7 +375,7 @@ test("findQuery uses Ember.get for a collectionKey", function() {
 });
 
 test("findQuery calls didFindQuery callback after finishing", function() {
-  expect(3);
+  expect(4);
 
   var data = {
         posts: [
@@ -377,7 +383,8 @@ test("findQuery calls didFindQuery callback after finishing", function() {
           {id: 2, name: 'Aaron'}
         ]
       },
-      records, args, didFindQuery = adapter.didFindQuery,
+      records, args, context,
+      didFindQuery = adapter.didFindQuery,
       params = { foo: 'bar' };
 
   RESTModel.collectionKey = 'posts';
@@ -386,6 +393,7 @@ test("findQuery calls didFindQuery callback after finishing", function() {
   };
 
   adapter.didFindQuery = function(klass, records, params, data) {
+    context = this;
     args = [].slice.call(arguments);
     didFindQuery.apply(adapter, arguments);
   };
@@ -397,6 +405,7 @@ test("findQuery calls didFindQuery callback after finishing", function() {
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
   ok(args, "didFindQuery callback should have been called");
   deepEqual(args, [RESTModel, records, params, data], "didFindQuery callback should have been called with proper arguments.");
+  equal(context, adapter, "context of didFindQuery should have been set to adapter");
 });
 
 test("createRecord", function() {
@@ -419,10 +428,10 @@ test("createRecord", function() {
 });
 
 test("createRecord calls didCreateRecord", function() {
-  expect(4);
+  expect(5);
 
   var record = RESTModel.create({name: "Erik"}),
-      args, didCreateRecord = adapter.didCreateRecord,
+      args, context, didCreateRecord = adapter.didCreateRecord,
       data = {id: 1, name: "Erik"};
 
   // ok(record.get('isDirty'), "Record should be dirty");
@@ -433,6 +442,7 @@ test("createRecord calls didCreateRecord", function() {
   };
 
   adapter.didCreateRecord = function(record, data) {
+    context = this;
     args = [].slice.call(arguments);
     didCreateRecord.apply(adapter, arguments);
   };
@@ -442,6 +452,7 @@ test("createRecord calls didCreateRecord", function() {
   ok(!record.get('isNew'), "Record should not be new");
   ok(args, "didCreateRecord callback should have been called");
   deepEqual(args, [record, data], "didCreateRecord callback should have been called with proper arguments.");
+  equal(context, adapter, "context of didCreateRecord should have been set to adapter");
 });
 
 test("saveRecord", function() {
@@ -465,10 +476,10 @@ test("saveRecord", function() {
 });
 
 test("saveRecord calls didSaveRecord after saving record", function() {
-  expect(4);
+  expect(5);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      data = {id: 1, name: "Erik"}, args, didSaveRecord = adapter.didSaveRecord;
+      data = {id: 1, name: "Erik"}, args, didSaveRecord = adapter.didSaveRecord, context;
 
   record.set('name', "Kris");
   ok(record.get('isDirty'), "Record should be dirty");
@@ -478,6 +489,7 @@ test("saveRecord calls didSaveRecord after saving record", function() {
   };
 
   adapter.didSaveRecord = function(record, data) {
+    context = this;
     args = [].slice.call(arguments);
     didSaveRecord.apply(adapter, arguments);
   };
@@ -487,6 +499,7 @@ test("saveRecord calls didSaveRecord after saving record", function() {
   ok(!record.get('isDirty'), "Record should not be dirty");
   ok(args, "didSaveRecord callback should have been called");
   deepEqual(args, [record, data], "didSaveRecord callback should have been called with proper arguments.");
+  equal(context, adapter, "context of didSaveRecord should have been set to adapter");
 });
 
 test("deleteRecord", function() {
@@ -508,10 +521,10 @@ test("deleteRecord", function() {
 });
 
 test("deleteRecord calls didDeleteRecord after deleting", function() {
-  expect(4);
+  expect(5);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      args, didDeleteRecord = adapter.didDeleteRecord, data = { ok: true };
+      args, didDeleteRecord = adapter.didDeleteRecord, data = { ok: true }, context;
 
   ok(!record.get('isDeleted'), "Record should not be deleted");
 
@@ -520,6 +533,7 @@ test("deleteRecord calls didDeleteRecord after deleting", function() {
   };
 
   adapter.didDeleteRecord = function(record, data) {
+    context = this;
     args = [].slice.call(arguments);
     didDeleteRecord.apply(adapter, arguments);
   };
@@ -529,4 +543,5 @@ test("deleteRecord calls didDeleteRecord after deleting", function() {
   ok(record.get('isDeleted'), "Record should be deleted");
   ok(args, "didDeleteRecord callback should have been called");
   deepEqual(args, [record, data], "didDeleteRecord callback should have been called with proper arguments.");
+  equal(context, adapter, "context of didDeleteRecord should have been set to adapter");
 });
