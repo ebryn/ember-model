@@ -1,5 +1,6 @@
 require('ember-model/adapter');
 require('ember-model/record_array');
+require('ember-model/store');
 
 var get = Ember.get,
     set = Ember.set,
@@ -62,8 +63,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   load: function(id, hash) {
+    var store = this.constructor.store;
+
     var data = Ember.merge({id: id}, hash);
     set(this, 'data', data);
+    store.load(this.constructor, id, data);
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this.trigger('didLoad');
@@ -143,6 +147,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 });
 
 Ember.Model.reopenClass({
+  store: new Ember.Store(),
   adapter: Ember.Adapter.create(),
 
   find: function(id) {
