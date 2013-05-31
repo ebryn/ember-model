@@ -182,7 +182,7 @@ test("findQuery with params", function() {
   expect(1);
 
   Ember.$.ajax = function(settings) {
-    equal(settings.data, "foo=bar&num=42");
+    deepEqual(settings.data, {foo: 'bar', num: 42});
     return ajaxSuccess();
   };
 
