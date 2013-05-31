@@ -95,6 +95,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     } else {
       var deferred = Ember.Deferred.create();
       deferred.resolve(this);
+      set(this, 'isSaving', false);
       return deferred;
     }
   },

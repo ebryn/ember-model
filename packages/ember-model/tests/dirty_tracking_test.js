@@ -17,6 +17,8 @@ test("when no properties have changed on a model, save should noop", function() 
   ok(!obj.get('isDirty'));
 
   Ember.run(obj, obj.save);
+
+  ok(!obj.get('isSaving'));
 });
 
 test("when properties have changed on a model, isDirty should be set", function() {
