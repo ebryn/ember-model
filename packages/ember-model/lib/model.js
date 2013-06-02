@@ -67,7 +67,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this.trigger('didLoad');
-    this.resolve(this);
+    if(this.bulk) {
+      set(this, '_deferred.promise.isFulfilled', true);
+      set(this, '_deferred.promise.fulfillmentValue', this);
+    } else {
+      this.resolve(this);
+    }
   },
 
   didDefineProperty: function(proto, key, value) {
@@ -278,10 +283,12 @@ Ember.Model.reopenClass({
   },
 
   // FIXME
-  findFromCacheOrLoad: function(data) {
+  findFromCacheOrLoad: function(data, bulk) {
     var record = this.cachedRecordForId(data.id);
     // set(record, 'data', data);
+    if(bulk) record.bulk = true;
     record.load(data.id, data);
+    record.bulk = false;
     return record;
   },
 
