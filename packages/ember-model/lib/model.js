@@ -68,6 +68,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     set(this, 'isNew', false);
     this.trigger('didLoad');
     if(this.bulk) {
+      // This is terribly hacky, but much faster
       set(this, '_deferred.promise.isFulfilled', true);
       set(this, '_deferred.promise.fulfillmentValue', this);
     } else {
