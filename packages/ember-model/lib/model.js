@@ -67,7 +67,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this.trigger('didLoad');
-    if(this.bulk) {
+    if(this._bulk) {
       // This is terribly hacky, but much faster
       set(this, '_deferred.promise.isFulfilled', true);
       set(this, '_deferred.promise.fulfillmentValue', this);
@@ -287,9 +287,9 @@ Ember.Model.reopenClass({
   findFromCacheOrLoad: function(data, bulk) {
     var record = this.cachedRecordForId(data.id);
     // set(record, 'data', data);
-    if(bulk) record.bulk = true;
+    if(bulk) record._bulk = true;
     record.load(data.id, data);
-    record.bulk = false;
+    record._bulk = false;
     return record;
   },
 
