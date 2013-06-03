@@ -61,6 +61,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didCreateRecord: function(record, data) {
+    var rootKey = get(record.constructor, 'rootKey'),
+        dataToLoad = rootKey ? data[rootKey] : data;
+
     Ember.run(function() {
       record.load(data.id, data); // FIXME: hardcoded ID
       record.didCreateRecord();
