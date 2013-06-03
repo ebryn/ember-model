@@ -61,13 +61,13 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     this._super();
   },
 
-  load: function(id, hash) {
+  load: function(id, hash, bulk) {
     var data = Ember.merge({id: id}, hash);
     set(this, 'data', data);
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this.trigger('didLoad');
-    if(this._bulk) {
+    if(bulk) {
       // This is terribly hacky, but much faster
       set(this, '_deferred.promise.isFulfilled', true);
       set(this, '_deferred.promise.fulfillmentValue', this);
@@ -288,9 +288,7 @@ Ember.Model.reopenClass({
   findFromCacheOrLoad: function(data, bulk) {
     var record = this.cachedRecordForId(data.id);
     // set(record, 'data', data);
-    if(bulk) record._bulk = true;
-    record.load(data.id, data);
-    record._bulk = false;
+    record.load(data.id, data, bulk);
     return record;
   },
 
