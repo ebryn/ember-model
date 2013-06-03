@@ -8,7 +8,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url).then(function(data) {
-      self.didFind.call(self, record, id, data);
+      self.didFind(record, id, data);
     });
   },
 
@@ -24,7 +24,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url).then(function(data) {
-      self.didFindAll.call(self, klass, records, data);
+      self.didFindAll(klass, records, data);
     });
   },
 
@@ -40,7 +40,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url, params).then(function(data) {
-      self.didFindQuery.call(self, klass, records, params, data);
+      self.didFindQuery(klass, records, params, data);
     });
   },
 
@@ -56,7 +56,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url, record.toJSON(), "POST").then(function(data) {
-      self.didCreateRecord.call(self, record, data);
+      self.didCreateRecord(record, data);
     });
   },
 
@@ -72,7 +72,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
-      self.didSaveRecord.call(self, record, data);
+      self.didSaveRecord(record, data);
     });
   },
 
@@ -85,7 +85,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         self = this;
 
     return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data
-      self.didDeleteRecord.call(self, record, data);
+      self.didDeleteRecord(record, data);
     });
   },
 
@@ -115,9 +115,13 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       dataType: "json"
     };
 
-    if (params && method !== "GET") {
-      settings.contentType = "application/json; charset=utf-8";
-      settings.data = JSON.stringify(params);
+    if (params) {
+      if (method === "GET") {
+        settings.data = params;
+      } else {
+        settings.contentType = "application/json; charset=utf-8";
+        settings.data = JSON.stringify(params);
+      }
     }
 
     return Ember.$.ajax(settings);
