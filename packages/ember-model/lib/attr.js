@@ -5,7 +5,8 @@ var get = Ember.get,
 Ember.attr = function(type) {
   return Ember.computed(function(key, value) {
     var data = get(this, 'data'),
-        dataValue = data && get(data, key),
+        dataKey = this.dataKey(key),
+        dataValue = data && get(data, dataKey),
         beingCreated = meta(this).proto === this;
 
     if (arguments.length === 2) {
@@ -13,7 +14,7 @@ Ember.attr = function(type) {
         if (!data) {
           data = {};
           set(this, 'data', data);
-          data[key] = value;
+          data[dataKey] = value;
         }
         return value;
       }

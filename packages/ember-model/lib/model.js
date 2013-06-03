@@ -3,7 +3,8 @@ require('ember-model/record_array');
 
 var get = Ember.get,
     set = Ember.set,
-    meta = Ember.meta;
+    meta = Ember.meta,
+    underscore = Ember.String.underscore;
 
 function contains(array, element) {
   for (var i = 0, l = array.length; i < l; i++) {
@@ -38,7 +39,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     for (var i = 0, l = attributes.length; i < l; i++) {
       key = attributes[i];
       cachedValue = this.cacheFor(key);
-      dataValue = get(this, 'data.'+key);
+      dataValue = get(this, 'data.'+this.dataKey(key));
       desc = meta(this).descs[key];
       descMeta = desc && desc.meta();
       type = descMeta.type;
@@ -55,6 +56,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     }
     return dirtyAttributes && dirtyAttributes.length !== 0;
   }).property().volatile(),
+
+  dataKey: function(key) {
+    var camelizeKeys = get(this.constructor, 'camelizeKeys');
+    return camelizeKeys ? underscore(key) : key;
+  },
 
   init: function() {
     if (!get(this, 'isNew')) { this.resolve(this); }
@@ -137,7 +143,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     for (var i = 0, l = dirtyAttributes.length; i < l; i++) {
       // TODO: merge Object.create'd object into prototype
       key = dirtyAttributes[i];
-      data[key] = this.cacheFor(key);
+      data[this.dataKey(key)] = this.cacheFor(key);
     }
     this._dirtyAttributes = [];
   }
