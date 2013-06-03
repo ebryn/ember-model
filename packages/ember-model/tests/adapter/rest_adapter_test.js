@@ -430,7 +430,7 @@ test("createRecord", function() {
     equal(url, "/posts.json");
     deepEqual(params, record.toJSON());
     equal(method, "POST");
-    return ajaxSuccess({id: 1, name: "Erik"});
+    return ajaxSuccess({post: {id: 1, name: "Erik"}});
   };
 
   Ember.run(record, record.save);
@@ -443,7 +443,7 @@ test("createRecord calls didCreateRecord", function() {
 
   var record = RESTModel.create({name: "Erik"}),
       args, context, didCreateRecord = adapter.didCreateRecord,
-      data = {id: 1, name: "Erik"};
+      data = {post: {id: 1, name: "Erik"}};
 
   // ok(record.get('isDirty'), "Record should be dirty");
   ok(record.get('isNew'), "Record should be new");
