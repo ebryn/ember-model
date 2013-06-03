@@ -47,3 +47,18 @@ test("attr should camelize attributes when reading", function() {
   var someAuthor = page.get('someAuthor');
   equal(someAuthor, "Alex", "author should be set to Alex");
 });
+
+
+test("attr should camelize attributes when writing", function() {
+  var Page = Ember.Model.extend({
+    someAuthor: attr()
+  });
+  Page.camelizeKeys = true;
+  var page;
+  Ember.run(function() {
+    page = Page.create({someAuthor: "Alex"});
+  });
+
+  var data = page.get('data');
+  equal(data.some_author, "Alex", "data.some_author should be set to Alex");
+});
