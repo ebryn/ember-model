@@ -1,4 +1,4 @@
-var Model;
+var Model, ModelWithoutID;
 
 module("Ember.Model", {
   setup: function() {
@@ -8,6 +8,12 @@ module("Ember.Model", {
     Model.adapter = Ember.FixtureAdapter.create();
     Model.FIXTURES = [
       {id: 1, name: 'Erik'}
+    ];
+    ModelWithoutID = Model.extend();
+    ModelWithoutID.adapter = Ember.FixtureAdapter.create();
+    ModelWithoutID.FIXTURES = [
+      {name: 'Erik'},
+      {name: 'Alex'}
     ];
   },
   teardown: function() {
@@ -19,6 +25,19 @@ test("can define attributes with Ember.attr, data is accessible", function() {
   var instance = Model.create({name: "Erik"});
 
   equal(instance.get('name'), "Erik", "Property value was retained");
+});
+
+test("can handle models without an ID", function() {
+  expect(3);
+  var records = ModelWithoutID.find();
+  stop();
+  records.on('didLoad', function() {
+    start();
+    equal(records.get('length'), 2);
+    equal(records.get('firstObject.name'), 'Erik');
+    equal(records.get('lastObject.name'), 'Alex');
+  });
+
 });
 
 // test("coercion", function() {
