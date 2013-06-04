@@ -30,3 +30,35 @@ test("attr should not change null to object", function() {
   var author = page.get('author');
   equal(author, null, "author should be set to null");
 });
+
+
+test("attr should camelize attributes when reading", function() {
+  var Page = Ember.Model.extend({
+    someAuthor: attr()
+  });
+  Page.camelizeKeys = true;
+
+  var page = Page.create();
+
+  Ember.run(function() {
+    page.load(1, {some_author: "Alex"});
+  });
+
+  var someAuthor = page.get('someAuthor');
+  equal(someAuthor, "Alex", "author should be set to Alex");
+});
+
+
+test("attr should camelize attributes when writing", function() {
+  var Page = Ember.Model.extend({
+    someAuthor: attr()
+  });
+  Page.camelizeKeys = true;
+  var page;
+  Ember.run(function() {
+    page = Page.create({someAuthor: "Alex"});
+  });
+
+  var data = page.get('data');
+  equal(data.some_author, "Alex", "data.some_author should be set to Alex");
+});
