@@ -31,11 +31,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   isDeleted: false,
   _dirtyAttributes: null,
 
-  // TODO: rewrite w/o volatile
   isDirty: Ember.computed(function() {
     var attributes = this.attributes,
-        dirtyAttributes = this._dirtyAttributes,
+        dirtyAttributes = Ember.A(), // just for removeObject
         key, cachedValue, dataValue, desc, descMeta, type, isDirty;
+
     for (var i = 0, l = attributes.length; i < l; i++) {
       key = attributes[i];
       cachedValue = this.cacheFor(key);
@@ -43,18 +43,24 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       desc = meta(this).descs[key];
       descMeta = desc && desc.meta();
       type = descMeta.type;
-      isDirty = dirtyAttributes && dirtyAttributes.indexOf(key) !== -1;
-      if (!isDirty && type && type.isEqual) {
-        if (!type.isEqual(dataValue, cachedValue || dataValue)) { // computed property won't have a value when just loaded
-          if (!dirtyAttributes) {
-            dirtyAttributes = this._dirtyAttributes = Ember.A();
-          }
-          dirtyAttributes.push(key);
-        }
+
+      if (type && type.isEqual) {
+        isDirty = !type.isEqual(dataValue, cachedValue || dataValue);
+      } else if (dataValue !== cachedValue) {
+        isDirty = true;
+      } else {
+        isDirty = false;
       }
 
+      if (isDirty) {
+        dirtyAttributes.push(key);
+      }
     }
-    return dirtyAttributes && dirtyAttributes.length !== 0;
+
+    if (dirtyAttributes.length) {
+      this._dirtyAttributes = dirtyAttributes;
+      return true;
+    }
   }).property().volatile(),
 
   dataKey: function(key) {
