@@ -60,6 +60,25 @@ test(".find(id) delegates to the adapter's find method", function() {
   });
 });
 
+test(".reload() loads the record via the adapter after it was loaded", function() {
+  expect(1);
+
+  var record = Ember.run(Model, Model.find, 1);
+
+  Model.load([{ id: 1, name: 'Yehuda' }]);
+
+  Ember.run(function() {
+    record.reload();
+  });
+
+  stop();
+
+  record.on('didLoad', function() {
+    start();
+    equal(record.get('name'), 'Erik');
+  });
+});
+
 test(".find(id) called multiple times returns the same object (identity map)", function() {
   expect(1);
 
