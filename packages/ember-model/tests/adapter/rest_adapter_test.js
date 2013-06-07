@@ -557,7 +557,7 @@ test("deleteRecord calls didDeleteRecord after deleting", function() {
   equal(context, adapter, "context of didDeleteRecord should have been set to adapter");
 });
 
-module("Ember.RESTAdapter - with an Ember Array attribute", {
+module("Ember.RESTAdapter - with an embedded array attribute", {
   setup: function() {
     RESTModel = Ember.Model.extend({
       names: Ember.attr()
@@ -570,10 +570,10 @@ module("Ember.RESTAdapter - with an Ember Array attribute", {
   }
 });
 
-test("saveRecord with Ember Array", function() {
-  expect(6);
+test("saveRecord received the array correctly inside params", function() {
+  expect(3);
 
-  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, names: new Ember.A(), isNew: false});
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, names: Ember.A(), isNew: false});
 
   var new_name = 'Bill';
   record.get('names').pushObject(new_name);
@@ -581,7 +581,7 @@ test("saveRecord with Ember Array", function() {
   ok(record.get('isDirty'), "Record should be dirty");
 
   adapter._ajax = function(url, params, method) {
-    equal(params.names, [new_name]);
+    deepEqual(params.names, [new_name], "params are correct");
     return ajaxSuccess({id: 1, names: [new_name]});
   };
 

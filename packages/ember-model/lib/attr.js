@@ -4,7 +4,14 @@ var get = Ember.get,
 
 function wrapObject(value) {
   if (Ember.isArray(value)) {
-    return value.slice();
+    var clonedArray = value.slice();
+
+    // TODO: write test for recursive cloning
+    for (var i = 0, l = clonedArray.length; i < l; i++) {
+      clonedArray[i] = wrapObject(clonedArray[i]);
+    }
+
+    return Ember.A(clonedArray);
   } else if (value && typeof value === "object") {
     var clone = Ember.create(value), property;
 
@@ -27,29 +34,13 @@ Ember.attr = function(type) {
         beingCreated = meta(this).proto === this;
 
     if (arguments.length === 2) {
-      if (beingCreated) {
-        if (!data) {
-          data = {};
-          set(this, 'data', data);
-          data[dataKey] = value;
-        }
-        return value;
+      if (beingCreated && !data) {
+        data = {};
+        set(this, 'data', data);
+        data[dataKey] = value;
       }
 
-      var isEqual;
-      if (type && type.isEqual) {
-        isEqual = type.isEqual(dataValue, value);
-      } else {
-        isEqual = dataValue === value;
-      }
-
-      if (!isEqual) {
-        if (!this._dirtyAttributes) { this._dirtyAttributes = Ember.A(); }
-        this._dirtyAttributes.push(key);
-      } else {
-        if (this._dirtyAttributes) { this._dirtyAttributes.removeObject(key); }
-      }
-      return value;
+      return wrapObject(value);
     }
 
     return wrapObject(dataValue);

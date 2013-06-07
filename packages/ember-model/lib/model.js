@@ -61,6 +61,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     if (dirtyAttributes.length) {
       this._dirtyAttributes = dirtyAttributes;
       return true;
+    } else {
+      this._dirtyAttributes = [];
+      return false;
     }
   }).property().volatile(),
 

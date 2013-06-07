@@ -58,7 +58,7 @@ test("when properties are changed back to the loaded value, isDirty should be fa
 
   var obj = Ember.run(Model, Model.create, {isNew: false, name: 'Erik'});
   ok(!obj.get('isDirty'));
-  equal(obj._dirtyAttributes, null, "There shouldn't be any dirty attributes");
+  deepEqual(obj._dirtyAttributes, [], "There shouldn't be any dirty attributes");
 
   obj.set('name', 'Jeffrey');
   ok(obj.get('isDirty'));
