@@ -238,3 +238,27 @@ test("getting embedded belongsTo attribute after load should not make parent dir
   var author = post.get('author');
   equal(post.get('isDirty'), false, 'get belongsTo relationship does not dirty post record');
 });
+
+test("isDirty is observable", function() {
+  expect(2);
+
+  var Model = Ember.Model.extend({
+    name: attr()
+  });
+
+  var obj = Model.create();
+  Ember.run(function() {
+    obj.load(1, {name: 'Erik'});
+  });
+
+  var expectDirty;
+  Ember.addObserver(obj, 'isDirty', function() {
+    equal(obj.get('isDirty'), expectDirty, 'isDirty is as expected');
+  });
+
+  expectDirty = true;
+  obj.set('name', 'Brian');
+
+  expectDirty = false;
+  obj.set('name', 'Erik');
+});
