@@ -47,7 +47,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
       if (type && type.isEqual) {
         isDirty = !type.isEqual(dataValue, cachedValue || dataValue);
-      } else if (dataValue !== cachedValue) {
+      } else if (dataValue !== (cachedValue || dataValue)) {
         isDirty = true;
       } else {
         isDirty = false;
@@ -140,7 +140,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   didSaveRecord: function() {
     set(this, 'isSaving', false);
     this.trigger('didSaveRecord');
-    this._copyDirtyAttributesToData();
+    if (this.get('isDirty')) { this._copyDirtyAttributesToData(); }
   },
 
   deleteRecord: function() {
