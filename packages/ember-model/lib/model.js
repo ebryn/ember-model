@@ -3,6 +3,7 @@ require('ember-model/record_array');
 
 var get = Ember.get,
     set = Ember.set,
+    setProperties = Ember.setProperties,
     meta = Ember.meta,
     underscore = Ember.String.underscore;
 
@@ -114,6 +115,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
   reload: function() {
     return this.constructor.reload(this.get('id'));
+  },
+
+  revert: function() {
+    if (this.get('isDirty')) {
+      var data = get(this, 'data'),
+          reverts = {};
+      for (var i = 0; i < this._dirtyAttributes.length; i++) {
+        var attr = this._dirtyAttributes[i];
+        reverts[attr] = data[attr];
+      }
+      setProperties(this, reverts);
+    }
   },
 
   didCreateRecord: function() {
