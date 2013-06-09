@@ -19,7 +19,7 @@ Ember.HasManyArray = Ember.RecordArray.extend({
     if (!this._records) { this._records = {}; }
     this._records[idx] = record;
 
-    Ember.run(record, record.load, attrs.id, attrs); // FIXME
+    record.load(attrs.id, attrs);
 
     return record;
   },

@@ -53,11 +53,11 @@ test("derp", function() {
   Ember.run(article, article.load, json.id, json);
 
   var comments = article.get('comments');
-  var newComment = comments.create({text: 'quattro'});
+  var newComment = Ember.run(comments, comments.create, {text: 'quattro'});
 
   equal(comments.get('length'), 4);
   ok(newComment instanceof Comment);
-  deepEqual(comments.mapProperty('text'), ['uno', 'dos', 'tres', 'quattro']);
+  deepEqual(Ember.run(comments, comments.mapProperty, 'text'), ['uno', 'dos', 'tres', 'quattro']);
 
   Ember.run(function() {
     stop();

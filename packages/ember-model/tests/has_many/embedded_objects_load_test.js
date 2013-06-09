@@ -35,7 +35,7 @@ test("derp", function() {
   var comments = article.get('comments');
 
   equal(comments.get('length'), 3);
-  ok(comments.get('firstObject') instanceof Comment);
-  deepEqual(comments.mapProperty('text'), ['uno', 'dos', 'tres']);
+  ok(Ember.run(comments, comments.get, 'firstObject') instanceof Comment);
+  deepEqual(Ember.run(comments, comments.mapProperty, 'text'), ['uno', 'dos', 'tres']);
   ok(!comments.everyProperty('isNew'), "Records should not be new");
 });
