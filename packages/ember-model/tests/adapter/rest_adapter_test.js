@@ -589,3 +589,27 @@ test("saveRecord received the array correctly inside params", function() {
 
   ok(!record.get('isDirty'), "Record should not be dirty");
 });
+
+test("saveRecord will run after an array update", function() {
+  expect(3);
+
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, names: Ember.A(), isNew: false});
+
+  var new_name = 'Bill';
+  record.get('names').pushObject(new_name);
+
+  ok(record.get('isDirty'), "Record should be dirty");
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess({id: 1, names: [new_name]});
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), "Record should not be dirty");
+
+  var second_name = 'Erik';
+  record.get('names').pushObject(second_name);
+
+  ok(record.get('isDirty'), "Record should be dirty after adding to the array");
+});
