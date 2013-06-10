@@ -36,7 +36,6 @@ test("when properties have changed on a model, isDirty should be set", function(
 
   var obj = Ember.run(Model, Model.create, {isNew: false});
   ok(!obj.get('isDirty'));
-
   obj.set('name', 'Jeffrey');
   ok(obj.get('isDirty'));
 
@@ -162,4 +161,27 @@ test("dirty checking works for nested objects", function() {
   ok(obj.get('isDirty'));
   obj.set('author.name.first', "Erik");
   ok(!obj.get('isDirty')); // FIXME - this fails
+});
+
+test("dirty checking works for arrays", function() {
+  var Model = Ember.Model.extend({
+    author_list: attr(Ember.A())
+  });
+
+  Model.adapter = {
+    saveRecord: function() {
+      ok(true, "saveRecord was called");
+    }
+  };
+
+  var obj = Model.create();
+  Ember.run(function() {
+    obj.load(1, {author_list: Ember.A()});
+  });
+
+  ok(!obj.get('isDirty'));
+  obj.get('author_list').pushObject('Chris');
+  ok(obj.get('isDirty'));
+  obj.get('author_list').removeObject('Chris');
+  ok(!obj.get('isDirty'));
 });
