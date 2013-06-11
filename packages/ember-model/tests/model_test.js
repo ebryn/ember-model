@@ -194,6 +194,17 @@ test("Model.find(id) returns a deferred", function() {
   stop();
 });
 
+test("Model.findMany(ids) returns a deferred", function() {
+  expect(1);
+
+  var record = Ember.run(Model, Model.findMany, [1]);
+  record.then(function(data) {
+    start();
+    ok(data.get('isLoaded'));
+  });
+  stop();
+});
+
 test("Model#save() returns a deferred", function() {
   expect(2);
 
