@@ -1,9 +1,12 @@
 require('ember-model/adapter');
 
+var get = Ember.get;
+
 Ember.FixtureAdapter = Ember.Adapter.extend({
   find: function(record, id) {
     var fixtures = record.constructor.FIXTURES,
-        data = Ember.A(fixtures).find(function(el) { return el.id === id; });
+        primaryKey = get(record.constructor, 'primaryKey'),
+        data = Ember.A(fixtures).find(function(el) { return el[primaryKey] === id; });
 
     if (!record.get('isLoaded')) {
       setTimeout(function() {

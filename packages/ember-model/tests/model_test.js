@@ -5,9 +5,10 @@ module("Ember.Model", {
     Model = Ember.Model.extend({
       name: Ember.attr()
     });
+    Model.primaryKey = 'token';
     Model.adapter = Ember.FixtureAdapter.create();
     Model.FIXTURES = [
-      {id: 1, name: 'Erik'}
+      {token: 'a', name: 'Erik'}
     ];
     ModelWithoutID = Model.extend();
     ModelWithoutID.adapter = Ember.FixtureAdapter.create();
@@ -46,7 +47,7 @@ test("can handle models without an ID", function() {
 test(".find(id) delegates to the adapter's find method", function() {
   expect(6);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
   ok(record, "Record was returned by find");
   ok(!record.get('isLoaded'));
   ok(record.get('isLoading'));
@@ -63,9 +64,9 @@ test(".find(id) delegates to the adapter's find method", function() {
 test(".reload() loads the record via the adapter after it was loaded", function() {
   expect(1);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
 
-  Model.load([{ id: 1, name: 'Yehuda' }]);
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
 
   Ember.run(function() {
     record.reload();
@@ -82,7 +83,7 @@ test(".reload() loads the record via the adapter after it was loaded", function(
 test(".revert() sets the data back to its saved state", function() {
   expect(3);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
 
   record.on('didLoad', function() {
     start();
@@ -99,8 +100,8 @@ test(".revert() sets the data back to its saved state", function() {
 test(".find(id) called multiple times returns the same object (identity map)", function() {
   expect(1);
 
-  var first = Ember.run(Model, Model.find, 1),
-      second = Ember.run(Model, Model.find, 1);
+  var first = Ember.run(Model, Model.find, 'a'),
+      second = Ember.run(Model, Model.find, 'a');
 
   equal(first, second);
 });
@@ -109,7 +110,7 @@ test("creating a new record adds it to existing record arrays", function() {
   expect(1);
 
   var records = Model.find();
-  var record = Model.create({id: 2, name: 'Yehuda'});
+  var record = Model.create({token: 'b', name: 'Yehuda'});
   record.save();
   stop();
 
@@ -128,7 +129,7 @@ test("destroying a record removes it from record arrays", function() {
   records.on('didLoad', function() {
     start();
     equal(records.get('length'), 1, "The record array was updated");
-    var record = Model.find(1);
+    var record = Model.find('a');
     record.deleteRecord();
     stop();
     record.on('didDeleteRecord', function() {
@@ -161,7 +162,7 @@ test("record isNew & isSaving flags", function() {
 test("record.toJSON() is generated from Ember.attr definitions", function() {
   expect(1);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
     deepEqual(record.toJSON(), {name: 'Erik'});
@@ -185,7 +186,7 @@ test("Model.find() returns a deferred", function() {
 test("Model.find(id) returns a deferred", function() {
   expect(2);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
   record.then(function(data) {
     start();
     equal(record, data);
@@ -197,7 +198,7 @@ test("Model.find(id) returns a deferred", function() {
 test("Model#save() returns a deferred", function() {
   expect(2);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
   record.then(function(data) {
     start();
     record.set('name', 'Stefan');
@@ -214,7 +215,7 @@ test("Model#save() returns a deferred", function() {
 test("Model#deleteRecord() returns a deferred", function() {
   expect(2);
 
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
   record.then(function(data) {
     start();
     record.deleteRecord().then(function(data) {
@@ -231,7 +232,7 @@ test("Model#save() works as expected", function() {
   expect(2);
 
   var records = Ember.run(Model, Model.find);
-  var record = Ember.run(Model, Model.find, 1);
+  var record = Ember.run(Model, Model.find, 'a');
 
   records.then(function() {
     start();

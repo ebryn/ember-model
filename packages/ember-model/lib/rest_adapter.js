@@ -62,16 +62,18 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didCreateRecord: function(record, data) {
     var rootKey = get(record.constructor, 'rootKey'),
+        primaryKey = get(record.constructor, 'primaryKey'),
         dataToLoad = rootKey ? data[rootKey] : data;
 
     Ember.run(function() {
-      record.load(dataToLoad.id, dataToLoad); // FIXME: hardcoded ID
+      record.load(dataToLoad[primaryKey], dataToLoad);
       record.didCreateRecord();
     });
   },
 
   saveRecord: function(record) {
-    var url = this.buildURL(record.constructor, get(record, 'id')),
+    var primaryKey = get(record.constructor, 'primaryKey'),
+        url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
     return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
@@ -84,7 +86,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   deleteRecord: function(record) {
-    var url = this.buildURL(record.constructor, get(record, 'id')),
+    var primaryKey = get(record.constructor, 'primaryKey'),
+        url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
     return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data

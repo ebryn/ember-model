@@ -78,8 +78,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   load: function(id, hash) {
-    var data = Ember.merge({id: id}, hash);
-    set(this, 'data', data);
+    var data = {};
+    data[get(this.constructor, 'primaryKey')] = id;
+    set(this, 'data', Ember.merge(data, hash));
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this.trigger('didLoad');
@@ -117,7 +118,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   reload: function() {
-    return this.constructor.reload(this.get('id'));
+    return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
   },
 
   revert: function() {
@@ -134,7 +135,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
   didCreateRecord: function() {
     set(this, 'isNew', false);
-    this.load(this.get('id'), this.getProperties(this.attributes));
+    this.load(this.get(get(this.constructor, 'primaryKey')), this.getProperties(this.attributes));
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
@@ -176,6 +177,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 });
 
 Ember.Model.reopenClass({
+  primaryKey: 'id',
+
   adapter: Ember.Adapter.create(),
 
   find: function(id) {
@@ -326,13 +329,13 @@ Ember.Model.reopenClass({
   // FIXME
   findFromCacheOrLoad: function(data) {
     var record;
-    if (!data.id) {
+    if (!data[get(this, 'primaryKey')]) {
       record = this.create({isLoaded: false});
     } else {
-      record = this.cachedRecordForId(data.id);
+      record = this.cachedRecordForId(data[get(this, 'primaryKey')]);
     }
     // set(record, 'data', data);
-    record.load(data.id, data);
+    record.load(data[get(this, 'primaryKey')], data);
     return record;
   },
 
@@ -350,7 +353,7 @@ Ember.Model.reopenClass({
     if (!this.recordCache) { return Ember.A([]); }
     var ids = Object.keys(this.recordCache);
     ids.map(function(id) {
-      return this.recordCache[parseInt(id, 10)];
+      return this.recordCache[id];
     }, this).forEach(callback);
   },
 
@@ -358,7 +361,7 @@ Ember.Model.reopenClass({
     if (!this.sideloadedData) { this.sideloadedData = {}; }
     for (var i = 0, l = hashes.length; i < l; i++) {
       var hash = hashes[i];
-      this.sideloadedData[hash.id] = hash; // FIXME: hardcoding `id` property
+      this.sideloadedData[hash[get(this, 'primaryKey')]] = hash;
     }
   }
 });
