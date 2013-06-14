@@ -7,7 +7,8 @@ test("data can be sideloaded without materializing records", function() {
 
   var Model = Ember.Model.extend({
     id: attr(),
-    name: attr()
+    name: attr(),
+    camelCase: attr()
   });
   Model.adapter = {
     find: function(record, id) {
@@ -15,9 +16,12 @@ test("data can be sideloaded without materializing records", function() {
     }
   };
 
-  Model.load([{id: 1, name: "Erik"}]);
+  Model.load([{id: 1, name: "Erik", camel_case: "Dromedary"}]);
 
   var record = Model.find(1);
   ok(record.get('isLoaded'), "Record should be loaded immediately");
+  strictEqual(record.get('id'), 1, "Record ID retained successfully");
+  strictEqual(record.get('name'), "Erik", "Record name retained successfully");
+  strictEqual(record.get('camelCase'), "Dromedary", "camel cased attributes retained correctly");
   // ok(record.get('isLoaded'), "Record should be loaded immediately");
 });
