@@ -55,7 +55,7 @@ existingUser.save(); // PUT /users/1.json
 
 `Model.find()` - find all records
 
-`Model.find(<String|Number>)` - find by ID (multiple calls within a single run loop can coalesce to a findMany)
+`Model.find(<String|Number>)` - find by primary key (multiple calls within a single run loop can coalesce to a findMany)
 
 `Model.find(<object>)` - find query - object gets passed directly to your adapter
 
@@ -66,10 +66,10 @@ existingUser.save(); // PUT /users/1.json
 ```javascript
 Ember.Adapter = Ember.Object.extend({
   find: function(record, id) {}, // find a single record
-  
+
   findAll: function(klass, records) {}, // find all records
-  
-  findMany: function(klass, records, ids) {}, // find many records by ID (batch find)
+
+  findMany: function(klass, records, ids) {}, // find many records by primary key (batch find)
 
   findQuery: function(klass, records, params) {}, // find records using a query
 
@@ -81,9 +81,67 @@ Ember.Adapter = Ember.Object.extend({
 });
 ```
 
+## Customizing
+
+There are a few properties you can set on your class to customize how either
+`Ember.Model` or `Ember.RESTAdapter` work:
+
+### primaryKey
+
+The property Ember Model uses for a per-record unique value (default: "id").
+
+```javascript
+App.User = Ember.Model.extend({
+  token: attr(String),
+  name: attr(String)
+});
+App.User.primaryKey = 'token';
+```
+
+```
+GET /users/a4bc81f90.json
+{"token": "a4bc81f90", "name": "Brian"}
+```
+
+### rootKey
+
+When `RESTAdapter` creates a record from data loaded from the server it will
+use the data from this property instead of the whole response body.
+
+```javascript
+App.User = Ember.Model.extend({
+  name: attr(String)
+});
+App.User.rootKey = 'user';
+```
+
+```
+GET /users/1.json
+{"user": {"id": 1, "name": "Brian"}}
+```
+
+### collectionKey
+
+When `RESTAdapter` creates multiple records from data loaded from the server it
+will use the data from this property instead of the whole response body.
+
+```javascript
+App.User = Ember.Model.extend({
+  name: attr(String)
+});
+App.User.collectionKey = 'users';
+```
+
+```
+GET /users.json
+{"users": [{"id": 1, "name": "Brian"}]}
+```
+
 ## Building Ember-Model
 
-To build Ember-Model, clone the repository, run `bundle` then `rake dist`. Unminified and minified builds of Ember-Model will be placed in the `dist` directory.
+To build Ember-Model, clone the repository, run `bundle` then `rake dist`.
+Unminified and minified builds of Ember-Model will be placed in the `dist`
+directory.
 
 ## How to Run Unit Tests
 

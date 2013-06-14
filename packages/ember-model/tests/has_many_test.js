@@ -1,3 +1,5 @@
+var get = Ember.get;
+
 module("Ember.hasMany");
 
 test("it exists", function() {
@@ -23,13 +25,18 @@ test("is a CP macro", function() {
 });
 
 test("using it in a model definition", function() {
-  var Comment = Ember.Model.extend(),
+  var Comment = Ember.Model.extend({
+        token: Ember.attr(String)
+      }),
       Article = Ember.Model.extend({
         comments: Ember.hasMany(Comment, 'comments')
       });
 
+  Comment.primaryKey = 'token';
+
   var article = Article.create();
-  Ember.run(article, article.load, 1, {comments: Ember.A([{id: 1}, {id: 2}])});
+  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
 
   equal(article.get('comments.length'), 2);
+  equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
 });
