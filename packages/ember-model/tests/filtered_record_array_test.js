@@ -8,8 +8,9 @@ module("Ember.FilteredRecordArray", {
     });
     Model.adapter = Ember.FixtureAdapter.create();
     Model.FIXTURES = [
-      {id: 1, name: 'Erik'},
-      {id: 2, name: 'Stefan'}
+      {id:     1, name: 'Erik'},
+      {id:     2, name: 'Stefan'},
+      {id: 'abc', name: 'Charles'}
     ];
   },
   teardown: function() { }
@@ -46,7 +47,7 @@ test("with a noop filter will return all the loaded records", function() {
       filterProperties: []
     });
 
-    equal(recordArray.get('length'), 2, "There are 2 records");
+    equal(recordArray.get('length'), 3, "There are 3 records");
   });
 
   stop();

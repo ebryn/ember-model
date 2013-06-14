@@ -19,7 +19,8 @@ Ember.HasManyArray = Ember.RecordArray.extend({
     if (!this._records) { this._records = {}; }
     this._records[idx] = record;
 
-    record.load(attrs.id, attrs);
+    var primaryKey = get(klass, 'primaryKey');
+    record.load(attrs[primaryKey], attrs);
 
     return record;
   },
