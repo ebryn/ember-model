@@ -16,7 +16,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var rootKey = get(record.constructor, 'rootKey'),
         dataToLoad = rootKey ? data[rootKey] : data;
 
-    Ember.run(record, record.load, id, dataToLoad);
+    record.load(id, dataToLoad);
   },
 
   findAll: function(klass, records) {
@@ -32,7 +32,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var collectionKey = get(klass, 'collectionKey'),
         dataToLoad = collectionKey ? data[collectionKey] : data;
 
-    Ember.run(records, records.load, klass, dataToLoad);
+    records.load(klass, dataToLoad);
   },
 
   findQuery: function(klass, records, params) {
@@ -48,7 +48,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       var collectionKey = get(klass, 'collectionKey'),
           dataToLoad = collectionKey ? data[collectionKey] : data;
 
-      Ember.run(records, records.load, klass, dataToLoad);
+      records.load(klass, dataToLoad);
   },
 
   createRecord: function(record) {
@@ -65,10 +65,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         primaryKey = get(record.constructor, 'primaryKey'),
         dataToLoad = rootKey ? data[rootKey] : data;
 
-    Ember.run(function() {
-      record.load(dataToLoad[primaryKey], dataToLoad);
-      record.didCreateRecord();
-    });
+    record.load(dataToLoad[primaryKey], dataToLoad);
+    record.didCreateRecord();
   },
 
   saveRecord: function(record) {
@@ -82,7 +80,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didSaveRecord: function(record, data) {
-    Ember.run(record, record.didSaveRecord);
+    record.didSaveRecord();
   },
 
   deleteRecord: function(record) {
@@ -96,7 +94,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didDeleteRecord: function(record, data) {
-    Ember.run(record, record.didDeleteRecord);
+    record.didDeleteRecord();
   },
 
   ajax: function(url, params, method) {
@@ -121,15 +119,26 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       dataType: "json"
     };
 
-    if (params) {
-      if (method === "GET") {
-        settings.data = params;
-      } else {
-        settings.contentType = "application/json; charset=utf-8";
-        settings.data = JSON.stringify(params);
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      if (params) {
+        if (method === "GET") {
+          settings.data = params;
+        } else {
+          settings.contentType = "application/json; charset=utf-8";
+          settings.data = JSON.stringify(params);
+        }
       }
-    }
 
-    return Ember.$.ajax(settings);
+      settings.success = function(json) {
+        Ember.run(null, resolve, json);
+      };
+
+      settings.error = function(jqXHR, textStatus, errorThrown) {
+        Ember.run(null, reject, jqXHR);
+      };
+
+
+      Ember.$.ajax(settings);
+   });
   }
 });
