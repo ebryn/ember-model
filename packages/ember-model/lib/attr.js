@@ -12,6 +12,8 @@ function wrapObject(value) {
     }
 
     return Ember.A(clonedArray);
+  } else if (value && value.constructor === Date) {
+    return new Date(value.toISOString());
   } else if (value && typeof value === "object") {
     var clone = Ember.create(value), property;
 
@@ -26,6 +28,37 @@ function wrapObject(value) {
   }
 }
 
+Ember.Model.dataTypes = {};
+
+Ember.Model.dataTypes[Date] = {
+  deserialize: function(string) {
+    return new Date(string);
+  },
+  serialize: function (date) {
+    return date.toISOString();
+  }
+};
+
+Ember.Model.dataTypes[Number] = {
+  deserialize: function(string) {
+    return Number(string);
+  },
+  serialize: function (number) {
+    return Number(number);
+  }
+};
+
+function deserialize(value, type) {
+  if (type && type.deserialize) {
+    return type.deserialize(value);
+  } else if (type && Ember.Model.dataTypes[type]) {
+    return Ember.Model.dataTypes[type].deserialize(value);
+  } else {
+    return wrapObject(value);
+  }
+}
+
+
 Ember.attr = function(type) {
   return Ember.computed(function(key, value) {
     var data = get(this, 'data'),
@@ -39,10 +72,9 @@ Ember.attr = function(type) {
         set(this, 'data', data);
         data[dataKey] = value;
       }
-
       return wrapObject(value);
     }
 
-    return wrapObject(dataValue);
+    return deserialize(dataValue, type);
   }).property('data').meta({isAttribute: true, type: type});
 };

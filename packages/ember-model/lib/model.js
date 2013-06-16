@@ -99,7 +99,17 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   toJSON: function() {
-    return this.getProperties(this.attributes);
+    var key, meta,
+      properties = this.getProperties(this.attributes);
+    for (key in properties) {
+      meta = this.constructor.metaForProperty(key);
+      if (meta.type && meta.type.serialize) {
+        properties[key] = meta.type.serialize(properties[key]);
+      } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
+        properties[key] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+      }
+    }
+    return properties;
   },
 
   save: function() {

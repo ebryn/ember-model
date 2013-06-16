@@ -80,6 +80,49 @@ Ember.Adapter = Ember.Object.extend({
   deleteRecord: function(record) {} // delete a record on the server
 });
 ```
+## Attribute types
+
+Attributes by default have no type and are not typecast from the representation
+provided in the JSON format. Objects and arrays are cloned, so that clean copy
+of the attribute is maintained internally in case of wanting to revert a dirty
+record to a clean state.
+
+### Built in attribute types
+
+Ember Model has built in `Date` and `Number` types. The `Date` type will deserialize
+strings into a javascript Date object, and will serialize dates into
+[ISO 8601](http://en.wikipedia.org/wiki/ISO_8601) format. The `Number` type will
+cast into a numeric type on serialization and deserialization.
+
+```javascript
+App.Post = Ember.Model.extend({
+  date: attr(Date),
+  comment_count: attr(Number)
+});
+```
+### Custom attribute types
+
+To provide custom attribute serialization and deserialization, create an object that
+has serialize and deserialize functions, and pass it into the attr helper:
+
+```javascript
+var Time = {
+  serialize: function(time) {
+    return time.hour + ":" + time.min;
+  },
+  deserialize: function(string) {
+    var array = string.split(":");
+    return {
+      hour: parseInt(array[0], 10),
+      min: parseInt(array[1], 10)
+    };
+  }
+};
+
+var Post = Ember.Model.extend({
+  time: attr(Time)
+});
+```
 
 ## Customizing
 
@@ -92,8 +135,8 @@ The property Ember Model uses for a per-record unique value (default: "id").
 
 ```javascript
 App.User = Ember.Model.extend({
-  token: attr(String),
-  name: attr(String)
+  token: attr(),
+  name: attr()
 });
 App.User.primaryKey = 'token';
 ```
@@ -110,7 +153,7 @@ use the data from this property instead of the whole response body.
 
 ```javascript
 App.User = Ember.Model.extend({
-  name: attr(String)
+  name: attr()
 });
 App.User.rootKey = 'user';
 ```
@@ -127,7 +170,7 @@ will use the data from this property instead of the whole response body.
 
 ```javascript
 App.User = Ember.Model.extend({
-  name: attr(String)
+  name: attr()
 });
 App.User.collectionKey = 'users';
 ```
