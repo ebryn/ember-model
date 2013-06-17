@@ -152,8 +152,15 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   didCreateRecord: function() {
+    var primaryKey = get(this.constructor, 'primaryKey'),
+        id = get(this, primaryKey);
+
     set(this, 'isNew', false);
-    this.load(this.get(get(this.constructor, 'primaryKey')), this.getProperties(this.attributes));
+
+    if (!this.constructor.recordCache) this.constructor.recordCache = {};
+    this.constructor.recordCache[id] = this;
+
+    this.load(id, this.getProperties(this.attributes));
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();

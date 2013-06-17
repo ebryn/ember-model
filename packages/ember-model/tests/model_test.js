@@ -106,6 +106,22 @@ test(".find(id) called multiple times returns the same object (identity map)", f
   equal(first, second);
 });
 
+test("new records are added to the identity map", function() {
+  expect(2);
+
+  var record = Model.create({token: 2, name: 'Yehuda'});
+
+  record.save();
+  stop();
+
+  record.on("didCreateRecord", function() {
+    start();
+
+    ok(Model.recordCache);
+    equal(Model.recordCache[2], record);
+  });
+});
+
 test("creating a new record adds it to existing record arrays", function() {
   expect(1);
 
