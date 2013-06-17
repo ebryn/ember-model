@@ -163,3 +163,18 @@ test("dirty checking works for nested objects", function() {
   obj.set('author.name.first', "Erik");
   ok(!obj.get('isDirty')); // FIXME - this fails
 });
+
+test("dirty checking works with boolean attributes", function() {
+  var Model = Ember.Model.extend({
+    canSwim: attr(Boolean)
+  });
+
+  var obj = Model.create();
+  Ember.run(function() {
+    obj.load(1, {canSwim: true});
+  });
+
+  ok(!obj.get('isDirty'));
+  obj.set('canSwim', false);
+  ok(obj.get('isDirty'), "toggling a boolean value makes the record dirty");
+});
