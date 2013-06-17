@@ -589,3 +589,28 @@ test("saveRecord received the array correctly inside params", function() {
 
   ok(!record.get('isDirty'), "Record should not be dirty");
 });
+
+test("Model.find([id]) works as expected", function() {
+  expect(1);
+
+  var data = {
+        post: {
+          id: 1,
+          name: "Test Title"
+        }
+      },
+      record, records, promise;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  record = Ember.run(RESTModel, RESTModel.find, 1);
+  records = Ember.run(RESTModel, RESTModel.find, [1]);
+
+  promise = Ember.run(Ember.RSVP, Ember.RSVP.all, [records, record]);
+
+  Ember.run(promise, promise.then, function() {
+    equal(records.get("firstObject"), record);
+  });
+});
