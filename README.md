@@ -203,6 +203,13 @@ one of the best is [rvm](https://rvm.io/).
 
 2. Then visit: `http://localhost:9292`.
 
+## Who's using Ember Model?
+
+* [LiveNation](http://www.livenation.com)
+* [Square](http://www.squareup.com)
+* [Embercasts](http://www.embercasts.com)
+
+Are you using Ember Model? Submit a pull request to add your project to this list!
 
 ## Special Thanks
 
