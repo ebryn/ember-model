@@ -303,9 +303,19 @@ Ember.Model.reopenClass({
 
   cachedRecordForId: function(id) {
     if (!this.recordCache) { this.recordCache = {}; }
-    var sideloadedData = this.sideloadedData && this.sideloadedData[id];
-    var record = this.recordCache[id] || (sideloadedData ? this.create(sideloadedData) : this.create({isLoaded: false}));
-    if (!this.recordCache[id]) { this.recordCache[id] = record; }
+    var record;
+
+    if (this.recordCache[id]) {
+      record = this.recordCache[id];
+    } else {
+      record = this.create({isLoaded: false});
+      var sideloadedData = this.sideloadedData && this.sideloadedData[id];
+      if (sideloadedData) {
+        record.load(id, sideloadedData);
+      }
+      this.recordCache[id] = record;
+    }
+
     return record;
   },
 
