@@ -32,18 +32,22 @@ Ember.Model.dataTypes = {};
 
 Ember.Model.dataTypes[Date] = {
   deserialize: function(string) {
+    if(!string) { return null; }
     return new Date(string);
   },
   serialize: function (date) {
+    if(!date) { return null; }
     return date.toISOString();
   }
 };
 
 Ember.Model.dataTypes[Number] = {
   deserialize: function(string) {
+    if (!string && string !== 0) { return null; }
     return Number(string);
   },
   serialize: function (number) {
+    if (!number && number !== 0) { return null; }
     return Number(number);
   }
 };
