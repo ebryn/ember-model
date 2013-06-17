@@ -134,7 +134,6 @@ test("creating a new record adds it to existing record arrays", function() {
     start();
     equal(records.get('length'), 2, "The record array was updated");
   });
-
 });
 
 test("destroying a record removes it from record arrays", function() {

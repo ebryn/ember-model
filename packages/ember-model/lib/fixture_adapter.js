@@ -13,6 +13,8 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
         Ember.run(record, record.load, id, data);
       });
     }
+
+    return record;
   },
 
   findMany: function(klass, records, ids) {
@@ -26,6 +28,8 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     setTimeout(function() {
       Ember.run(records, records.load, klass, requestedData);
     });
+
+    return records;
   },
 
   findAll: function(klass, records) {
@@ -34,6 +38,8 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     setTimeout(function() {
       Ember.run(records, records.load, klass, fixtures);
     });
+
+    return records;
   },
 
   createRecord: function(record) {
