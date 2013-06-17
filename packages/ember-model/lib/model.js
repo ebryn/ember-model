@@ -23,6 +23,13 @@ function concatUnique(toArray, fromArray) {
   return toArray;
 }
 
+function hasCachedValue(object, key) {
+  var objectMeta = meta(object, false);
+  if (objectMeta) {
+    return key in objectMeta.cache;
+  }
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
@@ -39,6 +46,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
     for (var i = 0, l = attributes.length; i < l; i++) {
       key = attributes[i];
+      if (!hasCachedValue(this, key)) { continue; }
       cachedValue = this.cacheFor(key);
       dataValue = get(this, 'data.'+this.dataKey(key));
       desc = meta(this).descs[key];
@@ -46,8 +54,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       type = descMeta.type;
 
       if (type && type.isEqual) {
-        isDirty = !type.isEqual(dataValue, cachedValue || dataValue);
-      } else if (dataValue !== (cachedValue || dataValue)) {
+        isDirty = !type.isEqual(dataValue, cachedValue);
+      } else if (dataValue !== cachedValue) {
         isDirty = true;
       } else {
         isDirty = false;
