@@ -290,22 +290,23 @@ Ember.Model.reopenClass({
     var batchIds = this._currentBatchIds,
         batchRecordArrays = this._currentBatchRecordArrays,
         self = this,
-        records;
+        recordOrRecordArray;
 
     this._currentBatchIds = null;
     this._currentBatchRecordArrays = null;
 
     if (batchIds.length === 1) {
-      get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
+      recordOrRecordArray = get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
     } else {
-      records = Ember.RecordArray.create({_ids: batchIds}),
-      get(this, 'adapter').findMany(this, records, batchIds);
-      records.then(function() {
-        for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
-          batchRecordArrays[i].loadForFindMany(self);
-        }
-      });
+      recordOrRecordArray = Ember.RecordArray.create({_ids: batchIds}),
+      get(this, 'adapter').findMany(this, recordOrRecordArray, batchIds);
     }
+
+    recordOrRecordArray.then(function() {
+      for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
+        batchRecordArrays[i].loadForFindMany(self);
+      }
+    });
   },
 
   findQuery: function(params) {
