@@ -40,3 +40,20 @@ test("using it in a model definition", function() {
   equal(article.get('comments.length'), 2);
   equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
 });
+
+test("model can be specified with a string instead of a class", function() {
+  var Article = Ember.Model.extend({
+        comments: Ember.hasMany('Ember.CommentModel', 'comments')
+      }),
+      Comment = Ember.CommentModel = Ember.Model.extend({
+        token: Ember.attr(String)
+      });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create();
+  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
+
+  equal(article.get('comments.length'), 2);
+  equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
+});
