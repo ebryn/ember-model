@@ -86,14 +86,31 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   load: function(id, hash) {
-    var data = {};
+    var data = {}, isPartiallyLoaded, attributes;
     data[get(this.constructor, 'primaryKey')] = id;
-    set(this, 'data', Ember.merge(data, hash));
+    data = Ember.merge(data, hash);
+    this._loadedAttributes = Ember.A(Ember.keys(data).map(function(key) { return this.dataKey(key); }, this));
+
+    attributes = get(this, 'attributes');
+    if(!attributes || attributes.length === 0) {
+      // TODO: fix this when implementing support for relationships
+      isPartiallyLoaded = false;
+    } else {
+      isPartiallyLoaded = Ember.EnumerableUtils.intersection(this._loadedAttributes, attributes).length !== attributes.length;
+    }
+    set(this, 'isPartiallyLoaded', isPartiallyLoaded);
+    set(this, 'data', data);
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this.trigger('didLoad');
     this.resolve(this);
   },
+
+  isAttributeMissing: function(key) {
+    return this.get('isPartiallyLoaded') && this._loadedAttributes && !this._loadedAttributes.contains(key);
+  },
+
+  missingAttributeAccessed: Ember.K,
 
   didDefineProperty: function(proto, key, value) {
     if (value instanceof Ember.Descriptor) {

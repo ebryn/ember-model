@@ -70,6 +70,10 @@ Ember.attr = function(type) {
         dataValue = data && get(data, dataKey),
         beingCreated = meta(this).proto === this;
 
+    if(this.get('isPartiallyLoaded') && this.isAttributeMissing(key)) {
+     this.missingAttributeAccessed(key);
+    }
+
     if (arguments.length === 2) {
       if (beingCreated && !data) {
         data = {};
