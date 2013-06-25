@@ -39,6 +39,17 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   isDeleted: false,
   _dirtyAttributes: null,
 
+  /**
+    Called when attribute is accessed.
+
+    @method getAttr
+    @param key {String} key which is being accessed
+    @param value {Object} value, which will be returned from getter by default
+  */
+  getAttr: function(key, value) {
+    return value;
+  },
+
   isDirty: Ember.computed(function() {
     var attributes = this.attributes,
         dirtyAttributes = Ember.A(), // just for removeObject
