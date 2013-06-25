@@ -581,7 +581,7 @@ test("saveRecord received the array correctly inside params", function() {
   ok(record.get('isDirty'), "Record should be dirty");
 
   adapter._ajax = function(url, params, method) {
-    deepEqual(params.names, [new_name], "params are correct");
+    deepEqual(params.post.names, [new_name], "params are correct");
     return ajaxSuccess({id: 1, names: [new_name]});
   };
 
