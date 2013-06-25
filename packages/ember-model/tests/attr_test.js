@@ -2,6 +2,28 @@ var attr = Ember.attr;
 
 module("Ember.attr");
 
+test("getAttr hook is called when attribute is fetched", function() {
+  expect(2);
+
+  var Page = Ember.Model.extend({
+    title: attr()
+  });
+
+  var page = Page.create();
+
+  page.getAttr = function(key, value) {
+    equal(key, 'title', 'getAttr should be called with key as a first argument');
+    return value.toUpperCase();
+  };
+
+  Ember.run(function() {
+    page.load(1, { title: 'teh article' });
+  });
+
+  var title = page.get('title');
+  equal(title, 'TEH ARTICLE', 'the value of the attr should be a value returned from getAttr hook');
+});
+
 test("when the attr is specified on an object it should Object.create the object", function() {
   var Page = Ember.Model.extend({
     author: attr()

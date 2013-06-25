@@ -79,6 +79,6 @@ Ember.attr = function(type) {
       return wrapObject(value);
     }
 
-    return deserialize(dataValue, type);
+    return this.getAttr(key, deserialize(dataValue, type));
   }).property('data').meta({isAttribute: true, type: type});
 };
