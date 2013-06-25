@@ -213,6 +213,7 @@ one of the best is [rvm](https://rvm.io/).
 * [Square](http://www.squareup.com)
 * [Embercasts](http://www.embercasts.com)
 * [Digital Science](http://www.digital-science.com)
+* [Travis CI](https://travis-ci.org)
 
 Are you using Ember Model? Submit a pull request to add your project to this list!
 
