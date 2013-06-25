@@ -185,6 +185,18 @@ test("record.toJSON() is generated from Ember.attr definitions", function() {
   stop();
 });
 
+test("record.toJSON() uses rootKey if it is defined", function() {
+  expect(1);
+
+  Model.rootKey = 'model';
+
+  var record = Ember.run(Model, Model.find, 'a');
+  record.on('didLoad', function() {
+    start();
+    deepEqual(record.toJSON(), { model: { name: 'Erik' } });
+  });
+  stop();
+});
 
 test("Model.find() returns a deferred", function() {
   expect(2);
