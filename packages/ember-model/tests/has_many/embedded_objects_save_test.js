@@ -1,6 +1,6 @@
 var attr = Ember.attr;
 
-module("Ember.HasManyArray - embedded objects saving");
+module("Ember.EmbeddedHasManyArray - embedded objects saving");
 
 test("derp", function() {
   var json = {
@@ -13,24 +13,19 @@ test("derp", function() {
     ]
   };
 
-  var Article = Ember.Model.extend({
-    title: attr(),
-
-    comments: Ember.computed(function(key) {
-      return Ember.HasManyArray.create({
-        parent: this,
-        modelClass: Comment,
-        content: Ember.A(this.get('data.comments'))
-      });
-    }).property()
-  });
-
   var Comment = Ember.Model.extend({
     id: attr(),
     text: attr()
   });
 
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+  });
+
   Comment.adapter = {
+
     createRecord: function(record) {
       Ember.run.later(function() {
         record.load(4, {text: 'quattro'});

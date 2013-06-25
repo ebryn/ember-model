@@ -1,6 +1,6 @@
 var attr = Ember.attr;
 
-module("Ember.HasManyArray - embedded objects loading");
+module("Ember.EmbeddedHasManyArray - embedded objects loading");
 
 test("derp", function() {
   var json = {
@@ -13,20 +13,14 @@ test("derp", function() {
     ]
   };
 
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
   var Article = Ember.Model.extend({
     title: attr(),
 
-    comments: Ember.computed(function(key) {
-      return Ember.HasManyArray.create({
-        parent: this,
-        modelClass: Comment,
-        content: Ember.A(this.get('data.comments'))
-      });
-    }).property()
-  });
-
-  var Comment = Ember.Model.extend({
-    text: attr()
+    comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
   });
 
   var article = Article.create();

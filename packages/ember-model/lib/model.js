@@ -92,8 +92,30 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   init: function() {
+    if (get(this, 'isLoaded') && get(this, 'isNew')) { this._createReference(); }
     if (!get(this, 'isNew')) { this.resolve(this); }
     this._super();
+  },
+
+  _createReference: function() {
+    var reference = this._reference,
+        id = this.getPrimaryKey();
+
+    if(!reference) {
+      reference = this.constructor._referenceForId(id);
+      reference.record = this;
+      this._reference = reference;
+    }
+
+    if(!reference.id) {
+      reference.id = id;
+    }
+
+    return reference;
+  },
+
+  getPrimaryKey: function() {
+    return get(this, get(this.constructor, 'primaryKey'));
   },
 
   load: function(id, hash) {
@@ -102,6 +124,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     set(this, 'data', Ember.merge(data, hash));
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
+    this._createReference();
     this.trigger('didLoad');
     this.resolve(this);
   },
@@ -218,6 +241,36 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     this._dirtyAttributes = [];
+  },
+
+  dataDidChange: Ember.observer(function() {
+    this._reloadHasManys();
+  }, 'data'),
+
+  _registerHasManyArray: function(array) {
+    if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
+
+    this._hasManyArrays.pushObject(array);
+  },
+
+  _reloadHasManys: function() {
+    if (!this._hasManyArrays) { return; }
+
+    var i;
+    for(i = 0; i < this._hasManyArrays.length; i++) {
+      var array = this._hasManyArrays[i];
+      set(array, 'content', this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded')));
+    }
+  },
+
+  _getHasManyContent: function(key, type, embedded) {
+    var content = get(this, 'data.' + key);
+
+    if(!embedded && content) {
+      content = Ember.EnumerableUtils.map(content, function(id) { return type._referenceForId(id); });
+    }
+
+    return Ember.A(content || []);
   }
 });
 
@@ -225,6 +278,8 @@ Ember.Model.reopenClass({
   primaryKey: 'id',
 
   adapter: Ember.Adapter.create(),
+
+  _clientIdCounter: 1,
 
   find: function(id) {
     if (!arguments.length) {
@@ -432,5 +487,35 @@ Ember.Model.reopenClass({
       var hash = hashes[i];
       this.sideloadedData[hash[get(this, 'primaryKey')]] = hash;
     }
+  },
+
+  _referenceForId: function(id) {
+    if (!this._idToReference) { this._idToReference = {}; }
+
+    var reference = this._idToReference[id];
+    if(!reference) {
+      reference = this._createReference(id);
+    }
+
+    return reference;
+  },
+
+  _createReference: function(id) {
+    if (!this._idToReference) { this._idToReference = {}; }
+
+    Ember.assert('The id ' + id + ' has alread been used with another record of type ' + this.toString() + '.', !id || !this._idToReference[id]);
+
+    var reference = {
+      id: id,
+      clientId: this._clientIdCounter++
+    };
+
+    // if we're creating an item, this process will be done
+    // later, once the object has been persisted.
+    if (id) {
+      this._idToReference[id] = reference;
+    }
+
+    return reference;
   }
 });
