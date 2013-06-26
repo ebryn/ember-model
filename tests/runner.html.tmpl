@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit basic example</title>
+  <link rel="stylesheet" href="../bower_components/qunit/qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script type="text/javascript" src="../bower_components/jquery/jquery.js"></script>
+  <script type="text/javascript" src="../bower_components/handlebars/handlebars.js"></script>
+  <script type="text/javascript" src="../bower_components/ember/ember.js"></script>
+
+  <script type="text/javascript" src="../bower_components/qunit/qunit.js"></script>
+
+  <script type="text/javascript">
+    TESTING = true;  
+  </script>
+
+  <script src="../dist/ember-model.js"></script>
+
+  <% _.each(files, function(filepath) { %>
+  <script type="text/javascript" src="../<%= filepath %>"></script>
+  <% }); %>
+
+  </script>
+</body>
+</html>
