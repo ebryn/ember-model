@@ -46,6 +46,37 @@ test("coalesced findMany call should only include records which aren't loaded in
   });
 });
 
+test("coalesced findMany returns a resolved promise even if all records are loaded from cache", function() {
+  expect(1);
+
+  var Model = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Model.adapter = {
+    findMany: function(klass, records, ids) {
+      ok(false, "findMany shouldn't be called");
+    }
+  };
+
+  var record = Model.create({ id: 1 });
+  Ember.run(record, record.didCreateRecord);
+  Ember.run(record, record.load, 1);
+
+  var record2 = Model.create({ id: 2 });
+  Ember.run(record2, record.didCreateRecord);
+  Ember.run(record2, record.load, 2);
+
+  var promise = Ember.run(Model, Model.find, [1, 2]);
+
+  Ember.run(function() {
+    promise.then(function(records) {
+      equal(records.get("length"), 2);
+    });
+  });
+});
+
+
 test("calls to Model#find and Model#findMany within the same run loop coalesce into a single findMany call", function() {
   expect(2);
 
