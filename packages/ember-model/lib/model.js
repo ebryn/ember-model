@@ -326,8 +326,13 @@ Ember.Model.reopenClass({
     if (batchIds.length === 1) {
       recordOrRecordArray = get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
     } else {
-      recordOrRecordArray = Ember.RecordArray.create({_ids: batchIds}),
-      get(this, 'adapter').findMany(this, recordOrRecordArray, requestIds);
+      recordOrRecordArray = Ember.RecordArray.create({_ids: batchIds});
+
+      if (requestIds.length === 0) {
+        recordOrRecordArray.notifyLoaded();
+      } else {
+        get(this, 'adapter').findMany(this, recordOrRecordArray, requestIds);
+      }
     }
 
     recordOrRecordArray.then(function() {
