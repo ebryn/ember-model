@@ -12,6 +12,8 @@ EM is still very much a work in progress, but it's flexible enough to be used in
 
 [![Getting started Embercast](http://f.cl.ly/items/1T1t2T2p3d2u0A2b0q2P/embercast.png)](http://www.embercasts.com/episodes/getting-started-with-ember-model)
 
+Need more help getting started? Join us in #ember-model on Freenode.
+
 ## Features
 
 - BYO$A (bring your own $.ajax)
