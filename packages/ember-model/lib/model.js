@@ -143,6 +143,23 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     }
   },
 
+  serializeHasMany: function(key, meta) {
+    return this.get(key).toJSON();
+  },
+
+  serializeBelongsTo: function(key, meta) {
+    if(meta.options.embedded) {
+      var record = this.get(key);
+      if(record) {
+        console.log(key, record+'');
+        return record.toJSON();
+      }
+    } else {
+      var primaryKey = get(meta.type, 'primaryKey');
+      return this.get(key + '.' + primaryKey);
+    }
+  },
+
   toJSON: function() {
     var key, meta,
         properties = this.getProperties(this.attributes);
@@ -153,6 +170,24 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
         properties[key] = meta.type.serialize(properties[key]);
       } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
         properties[key] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+      }
+    }
+
+    if(this.relationships) {
+      var data;
+      for(var i = 0; i < this.relationships.length; i++) {
+        key = this.relationships[i];
+        meta = this.constructor.metaForProperty(key);
+
+        if(meta.kind === 'belongsTo') {
+          data = this.serializeBelongsTo(key, meta);
+        } else {
+          data = this.serializeHasMany(key, meta);
+        }
+
+        if(data) {
+          properties[key] = data;
+        }
       }
     }
 
@@ -415,7 +450,10 @@ Ember.Model.reopenClass({
     if (this.recordCache[id]) {
       record = this.recordCache[id];
     } else {
-      record = this.create({isLoaded: false});
+      var primaryKey = get(this, 'primaryKey'),
+          attrs = {isLoaded: false};
+      attrs[primaryKey] = id;
+      record = this.create(attrs);
       var sideloadedData = this.sideloadedData && this.sideloadedData[id];
       if (sideloadedData) {
         record.load(id, sideloadedData);

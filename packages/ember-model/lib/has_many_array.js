@@ -49,6 +49,18 @@ Ember.HasManyArray = Ember.ManyArray.extend({
     }, this);
 
     this._super(index, removed, added);
+  },
+
+  toJSON: function() {
+    var ids = [], content = this.get('content');
+
+    content.forEach(function(reference) {
+      if(reference.id) {
+        ids.push(reference.id);
+      }
+    });
+
+    return ids;
   }
 });
 
@@ -75,5 +87,11 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
 
     record.load(attrs[primaryKey], attrs);
     return record;
+  },
+
+  toJSON: function() {
+    return this.map(function(record) {
+      return record.toJSON();
+    });
   }
 });

@@ -344,6 +344,87 @@ test("relationships are added to relationships list", function() {
   deepEqual(Article.proto().relationships, ['comments', 'author', 'ratings'], 'relationships keys should be saved into relationships attribute');
 });
 
+test("toJSON includes embedded relationships", function() {
+  var Comment = Ember.Model.extend({
+        id: Ember.attr(),
+        text: Ember.attr()
+      }),
+      Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Article = Ember.Model.extend({
+        id: 1,
+        title: Ember.attr(),
+        comments: Ember.hasMany(Comment, { key: 'comments', embedded: true }),
+        author: Ember.belongsTo(Author, { key: 'author', embedded: true })
+      });
+
+  var articleData = {
+    id: 1,
+    title: 'foo',
+    comments: [
+      {id: 1, text: 'uno'},
+      {id: 2, text: 'dos'},
+      {id: 3, text: 'tres'}
+    ],
+    author: {id: 1, name: 'drogus'}
+  };
+
+  var article = Article.create();
+  Ember.run(article, article.load, articleData.id, articleData);
+
+  var json = Ember.run(article, article.toJSON);
+
+  var map = Ember.EnumerableUtils.map;
+
+  deepEqual(map(json.comments, function(c) { return c.text; }), ['uno', 'dos', 'tres'], "JSON should contain serialized records from hasMany relationship");
+  equal(json.author.name, 'drogus', "JSON should contain serialized record from belongsTo relationship");
+});
+
+test("toJSON includes non-embedded relationships", function() {
+  var Comment = Ember.Model.extend({
+        id: Ember.attr(),
+        text: Ember.attr()
+      }),
+      Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Article = Ember.Model.extend({
+        id: 1,
+        title: Ember.attr(),
+        comments: Ember.hasMany(Comment, { key: 'comments' }),
+        author: Ember.belongsTo(Author, { key: 'author' })
+      });
+
+  var articleData = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3],
+    author: 1
+  };
+
+  Author.adapter = Ember.FixtureAdapter.create();
+  Comment.adapter = Ember.FixtureAdapter.create();
+
+  Author.FIXTURES = [{id: 1, name: 'drogus'}];
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+
+  var article = Article.create();
+  Ember.run(article, article.load, articleData.id, articleData);
+
+  var json = Ember.run(article, article.toJSON);
+
+  deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
+  equal(json.author, 1, "JSON should contain id of belongsTo relationship");
+});
+
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){
