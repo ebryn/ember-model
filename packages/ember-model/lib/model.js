@@ -136,6 +136,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       if (meta.isAttribute) {
         if (!proto.attributes) { proto.attributes = []; }
         proto.attributes.push(key);
+      } else if(meta.isRelationship) {
+        if(!proto.relationships) { proto.relationships = []; }
+        proto.relationships.push(key);
       }
     }
   },

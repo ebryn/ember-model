@@ -331,6 +331,19 @@ test("Model#create() works as expected", function() {
   stop();
 });
 
+test("relationships are added to relationships list", function() {
+  var Comment = Ember.Model.extend(),
+      Rating = Ember.Model.extend(),
+      Author = Ember.Model.extend(),
+      Article = Ember.Model.extend({
+        comments: Ember.hasMany(Comment, { key: 'comments' }),
+        author: Ember.belongsTo(Author, { key: 'author' }),
+        ratings: Ember.hasMany(Rating, { key: 'ratings' })
+      });
+
+  deepEqual(Article.proto().relationships, ['comments', 'author', 'ratings'], 'relationships keys should be saved into relationships attribute');
+});
+
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){
