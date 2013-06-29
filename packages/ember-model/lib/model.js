@@ -92,7 +92,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   init: function() {
-    if (get(this, 'isLoaded') && get(this, 'isNew')) { this._createReference(); }
+    this._createReference();
     if (!get(this, 'isNew')) { this.resolve(this); }
     this._super();
   },
@@ -101,13 +101,13 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     var reference = this._reference,
         id = this.getPrimaryKey();
 
-    if(!reference) {
+    if (!reference) {
       reference = this.constructor._referenceForId(id);
       reference.record = this;
       this._reference = reference;
     }
 
-    if(!reference.id) {
+    if (!reference.id) {
       reference.id = id;
     }
 
@@ -136,8 +136,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       if (meta.isAttribute) {
         if (!proto.attributes) { proto.attributes = []; }
         proto.attributes.push(key);
-      } else if(meta.isRelationship) {
-        if(!proto.relationships) { proto.relationships = []; }
+      } else if (meta.isRelationship) {
+        if (!proto.relationships) { proto.relationships = []; }
         proto.relationships.push(key);
       }
     }
@@ -148,9 +148,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   },
 
   serializeBelongsTo: function(key, meta) {
-    if(meta.options.embedded) {
+    if (meta.options.embedded) {
       var record = this.get(key);
-      if(record) {
+      if (record) {
         console.log(key, record+'');
         return record.toJSON();
       }
@@ -173,19 +173,19 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
       }
     }
 
-    if(this.relationships) {
+    if (this.relationships) {
       var data;
       for(var i = 0; i < this.relationships.length; i++) {
         key = this.relationships[i];
         meta = this.constructor.metaForProperty(key);
 
-        if(meta.kind === 'belongsTo') {
+        if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
         } else {
           data = this.serializeHasMany(key, meta);
         }
 
-        if(data) {
+        if (data) {
           properties[key] = data;
         }
       }
@@ -304,7 +304,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   _getHasManyContent: function(key, type, embedded) {
     var content = get(this, 'data.' + key);
 
-    if(!embedded && content) {
+    if (!embedded && content) {
       content = Ember.EnumerableUtils.map(content, function(id) { return type._referenceForId(id); });
     }
 
@@ -534,7 +534,7 @@ Ember.Model.reopenClass({
     if (!this._idToReference) { this._idToReference = {}; }
 
     var reference = this._idToReference[id];
-    if(!reference) {
+    if (!reference) {
       reference = this._createReference(id);
     }
 

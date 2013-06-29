@@ -36,24 +36,6 @@ test("creates reference when creating record", function() {
   equal(reference.record, model, "reference should keep a reference to a model");
 });
 
-test("does not create a reference if record is not loaded and not new", function() {
-  expect(1);
-
-  var model = Ember.run(Model, Model.create, { isLoaded: false, isNew: false }),
-      reference = model._reference;
-
-  ok(!reference, "should not create a reference");
-});
-
-test("does not create a reference if record is not loaded and new", function() {
-  expect(1);
-
-  var model = Ember.run(Model, Model.create, { isLoaded: false, isNew: true }),
-      reference = model._reference;
-
-  ok(!reference, "should not create a reference");
-});
-
 test("can define attributes with Ember.attr, data is accessible", function() {
   var instance = Model.create({name: "Erik"});
 

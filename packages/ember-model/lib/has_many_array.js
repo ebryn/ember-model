@@ -34,7 +34,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
         reference = content.objectAt(idx),
         record;
 
-    if(reference.record) {
+    if (reference.record) {
       record = reference.record;
     } else {
       record = klass.findById(reference.id);
@@ -55,7 +55,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
     var ids = [], content = this.get('content');
 
     content.forEach(function(reference) {
-      if(reference.id) {
+      if (reference.id) {
         ids.push(reference.id);
       }
     });
