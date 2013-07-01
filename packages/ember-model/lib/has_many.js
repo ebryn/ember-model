@@ -1,19 +1,35 @@
 var get = Ember.get;
 
-Ember.hasMany = function(klassOrString, key) {
-  return Ember.computed(function() {
-    var klass;
+Ember.hasMany = function(type, options) {
+  options = options || {};
 
-    if (typeof klassOrString === "string") {
-      klass = Ember.get(Ember.lookup, klassOrString);
-    } else {
-      klass = klassOrString;
+  var meta = { type: type, isRelationship: true, options: options, kind: 'hasMany' },
+      key = options.key;
+
+  return Ember.computed(function() {
+    if (typeof type === "string") {
+      type = Ember.get(Ember.lookup, type);
     }
 
-    return Ember.HasManyArray.create({
-      parent: this,
-      modelClass: klass,
-      content: get(this, 'data.' + key)
-    });
-  }).property();
+    return this.getHasMany(key, type, meta);
+  }).property().meta(meta);
 };
+
+Ember.Model.reopen({
+  getHasMany: function(key, type, meta) {
+    var embedded = meta.options.embedded,
+        collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
+
+    var collection = collectionClass.create({
+      parent: this,
+      modelClass: type,
+      content: this._getHasManyContent(key, type, embedded),
+      embedded: embedded,
+      key: key
+    });
+
+    this._registerHasManyArray(collection);
+
+    return collection;
+  }
+});
