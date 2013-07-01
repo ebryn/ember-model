@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-// 0.0.3-37-gf1bec43
-// f1bec43 (2013-07-16 06:25:39 -0700)
+// 0.0.3-40-g5bd1c59
+// 5bd1c59 (2013-07-16 11:45:35 -0500)
 
 (function() {
 
@@ -1215,13 +1215,17 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       return urlRoot + ".json";
     }
   },
-
-  _ajax: function(url, params, method) {
-    var settings = {
+  
+  ajaxSettings: function(url, method) {
+    return {
       url: url,
       type: method,
       dataType: "json"
     };
+  },
+
+  _ajax: function(url, params, method) {
+    var settings = this.ajaxSettings(url, method);
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
