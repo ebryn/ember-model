@@ -614,3 +614,37 @@ test("Model.find([id]) works as expected", function() {
     equal(records.get("firstObject"), record);
   });
 });
+
+
+module("Ember.RESTAdapter - with custom ajax settings", {
+  setup: function() {
+    RESTModel = Ember.Model.extend({
+      name: Ember.attr()
+    });
+    RESTModel.url = "/posts";
+    RESTModel.collectionKey = "posts";
+    RESTModel.rootKey = "post";
+    customAdapter = Ember.RESTAdapter.extend({
+      _ajaxSettings: function(url, method) {
+        return {
+          url: url,
+          type: method,
+          headers: {
+            "authentication": "xxx-yyy"
+          },
+          dataType: "json"
+        };
+      }
+    });
+    adapter = RESTModel.adapter = customAdapter.create();
+    _ajax = adapter._ajax;
+  }
+});
+test("Expect ajax settings to include a custom header", function() {
+  var settings = Ember.run(RESTModel.adapter, RESTModel.adapter._ajaxSettings, RESTModel.url, "GET");
+  equal(settings.headers.authentication, "xxx-yyy");
+  equal(settings.type, "GET");
+  equal(settings.url, RESTModel.url);
+
+});
+
