@@ -624,8 +624,8 @@ module("Ember.RESTAdapter - with custom ajax settings", {
     RESTModel.url = "/posts";
     RESTModel.collectionKey = "posts";
     RESTModel.rootKey = "post";
-    customAdapter = Ember.RESTAdapter.extend({
-      _ajaxSettings: function(url, method) {
+    var CustomAdapter = Ember.RESTAdapter.extend({
+      ajaxSettings: function(url, method) {
         return {
           url: url,
           type: method,
@@ -636,12 +636,43 @@ module("Ember.RESTAdapter - with custom ajax settings", {
         };
       }
     });
-    adapter = RESTModel.adapter = customAdapter.create();
+    adapter = RESTModel.adapter = CustomAdapter.create();
     _ajax = adapter._ajax;
   }
 });
 test("Expect ajax settings to include a custom header", function() {
-  var settings = Ember.run(RESTModel.adapter, RESTModel.adapter._ajaxSettings, RESTModel.url, "GET");
+  var settings = Ember.run(RESTModel.adapter, RESTModel.adapter.ajaxSettings, RESTModel.url, "GET");
+  equal(settings.headers.authentication, "xxx-yyy");
+  equal(settings.type, "GET");
+  equal(settings.url, RESTModel.url);
+
+});
+
+module("Ember.RESTAdapter - with custom ajax settings passed from create", {
+  setup: function() {
+    RESTModel = Ember.Model.extend({
+      name: Ember.attr()
+    });
+    RESTModel.url = "/posts";
+    RESTModel.collectionKey = "posts";
+    RESTModel.rootKey = "post";
+    adapter = Ember.RESTAdapter.create({
+      ajaxSettings: function(url, method) {
+        return {
+          url: url,
+          type: method,
+          headers: {
+            "authentication": "xxx-yyy"
+          },
+          dataType: "json"
+        };
+      }
+    });
+    _ajax = adapter._ajax;
+  }
+});
+test("Expect ajax settings to include a custom header", function() {
+  var settings = Ember.run(adapter, adapter.ajaxSettings, RESTModel.url, "GET");
   equal(settings.headers.authentication, "xxx-yyy");
   equal(settings.type, "GET");
   equal(settings.url, RESTModel.url);
