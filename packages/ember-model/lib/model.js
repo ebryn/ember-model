@@ -151,7 +151,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     if (meta.options.embedded) {
       var record = this.get(key);
       if (record) {
-        console.log(key, record+'');
         return record.toJSON();
       }
     } else {
