@@ -22,7 +22,8 @@ test(".find({}) delegates to the adapter's findQuery method", function() {
   ok(!(Model.recordArrays || Ember.A()).contains(records), "The RecordArray created by a findQuery should not be registered");
 
   stop();
-  Ember.run(records, records.then, function() {
+  var promise = Ember.loadPromise(records);
+  Ember.run(promise, promise.then, function() {
     start();
     ok(records.get('isLoaded'), "RecordArray is loaded after resolved");
   });

@@ -7,3 +7,4 @@ require('ember-model/model');
 require('ember-model/has_many');
 require('ember-model/attr');
 require('ember-model/rest_adapter');
+require('ember-model/load_promise');

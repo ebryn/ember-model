@@ -202,7 +202,7 @@ test("Model.find() returns a deferred", function() {
   expect(2);
 
   var records = Ember.run(Model, Model.find);
-  records.then(function(data) {
+  Ember.loadPromise(records).then(function(data) {
     start();
     equal(records, data);
     ok(data.get('isLoaded'));
@@ -214,7 +214,7 @@ test("Model.find(id) returns a deferred", function() {
   expect(2);
 
   var record = Ember.run(Model, Model.find, 'a');
-  record.then(function(data) {
+  Ember.loadPromise(record).then(function(data) {
     start();
     equal(record, data);
     ok(data.get('isLoaded'));
@@ -226,7 +226,7 @@ test("Model#save() returns a deferred", function() {
   expect(2);
 
   var record = Ember.run(Model, Model.find, 'a');
-  record.then(function(data) {
+  Ember.loadPromise(record).then(function(data) {
     start();
     record.set('name', 'Stefan');
     record.save().then(function(data) {
@@ -243,7 +243,7 @@ test("Model#deleteRecord() returns a deferred", function() {
   expect(2);
 
   var record = Ember.run(Model, Model.find, 'a');
-  record.then(function(data) {
+  Ember.loadPromise(record).then(function(data) {
     start();
     record.deleteRecord().then(function(data) {
       start();
@@ -261,7 +261,7 @@ test("Model#save() works as expected", function() {
   var records = Ember.run(Model, Model.find);
   var record = Ember.run(Model, Model.find, 'a');
 
-  records.then(function() {
+  Ember.loadPromise(records).then(function() {
     start();
     ok(!record.get('isNew'));
 
