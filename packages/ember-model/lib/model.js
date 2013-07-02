@@ -32,7 +32,7 @@ function hasCachedValue(object, key) {
 
 Ember.run.queues.push('data');
 
-Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
+Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,
   isLoading: Ember.computed.not('isLoaded'),
   isNew: true,
@@ -93,7 +93,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
 
   init: function() {
     this._createReference();
-    if (!get(this, 'isNew')) { this.resolve(this); }
     this._super();
   },
 
@@ -126,7 +125,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     set(this, 'isNew', false);
     this._createReference();
     this.trigger('didLoad');
-    this.resolve(this);
   },
 
   didDefineProperty: function(proto, key, value) {
@@ -204,9 +202,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
     var adapter = this.constructor.adapter;
     set(this, 'isSaving', true);
     if (get(this, 'isNew')) {
-      return adapter.createRecord(this);
+      return Ember.loadPromise(adapter.createRecord(this));
     } else if (get(this, 'isDirty')) {
-      return adapter.saveRecord(this);
+      return Ember.loadPromise(adapter.saveRecord(this));
     } else {
       var deferred = Ember.Deferred.create();
       deferred.resolve(this);
@@ -437,7 +435,7 @@ Ember.Model.reopenClass({
       }
     }
 
-    recordOrRecordArray.then(function() {
+    Ember.loadPromise(recordOrRecordArray).then(function() {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
         batchRecordArrays[i].loadForFindMany(self);
       }
