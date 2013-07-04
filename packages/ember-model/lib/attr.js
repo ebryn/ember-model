@@ -18,8 +18,12 @@ function wrapObject(value) {
     var clone = Ember.create(value), property;
 
     for (property in value) {
-      if (value.hasOwnProperty(property) && typeof value[property] === "object") {
-        clone[property] = wrapObject(value[property]);
+      if (value.hasOwnProperty(property) ){
+        if(typeof value[property] === "object") {
+          clone[property] = wrapObject(value[property]);
+        } else {
+          clone[property] = value[property];
+        }
       }
     }
     return clone;
