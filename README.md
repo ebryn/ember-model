@@ -207,8 +207,12 @@ GET /users.json
 ```
 
 ## Building Ember-Model
+Ember-Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
+These three libraries will need to be installed before building.
+ 
+To build Ember-Model, clone the repository, and run `npm install` to install build dependencies
+and `grunt` to build the library.
 
-To build Ember-Model, clone the repository, run `bundle` then `rake dist`.
 Unminified and minified builds of Ember-Model will be placed in the `dist`
 directory.
 
@@ -216,18 +220,14 @@ directory.
 
 ### Setup
 
-1. Install Ruby 1.9.2+. There are many resources on the web can help;
-one of the best is [rvm](https://rvm.io/).
+Ember-Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system
+and test runner, and [bower](http://bower.io/) for dependency management.
 
-2. Install Bundler: `gem install bundler`
-
-3. Run `bundle` inside the project root to install the gem dependencies.
+To test Ember-Model run `npm install` to install build dependencies, `bower install` to install the
+runtime dependencies and `grunt test` to execute the test suite headlessly via phantomjs.
 
 ### In Your Browser
-
-1. To start the development server, run `rackup`.
-
-2. Then visit: `http://localhost:9292`.
+???
 
 ## Who's using Ember Model?
 
