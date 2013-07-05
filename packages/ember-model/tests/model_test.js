@@ -78,20 +78,17 @@ test(".find(id) delegates to the adapter's find method", function() {
 test(".reload() loads the record via the adapter after it was loaded", function() {
   expect(1);
 
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
   var record = Ember.run(Model, Model.find, 'a');
 
-  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      ok(true, "find was called in the adapter upon reload");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
 
-  Ember.run(function() {
-    record.reload();
-  });
-
-  stop();
-
-  record.on('didLoad', function() {
-    start();
-    equal(record.get('name'), 'Erik');
-  });
+  Ember.run(record, record.reload);
 });
 
 test(".revert() sets the data back to its saved state", function() {
