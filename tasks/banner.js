@@ -2,10 +2,18 @@ var execSync = require('execSync').exec;
 
 function gitSha(){
   var tags = execSync('git describe --tags'),
-      sha  = execSync('git log -n 1 --format="%h (%ci)"');
+      sha  = execSync('git log -n 1 --format="%h (%ci)"'),
+      banner = '';
 
-  return "// " + tags.stdout +
-         "// " + sha.stdout;
+  if (!tags.code) {
+    banner = banner + "// " + tags.stdout;
+  }
+
+  if (!sha.code) {
+    banner = banner + "// " + sha.stdout;
+  }
+
+  return banner;
 }
 
 module.exports = function(grunt){

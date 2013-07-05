@@ -1,10 +1,9 @@
 module.exports = function(grunt){
-  grunt.registerTask('release', 'tag a new release', function(type){
+  grunt.registerTask('release', 'Release a new ember-model version', function(type){
     type = type || 'patch';
 
     grunt.task.run('build');
-    grunt.file.copy('dist/ember-model.js', 'ember-model.js');
-
-    grunt.task.run('_release:'+type);
+    grunt.task.run('copy:release');
+    grunt.task.run('publish:'+type);
   });
 };
