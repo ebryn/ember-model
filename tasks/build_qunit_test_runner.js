@@ -6,6 +6,6 @@ module.exports = function(grunt) {
         files: this.filesSrc
       }
     };
-    grunt.file.write('tests/runner.html', grunt.template.process(tmpl, renderingContext));
+    grunt.file.write('tests/index.html', grunt.template.process(tmpl, renderingContext));
   });
 };

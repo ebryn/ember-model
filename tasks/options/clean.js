@@ -1,3 +1,3 @@
 module.exports = {
-  test: ["tests/runner.html"]
+  test: ["tests/index.html"]
 };
