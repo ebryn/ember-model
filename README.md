@@ -206,28 +206,25 @@ GET /users.json
 {"users": [{"id": 1, "name": "Brian"}]}
 ```
 
-## Building Ember-Model
-Ember-Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
+## Building Ember Model
+Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
 These three libraries will need to be installed before building.
  
-To build Ember-Model, clone the repository, and run `npm install` to install build dependencies
+To build Ember Model, clone the repository, and run `npm install` to install build dependencies
 and `grunt` to build the library.
 
-Unminified and minified builds of Ember-Model will be placed in the `dist`
+Unminified and minified builds of Ember Model will be placed in the `dist`
 directory.
 
 ## How to Run Unit Tests
 
 ### Setup
 
-Ember-Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system
+Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system
 and test runner, and [bower](http://bower.io/) for dependency management.
 
-To test Ember-Model run `npm install` to install build dependencies, `bower install` to install the
+To test Ember Model run `npm install` to install build dependencies, `bower install` to install the
 runtime dependencies and `grunt test` to execute the test suite headlessly via phantomjs.
-
-### In Your Browser
-???
 
 ## Who's using Ember Model?
 
