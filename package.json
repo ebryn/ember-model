@@ -1,0 +1,33 @@
+{
+  "name": "ember-model",
+  "description": "A lightweight model library for Ember.js",
+  "main": "Gruntfile.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ebryn/ember-model.git"
+  },
+  "author": "no",
+  "license": "BSD",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-neuter": "~0.5.0",
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-qunit": "~0.2.2",
+    "grunt-contrib-clean": "~0.4.1",
+    "grunt-strip-node": "~0.1.1",
+    "matchdep": "~0.1.2",
+    "grunt-curl": "~1.1.1",
+    "grunt-strip": "~0.2.1",
+    "execSync": "0.0.4",
+    "grunt-release": "~0.3.5",
+    "glob": "~3.2.1"
+  },
+  "version": "0.0.0"
+}
