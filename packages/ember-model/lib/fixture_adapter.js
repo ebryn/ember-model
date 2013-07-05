@@ -3,10 +3,16 @@ require('ember-model/adapter');
 var get = Ember.get;
 
 Ember.FixtureAdapter = Ember.Adapter.extend({
-  find: function(record, id) {
-    var fixtures = record.constructor.FIXTURES,
-        primaryKey = get(record.constructor, 'primaryKey'),
+  _findData: function(klass, id) {
+    var fixtures = klass.FIXTURES,
+        primaryKey = get(klass, 'primaryKey'),
         data = Ember.A(fixtures).find(function(el) { return el[primaryKey] === id; });
+
+    return data;
+  },
+
+  find: function(record, id) {
+    var data = this._findData(record.constructor, id);
 
     if (!record.get('isLoaded')) {
       setTimeout(function() {
@@ -22,7 +28,7 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
         requestedData = [];
 
     for (var i = 0, l = ids.length; i < l; i++) {
-      requestedData.push(fixtures[i]);
+      requestedData.push(this._findData(klass, ids[i]));
     }
 
     setTimeout(function() {
