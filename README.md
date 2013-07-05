@@ -4,8 +4,6 @@
 
 Ember Model (EM) is a simple and lightweight model library for Ember. It intentionally supports a limited feature set. The main goal is to provide primitives on top of $.ajax that are required by Ember.
 
-EM makes it easy to provide hooks for making requests to your server, and requires you to convert the response into a model object. If your response does not look the same as your model's attributes, you will need to manually convert them before loading them.
-
 EM is still very much a work in progress, but it's flexible enough to be used in apps today. It was extracted out of an Ember app. Please see the issues section for a list of bugs and planned features.
 
 ## Getting Started with Ember Model
@@ -19,6 +17,7 @@ Need more help getting started? Join us in #ember-model on Freenode.
 ## Features
 
 - BYO$A (bring your own $.ajax)
+- Relationships (hasMany/belongsTo)
 - Focused on performance
 - Automatic coalescing of multiple findById calls into a single findMany
 - Customizable dirty tracking (great for embedded objects)
@@ -32,18 +31,37 @@ If you want more features than Ember Model provides, file an issue. Feature requ
 ## Example usage
 
 ```javascript
-var attr = Ember.attr;
+var attr = Ember.attr, hasMany = Ember.hasMany;
 
+// Model definitions
 App.User = Ember.Model.extend({
   id: attr(),
-  name: attr()
+  name: attr(),
+  comments: hasMany("App.Comment", {key: 'comment_ids'})
 });
 
 App.User.url = "/users";
 App.User.adapter = Ember.RESTAdapter.create();
 
+App.Comment = Ember.Model.extend({
+  id: attr(),
+  text: attr()
+});
+
+App.Comment.url = "/comments";
+App.Comment.adapter = Ember.RESTAdapter.create();
+
+// create example
+
 var newUser = App.User.create({name: "Erik"});
 newUser.save(); // POST to /users.json
+
+// hasMany example
+var comments = newUser.get('comments');
+comments.create({text: "hello!"});
+comments.save(); // POST to /comments.json
+
+// find & update example
 
 var existingUser = App.User.find(1); // GET /users/1.json
 existingUser.set('name', 'Kris');
@@ -218,6 +236,7 @@ one of the best is [rvm](https://rvm.io/).
 * [Embercasts](http://www.embercasts.com)
 * [Digital Science](http://www.digital-science.com)
 * [Travis CI](https://travis-ci.org)
+* [Bugzilla-Ember](https://github.com/ebryn/bugzilla-ember)
 
 Are you using Ember Model? Submit a pull request to add your project to this list!
 
