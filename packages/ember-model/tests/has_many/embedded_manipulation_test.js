@@ -33,12 +33,12 @@ test("pushing record adds a record to many array", function() {
   Ember.run(comments, comments.pushObject, comment);
 
   equal(comments.get('length'), 4);
-  equal(comments.get('lastObject.text', 'quatro', 'added element should be available in the array'));
+  equal(comments.get('lastObject.text'), 'quatro', 'added element should be available in the array');
 
   comment = Comment.create({ id: 5, text: 'cinco' });
 
   Ember.run(comments, comments.pushObject, comment);
 
   equal(comments.get('length'), 5);
-  equal(comments.get('lastObject.text', 'cinco', 'added element should be available in the array'));
+  equal(comments.get('lastObject.text'), 'cinco', 'added element should be available in the array');
 });

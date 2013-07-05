@@ -9,7 +9,8 @@ test("derp", function() {
     comments: [
       {id: 1, text: 'uno'},
       {id: 2, text: 'dos'},
-      {id: 3, text: 'tres'}
+      // ensure that records without an id work correctly
+      {text: 'tres'}
     ]
   };
 

@@ -24,6 +24,14 @@ Ember.ManyArray = Ember.RecordArray.extend({
     return Ember.RSVP.all(this.map(function(record) {
       return record.save();
     }));
+  },
+
+  replaceContent: function(index, removed, added) {
+    added = Ember.EnumerableUtils.map(added, function(record) {
+      return record._reference;
+    }, this);
+
+    this._super(index, removed, added);
   }
 });
 
@@ -41,14 +49,6 @@ Ember.HasManyArray = Ember.ManyArray.extend({
     }
 
     return record;
-  },
-
-  replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
-      return record._reference;
-    }, this);
-
-    this._super(index, removed, added);
   },
 
   toJSON: function() {
@@ -69,24 +69,27 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     var klass = get(this, 'modelClass'),
         record = klass.create(attrs);
 
-    this.pushObject(attrs);
-
-    // TODO: Create a LazilyMaterializedRecordArray class and test it
-    if (!this._records) { this._records = {}; }
-    this._records[get(this, 'length') - 1] = record;
+    this.pushObject(record);
 
     return record; // FIXME: inject parent's id
   },
 
   materializeRecord: function(idx) {
     var klass = get(this, 'modelClass'),
-        record = klass.create(),
         primaryKey = get(klass, 'primaryKey'),
         content = get(this, 'content'),
-        attrs = content.objectAt(idx);
+        reference = content.objectAt(idx),
+        attrs = reference.data;
 
-    record.load(attrs[primaryKey], attrs);
-    return record;
+    if (reference.record) {
+      return reference.record;
+    } else {
+      var record = klass.create({ _reference: reference });
+      if(attrs) {
+        record.load(attrs[primaryKey], attrs);
+      }
+      return record;
+    }
   },
 
   toJSON: function() {

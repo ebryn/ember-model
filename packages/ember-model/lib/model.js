@@ -303,8 +303,19 @@ Ember.Model = Ember.Object.extend(Ember.Evented, Ember.DeferredMixin, {
   _getHasManyContent: function(key, type, embedded) {
     var content = get(this, 'data.' + key);
 
-    if (!embedded && content) {
-      content = Ember.EnumerableUtils.map(content, function(id) { return type._referenceForId(id); });
+    if (content) {
+      var mapFunction, primaryKey, reference;
+      if (embedded) {
+        primaryKey = get(type, 'primaryKey');
+        mapFunction = function(attrs) {
+          reference = type._referenceForId(attrs[primaryKey]);
+          reference.data = attrs;
+          return reference;
+        };
+      } else {
+        mapFunction = function(id) { return type._referenceForId(id); };
+      }
+      content = Ember.EnumerableUtils.map(content, mapFunction);
     }
 
     return Ember.A(content || []);
