@@ -1,3 +1,8 @@
 module.exports = {
-  all: ['tests/**/*.html']
+  cli: ['tests/**/*.html'],
+  development: {
+    options: {
+      urls: ['http://localhost:8000/tests/runner.html']
+    }
+  }
 };

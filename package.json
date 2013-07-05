@@ -28,7 +28,9 @@
     "execSync": "0.0.4",
     "grunt-release": "git+https://github.com/trek/grunt-release.git#7b766605c85605",
     "glob": "~3.2.1",
-    "grunt-contrib-copy": "~0.4.1"
+    "grunt-contrib-copy": "~0.4.1",
+    "grunt-contrib-connect": "~0.3.0",
+    "grunt-contrib-watch": "~0.4.4"
   },
   "version": "0.0.0"
 }
