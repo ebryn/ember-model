@@ -69,7 +69,7 @@ test("non embedded belongsTo should get a record by its id", function() {
   var article = Ember.run(comment, comment.get, 'article');
 
   stop();
-  article.then(function() {
+  Ember.loadPromise(article).then(function() {
     start();
     equal(article.get('slug'), 'first-article');
     ok(article instanceof Article);
@@ -97,7 +97,7 @@ test("relationship should be refreshed when data changes", function() {
   article = Ember.run(comment, comment.get, 'article');
 
   stop();
-  article.then(function() {
+  Ember.loadPromise(article).then(function() {
     start();
     equal(article.get('slug'), 'first-article');
     ok(article instanceof Article);
