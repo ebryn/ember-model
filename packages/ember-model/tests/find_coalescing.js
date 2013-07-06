@@ -67,8 +67,7 @@ test("coalesced findMany returns a resolved promise even if all records are load
   Ember.run(record2, record.didCreateRecord);
   Ember.run(record2, record.load, 2);
 
-  var records = Ember.run(Model, Model.find, [1, 2]),
-      promise = Ember.run(Ember, Ember.loadPromise, records);
+  var promise = Ember.run(Model, Model.fetch, [1, 2]);
 
   Ember.run(function() {
     promise.then(function(records) {
@@ -141,14 +140,14 @@ test("should resolve all RecordArrays", function() {
   Ember.run(function() {
     Model.find(1);
     Model.find(1);
-    recordArray1 = Model.find([2, 3]);
-    recordArray2 = Model.find([1, 2, 3]);
+    promise1 = Model.fetch([2, 3]);
+    promise2 = Model.fetch([1, 2, 3]);
 
-    Ember.loadPromise(recordArray1).then(function() {
+    promise1.then(function() {
       ok(true, "The first RecordArray returned from findMany was loaded");
     });
 
-    Ember.loadPromise(recordArray2).then(function() {
+    promise2.then(function() {
       ok(true, "The second RecordArray returned from findMany was loaded");
     });
   });

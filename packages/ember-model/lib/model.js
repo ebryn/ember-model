@@ -202,14 +202,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var adapter = this.constructor.adapter;
     set(this, 'isSaving', true);
     if (get(this, 'isNew')) {
-      return Ember.loadPromise(adapter.createRecord(this));
+      return adapter.createRecord(this);
     } else if (get(this, 'isDirty')) {
-      return Ember.loadPromise(adapter.saveRecord(this));
-    } else {
-      var deferred = Ember.Deferred.create();
-      deferred.resolve(this);
+      return adapter.saveRecord(this);
+    } else { // noop, return a resolved promise
+      var self = this,
+          promise = new Ember.RSVP.Promise(function(resolve, reject) {
+            resolve(self);
+          });
       set(this, 'isSaving', false);
-      return deferred;
+      return promise;
     }
   },
 
@@ -327,6 +329,10 @@ Ember.Model.reopenClass({
 
   _clientIdCounter: 1,
 
+  fetch: function() {
+    return Ember.loadPromise(this.find.apply(this, arguments));
+  },
+
   find: function(id) {
     if (!arguments.length) {
       return this.findAll();
@@ -402,8 +408,9 @@ Ember.Model.reopenClass({
       }
 
       Ember.run.scheduleOnce('data', this, this._executeBatch);
+      // TODO: return a promise here
     } else {
-      adapter.find(record, id);
+      return adapter.find(record, id);
     }
   },
 
@@ -412,7 +419,7 @@ Ember.Model.reopenClass({
         batchRecordArrays = this._currentBatchRecordArrays,
         self = this,
         requestIds = [],
-        recordOrRecordArray,
+        promise,
         i;
 
     this._currentBatchIds = null;
@@ -425,17 +432,18 @@ Ember.Model.reopenClass({
     }
 
     if (batchIds.length === 1) {
-      recordOrRecordArray = get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
+      promise = get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
     } else {
-      recordOrRecordArray = Ember.RecordArray.create({_ids: batchIds});
+      var recordArray = Ember.RecordArray.create({_ids: batchIds});
       if (requestIds.length === 0) {
-        recordOrRecordArray.notifyLoaded();
+        promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); })
+        recordArray.notifyLoaded();
       } else {
-        get(this, 'adapter').findMany(this, recordOrRecordArray, requestIds);
+        promise = get(this, 'adapter').findMany(this, recordOrRecordArray, requestIds);
       }
     }
 
-    Ember.loadPromise(recordOrRecordArray).then(function() {
+    promise.then(function() {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
         batchRecordArrays[i].loadForFindMany(self);
       }

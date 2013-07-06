@@ -38,7 +38,7 @@ test("must be created with a filterProperties property", function() {
 test("with a noop filter will return all the loaded records", function() {
   expect(1);
 
-  Ember.loadPromise(Model.find()).then(function() {
+  Model.fetch().then(function() {
     start();
 
     var recordArray = Ember.FilteredRecordArray.create({
@@ -56,7 +56,7 @@ test("with a noop filter will return all the loaded records", function() {
 test("with a filter will return only the relevant loaded records", function() {
   expect(2);
 
-  Ember.loadPromise(Model.find()).then(function() {
+  Model.fetch().then(function() {
     start();
 
     var recordArray = Ember.FilteredRecordArray.create({
@@ -77,7 +77,7 @@ test("with a filter will return only the relevant loaded records", function() {
 test("loading a record that doesn't match the filter after creating a FilteredRecordArray shouldn't change the content", function() {
   expect(2);
 
-  Ember.loadPromise(Model.find()).then(function() {
+  Model.fetch().then(function() {
     start();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
@@ -101,7 +101,7 @@ test("loading a record that doesn't match the filter after creating a FilteredRe
 test("loading a record that matches the filter after creating a FilteredRecordArray should update the content of it", function() {
   expect(3);
 
-  Ember.loadPromise(Model.find()).then(function() {
+  Model.fetch().then(function() {
     start();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
@@ -126,7 +126,7 @@ test("loading a record that matches the filter after creating a FilteredRecordAr
 test("changing a property that matches the filter should update the FilteredRecordArray to include it", function() {
   expect(5);
 
-  Ember.loadPromise(Model.find()).then(function() {
+  Model.fetch().then(function() {
     start();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
@@ -139,7 +139,7 @@ test("changing a property that matches the filter should update the FilteredReco
     equal(recordArray.get('length'), 1, "There is 1 record initially");
     equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
 
-    Ember.loadPromise(Model.find(2)).then(function(record) {
+    Model.fetch(2).then(function(record) {
       record.set('name', 'Estefan');
 
       equal(recordArray.get('length'), 2, "There are 2 records after changing the name");
@@ -154,7 +154,7 @@ test("changing a property that matches the filter should update the FilteredReco
 test("adding a new record and changing a property that matches the filter should update the FilteredRecordArray to include it", function() {
   expect(5);
 
-  Ember.loadPromise(Model.find()).then(function() {
+  Model.fetch().then(function() {
     start();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,

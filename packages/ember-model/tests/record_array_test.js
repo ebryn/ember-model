@@ -23,15 +23,14 @@ module("Ember.RecordArray", {
 // });
 
 test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function() {
-  var records = Ember.run(Model, Model.find, [1,2,3]),
-      promise = Ember.loadPromise(records);
+  var records = Ember.run(Model, Model.find, [1,2,3]);
 
   deepEqual(records.get('_ids'), [1,2,3]);
   equal(records.get('length'), 0);
   ok(!records.get('isLoaded'));
   stop();
 
-  Ember.run(promise, promise.then, function() {
+  records.one('didLoad', function() {
     start();
     equal(records.get('length'), 3);
   });

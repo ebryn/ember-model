@@ -209,40 +209,38 @@ test("record.toJSON() uses rootKey if it is defined", function() {
   stop();
 });
 
-test("Model.find() returns a deferred", function() {
-  expect(2);
+test("Model.fetch() returns a promise", function() {
+  expect(1);
 
-  var records = Ember.run(Model, Model.find);
-  Ember.loadPromise(records).then(function(data) {
+  var promise = Ember.run(Model, Model.fetch);
+  promise.then(function(record) {
     start();
-    equal(records, data);
-    ok(data.get('isLoaded'));
+    ok(record.get('isLoaded'));
   });
   stop();
 });
 
-test("Model.find(id) returns a deferred", function() {
-  expect(2);
+test("Model.fetch(id) returns a promise", function() {
+  expect(1);
 
-  var record = Ember.run(Model, Model.find, 'a');
-  Ember.loadPromise(record).then(function(data) {
+  var promise = Ember.run(Model, Model.fetch, 'a');
+  promise.then(function(record) {
     start();
-    equal(record, data);
-    ok(data.get('isLoaded'));
+    ok(record.get('isLoaded'));
   });
   stop();
 });
 
-test("Model#save() returns a deferred", function() {
+test("Model#save() returns a promise", function() {
   expect(2);
 
-  var record = Ember.run(Model, Model.find, 'a');
-  Ember.loadPromise(record).then(function(data) {
+  var promise = Ember.run(Model, Model.fetch, 'a');
+  promise.then(function(record) {
     start();
     record.set('name', 'Stefan');
-    record.save().then(function(data) {
+    record.save().then(function(record2) {
       start();
-      equal(record, data);
+      equal(record, record2);
       ok(!record.get('isSaving'));
     });
     stop();
@@ -250,15 +248,15 @@ test("Model#save() returns a deferred", function() {
   stop();
 });
 
-test("Model#deleteRecord() returns a deferred", function() {
+test("Model#deleteRecord() returns a promise", function() {
   expect(2);
 
-  var record = Ember.run(Model, Model.find, 'a');
-  Ember.loadPromise(record).then(function(data) {
+  var promise = Ember.run(Model, Model.fetch, 'a');
+  promise.then(function(record) {
     start();
-    record.deleteRecord().then(function(data) {
+    record.deleteRecord().then(function(record2) {
       start();
-      equal(record, data);
+      equal(record, record2);
       ok(record.get('isDeleted'));
     });
     stop();
@@ -269,10 +267,10 @@ test("Model#deleteRecord() returns a deferred", function() {
 test("Model#save() works as expected", function() {
   expect(2);
 
-  var records = Ember.run(Model, Model.find);
+  var recordsPromise = Ember.run(Model, Model.fetch);
   var record = Ember.run(Model, Model.find, 'a');
 
-  Ember.loadPromise(records).then(function() {
+  recordsPromise.then(function(records) {
     start();
     ok(!record.get('isNew'));
 

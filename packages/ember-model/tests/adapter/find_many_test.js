@@ -27,8 +27,7 @@ test(".find([]) delegates to the adapter's findMany method", function() {
   equal(records.get('length'), 0, "RecordArray is empty when not resolved yet");
 
   stop();
-  var promise = Ember.loadPromise(records);
-  Ember.run(promise, promise.then, function() {
+  records.one('didLoad', function() {
     start();
     equal(records.get('length'), 3, "RecordArray#length is 3 after resolved");
     ok(records.get('isLoaded'), "RecordArray is loaded after resolved");
