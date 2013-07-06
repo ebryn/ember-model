@@ -32,11 +32,11 @@ module.exports = function(grunt) {
   // load local tasks
   grunt.task.loadTasks('./tasks');   
   
-  grunt.registerTask('develop', ['jshint', 'neuter', 'build_test_runner_file', 'connect:test', 'watch']);
-  grunt.registerTask('build', ['jshint', 'neuter', 'production']);
+  grunt.registerTask('develop', ['jshint:development', 'neuter', 'build_test_runner_file', 'connect:test', 'watch']);
+  grunt.registerTask('build', ['jshint:all', 'neuter', 'production']);
 
   grunt.registerTask('production', ['copy:production', 'strip:production', 'uglify:production', 'banner']);
-  grunt.registerTask('test', ['jshint', 'neuter', 'build_test_runner_file', 'qunit:cli', 'clean:test']);
+  grunt.registerTask('test', ['jshint:all', 'neuter', 'build_test_runner_file', 'qunit:cli', 'clean:test']);
   grunt.registerTask('default', ['build']);
 
 };
