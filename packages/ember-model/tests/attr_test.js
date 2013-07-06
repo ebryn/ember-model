@@ -96,7 +96,7 @@ test("it should be able to sideload from a pojo[] attribute", function() {
   var Author = Ember.Model.extend({
     user:  attr(),
     id:    attr(),
-    items: attr ()
+    items: attr()
   });
 
   var authors = Authors.create(),
@@ -116,8 +116,6 @@ test("it should be able to sideload from a pojo[] attribute", function() {
 
   ok(author1.get("user") === "Mister", "you should be able to sideload from attributes");
   ok(author2.get("user") === "TheKing", "you should be able to sideload from attributes");
-  
-
 });
 
 test("attr should deserialize when type has a deserialize method", function() {
