@@ -28,3 +28,18 @@ test(".find({}) delegates to the adapter's findQuery method", function() {
   });
 });
 
+test("Model.find({}, {}) delegates the given options to the adapter's findAll", function() {
+  expect(1);
+
+  var Model = Ember.Model.extend(),
+      findOptions = { foo: 1 };
+
+  Model.adapter = {
+    findQuery: function(klass, records, params, options) {
+      equal(options, findOptions);
+    }
+  };
+
+  Model.find({}, findOptions);
+});
+
