@@ -75,6 +75,21 @@ test(".find(id) delegates to the adapter's find method", function() {
   });
 });
 
+test("Model.find(1, {}) delegates the given options to the adapter's findAll", function() {
+  expect(1);
+
+  var Model = Ember.Model.extend(),
+      findOptions = { foo: 1 };
+
+  Model.adapter = {
+    find: function(record, id, options) {
+      equal(options, findOptions);
+    }
+  };
+
+  Model.find(1, findOptions);
+});
+
 test(".reload() loads the record via the adapter after it was loaded", function() {
   expect(1);
 

@@ -34,3 +34,20 @@ test(".find([]) delegates to the adapter's findMany method", function() {
   });
 });
 
+test("Model.findMany([], {}) delegates the given options to the adapter's findAll", function() {
+  expect(1);
+
+  var Model = Ember.Model.extend(),
+      findOptions = { foo: 1 };
+
+  Model.adapter = {
+    findMany: function(klass, records, ids, options) {
+      start();
+      equal(options, findOptions);
+    }
+  };
+
+  Model.findMany([1, 2], findOptions);
+  stop();
+});
+

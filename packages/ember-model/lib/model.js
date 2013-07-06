@@ -329,37 +329,16 @@ Ember.Model.reopenClass({
 
   _clientIdCounter: 1,
 
-  find: function(id) {
+  find: function(id, options) {
     if (!arguments.length) {
       return this.findAll();
     } else if (Ember.isArray(id)) {
-      return this.findMany(id);
+      return this.findMany(id, options);
     } else if (typeof id === 'object') {
-      return this.findQuery(id);
+      return this.findQuery(id, options);
     } else {
-      return this.findById(id);
+      return this.findById(id, options);
     }
-  },
-
-  findMany: function(ids) {
-    Ember.assert("findMany requires an array", Ember.isArray(ids));
-
-    var records = Ember.RecordArray.create({_ids: ids});
-
-    if (!this.recordArrays) { this.recordArrays = []; }
-    this.recordArrays.push(records);
-
-    if (this._currentBatchIds) {
-      concatUnique(this._currentBatchIds, ids);
-      this._currentBatchRecordArrays.push(records);
-    } else {
-      this._currentBatchIds = concatUnique([], ids);
-      this._currentBatchRecordArrays = [records];
-    }
-
-    Ember.run.scheduleOnce('data', this, this._executeBatch);
-
-    return records;
   },
 
   findAll: function() {
@@ -372,14 +351,25 @@ Ember.Model.reopenClass({
     return records;
   },
 
+  findMany: function(ids, options) {
+    Ember.assert("findMany requires an array", Ember.isArray(ids));
+
+    var records = Ember.RecordArray.create({_ids: ids});
+
+    this._pushToBatch(ids, options, records);
+    Ember.run.scheduleOnce('data', this, this._executeBatch);
+
+    return records;
+  },
+
   _currentBatchIds: null,
   _currentBatchRecordArrays: null,
 
-  findById: function(id) {
+  findById: function(id, options) {
     var record = this.cachedRecordForId(id);
 
     if (!get(record, 'isLoaded')) {
-      this._fetchById(record, id);
+      this._fetchById(record, id, options);
     }
     return record;
   },
@@ -392,20 +382,14 @@ Ember.Model.reopenClass({
     return record;
   },
 
-  _fetchById: function(record, id) {
+  _fetchById: function(record, id, options) {
     var adapter = get(this, 'adapter');
 
     if (adapter.findMany) {
-      if (this._currentBatchIds) {
-        if (!contains(this._currentBatchIds, id)) { this._currentBatchIds.push(id); }
-      } else {
-        this._currentBatchIds = [id];
-        this._currentBatchRecordArrays = [];
-      }
-
+      this._pushToBatch([id], options);
       Ember.run.scheduleOnce('data', this, this._executeBatch);
     } else {
-      adapter.find(record, id);
+      adapter.find(record, id, options);
     }
   },
 
@@ -426,16 +410,37 @@ Ember.Model.reopenClass({
       }
     }
 
-    if (batchIds.length === 1) {
-      recordOrRecordArray = get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
-    } else {
-      recordOrRecordArray = Ember.RecordArray.create({_ids: batchIds});
-      if (requestIds.length === 0) {
-        recordOrRecordArray.notifyLoaded();
+    recordOrRecordArray = this._processBatch(batchIds, requestIds);
+
+    this._notifyRecordArrays(recordOrRecordArray, batchRecordArrays);
+  },
+
+  _processBatch: function(batchIds, requestIds) {
+    var recordOrRecordArray,
+        id = batchIds[0].ids[0];
+
+    for (var i = 0, l = batchIds.length; i < l; i ++) {
+      var item = batchIds[i],
+          ids = item.ids;
+
+      if (ids.length === 1) {
+        recordOrRecordArray = get(this, 'adapter').find(this.cachedRecordForId(ids), ids[0], item.options);
       } else {
-        get(this, 'adapter').findMany(this, recordOrRecordArray, requestIds);
+        recordOrRecordArray = Ember.RecordArray.create({_ids: ids});
+
+        if (ids.length === 0) {
+          recordOrRecordArray.notifyLoaded();
+        } else {
+          get(this, 'adapter').findMany(this, recordOrRecordArray, ids, item.options);
+        }
       }
     }
+
+    return recordOrRecordArray;
+  },
+
+  _notifyRecordArrays: function(recordOrRecordArray, batchRecordArrays) {
+    var self = this;
 
     recordOrRecordArray.then(function() {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
@@ -444,10 +449,27 @@ Ember.Model.reopenClass({
     });
   },
 
-  findQuery: function(params) {
+  _pushToBatch: function(ids, options, records) {
+    if (!this.recordArrays) { this.recordArrays = []; }
+    if (!this._currentBatchIds) { this._currentBatchIds = []; }
+    if (!this._currentBatchRecordArrays) { this._currentBatchRecordArrays = []; }
+
+    if (records) { this.recordArrays.push(records); }
+    this._currentBatchRecordArrays.push(records);
+
+    if (options) {
+      this._currentBatchIds.pushObject({ ids: ids, options: options });
+    } else {
+      // TODO - make this smarter and actually concat them
+      this._currentBatchIds.pushObject({ ids: ids, options: {} });
+      // concatUnique(this._currentBatchIds, ids);
+    }
+  },
+
+  findQuery: function(params, options) {
     var records = Ember.RecordArray.create();
 
-    this.adapter.findQuery(this, records, params);
+    this.adapter.findQuery(this, records, params, options);
 
     return records;
   },
