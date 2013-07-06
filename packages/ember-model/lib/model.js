@@ -436,10 +436,10 @@ Ember.Model.reopenClass({
     } else {
       var recordArray = Ember.RecordArray.create({_ids: batchIds});
       if (requestIds.length === 0) {
-        promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); })
+        promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); });
         recordArray.notifyLoaded();
       } else {
-        promise = get(this, 'adapter').findMany(this, recordOrRecordArray, requestIds);
+        promise = get(this, 'adapter').findMany(this, recordArray, requestIds);
       }
     }
 

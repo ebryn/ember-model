@@ -135,7 +135,7 @@ test("should resolve all RecordArrays", function() {
     }
   };
 
-  var recordArray1, recordArray2;
+  var promise1, promise2;
 
   Ember.run(function() {
     Model.find(1);
