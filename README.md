@@ -209,7 +209,7 @@ GET /users.json
 ## Building Ember Model
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
 These three libraries will need to be installed before building.
- 
+
 To build Ember Model, clone the repository, and run `npm install` to install build dependencies
 and `grunt` to build the library.
 
@@ -225,6 +225,9 @@ and test runner, and [bower](http://bower.io/) for dependency management.
 
 To test Ember Model run `npm install` to install build dependencies, `bower install` to install the
 runtime dependencies and `grunt test` to execute the test suite headlessly via phantomjs.
+
+If you prefer to run tests in a browser, you may start a development server using
+`grunt develop`. Tests are available at http://localhost:8000/tests
 
 ## Who's using Ember Model?
 
