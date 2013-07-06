@@ -4,10 +4,10 @@ module.exports = {
   },
   code: {
     files: ['packages/ember-model/lib/**/*.js'],
-    tasks: ['jshint', 'neuter'],
+    tasks: ['jshint:development', 'neuter'],
   },
   test: {
     files: ['packages/ember-model/tests/**/*.js'],
-    tasks: ['jshint', 'build_test_runner_file'],
+    tasks: ['jshint:development', 'build_test_runner_file'],
   }
 };
