@@ -286,24 +286,25 @@ test("Model#save() works as expected", function() {
 });
 
 test("Model#create() works as expected", function() {
-  expect(9);
+  expect(10);
 
   var record = Model.create({name: 'Yehuda'});
 
-  ok(record.get('isNew'));
-  ok(record.get('isLoaded'));
-  ok(!record.get('isSaving'));
+  ok(record.get('isNew'), "record isNew upon instantiation");
+  ok(record.get('isLoaded'), "record isLoaded upon instantiation");
+  ok(!record.get('isSaving'), "record isSaving is false upon instantiation");
 
-  record.save().then(function() {
+  record.save().then(function(record2) {
     start();
-    ok(!record.get('isNew'));
-    ok(record.get('isLoaded'));
-    ok(!record.get('isSaving'));
+    equal(record, record2, "The same record object is passed into the resolved promise");
+    ok(!record.get('isNew'), "The record is no longer new after being saved");
+    ok(record.get('isLoaded'), "The record isLoaded");
+    ok(!record.get('isSaving'), "The record is no longer saving");
   });
 
-  ok(record.get('isNew'));
-  ok(record.get('isLoaded'));
-  ok(record.get('isSaving'));
+  ok(record.get('isNew'), "The record is still new until the save completes");
+  ok(record.get('isLoaded'), "The record is still loaded while saving is in progress");
+  ok(record.get('isSaving'), 'The record isSaving flag is true while saving is in progress');
 
   stop();
 });

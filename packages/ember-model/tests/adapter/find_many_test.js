@@ -10,8 +10,11 @@ test(".find([]) delegates to the adapter's findMany method", function() {
       ok(adapterRecords instanceof Ember.RecordArray, "RecordArray is passed into Adapter#findMany");
       deepEqual(ids, [1,2,3], "IDs are passed into Adapter#findMany");
 
-      setTimeout(function() {
-        Ember.run(adapterRecords, adapterRecords.load, klass, []);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        setTimeout(function() {
+          Ember.run(adapterRecords, adapterRecords.load, klass, []);
+          resolve(adapterRecords);
+        });
       });
     }
   };

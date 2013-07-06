@@ -27,20 +27,22 @@ test("derp", function() {
   Comment.adapter = {
 
     createRecord: function(record) {
-      Ember.run.later(function() {
-        record.load(4, {text: 'quattro'});
-        record.didCreateRecord();
-      }, 1);
-
-      return record;
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        Ember.run.later(function() {
+          record.load(4, {text: 'quattro'});
+          record.didCreateRecord();
+          resolve(record);
+        }, 1);
+      });
     },
 
     saveRecord: function(record) {
-      Ember.run.later(function() {
-        record.didSaveRecord();
-      }, 1);
-
-      return record;
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        Ember.run.later(function() {
+          record.didSaveRecord();
+          resolve(record);
+        }, 1);
+      });
     }
   };
 
@@ -56,8 +58,9 @@ test("derp", function() {
 
   Ember.run(function() {
     stop();
-    comments.save().then(function() {
+    comments.save().then(function(record) {
       start();
+      debugger;
       ok(!newComment.get('isDirty'), "New comment is not dirty");
       equal(newComment.get('id'), 4, "New comment has an ID");
     });

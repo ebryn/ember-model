@@ -14,13 +14,12 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
   find: function(record, id) {
     var data = this._findData(record.constructor, id);
 
-    if (!record.get('isLoaded')) {
+    return new Ember.RSVP.Promise(function(resolve, reject) {
       setTimeout(function() {
         Ember.run(record, record.load, id, data);
+        resolve(record);
       });
-    }
-
-    return record;
+    });
   },
 
   findMany: function(klass, records, ids) {
@@ -31,56 +30,53 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
       requestedData.push(this._findData(klass, ids[i]));
     }
 
-    setTimeout(function() {
-      Ember.run(records, records.load, klass, requestedData);
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      setTimeout(function() {
+        Ember.run(records, records.load, klass, requestedData);
+        resolve(records);
+      })
     });
-
-    return records;
   },
 
   findAll: function(klass, records) {
     var fixtures = klass.FIXTURES;
 
-    setTimeout(function() {
-      Ember.run(records, records.load, klass, fixtures);
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      setTimeout(function() {
+        Ember.run(records, records.load, klass, fixtures);
+        resolve(records);
+      });
     });
-
-    return records;
   },
 
   createRecord: function(record) {
     var klass = record.constructor,
         fixtures = klass.FIXTURES;
 
-    setTimeout(function() {
-      Ember.run(function() {
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      setTimeout(function() {
         fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
         record.didCreateRecord();
+        resolve(record);
       });
     });
-
-    return record;
   },
 
   saveRecord: function(record) {
-    var deferred = Ember.Deferred.create();
-    deferred.then(function() {
-      record.didSaveRecord();
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      setTimeout(function() {
+        record.didSaveRecord();
+        resolve(record);
+      });
     });
-    setTimeout(function() {
-      Ember.run(deferred, deferred.resolve, record);
-    });
-    return deferred;
   },
 
   deleteRecord: function(record) {
-    var deferred = Ember.Deferred.create();
-    deferred.then(function() {
-      record.didDeleteRecord();
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      setTimeout(function() {
+        record.didDeleteRecord();
+        resolve(record);
+      });
     });
-    setTimeout(function() {
-      Ember.run(deferred, deferred.resolve, record);
-    });
-    return deferred;
   }
 });
