@@ -34,7 +34,7 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
       setTimeout(function() {
         Ember.run(records, records.load, klass, requestedData);
         resolve(records);
-      })
+      });
     });
   },
 
