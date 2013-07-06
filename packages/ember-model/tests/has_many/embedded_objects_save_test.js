@@ -60,7 +60,6 @@ test("derp", function() {
     stop();
     comments.save().then(function(record) {
       start();
-      debugger;
       ok(!newComment.get('isDirty'), "New comment is not dirty");
       equal(newComment.get('id'), 4, "New comment has an ID");
     });
