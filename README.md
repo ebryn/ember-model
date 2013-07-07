@@ -245,3 +245,4 @@ Are you using Ember Model? Submit a pull request to add your project to this lis
 Yehuda Katz (@wycats), Tom Dale (@tomdale), Igor Terzic (@igorT), and company for their amazing work on Ember Data. I believe it's the most ambitious JS project today. The goal is someday everyone's JSON APIs will be conventional enough that Ember Data will be the best choice of data library for Ember. Until then, Ember Model will make it easy to get up and running quickly with Ember.
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/ebryn/ember-model/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+![](https://d3oi6fmp1dfbdb.cloudfront.net/g.gif?repo=ebryn/ember-model)
