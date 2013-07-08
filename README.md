@@ -206,6 +206,28 @@ GET /users.json
 {"users": [{"id": 1, "name": "Brian"}]}
 ```
 
+### camelizeKeys
+
+If the server sends keys with underscores (ex: ```created_at```),
+rather than camelized (ex: ```createdAt```), setting this option to ```true```
+makes Ember Model automatically camelize the keys.
+
+```javascript
+App.User = Ember.Model.extend({
+  firstName: attr()
+});
+App.User.camelizeKeys = true;
+```
+
+```
+GET /users/1.json
+{"id": 1, "first_name": "Brian"}
+```
+
+```javascript
+user.get('firstName') // => Brian
+```
+
 ## Building Ember Model
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
 These three libraries will need to be installed before building.
