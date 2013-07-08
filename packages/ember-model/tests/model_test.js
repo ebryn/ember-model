@@ -1,4 +1,4 @@
-var Model, ModelWithoutID;
+var Model, ModelWithoutID, ModelCamelizedAttr;
 
 module("Ember.Model", {
   setup: function() {
@@ -15,6 +15,14 @@ module("Ember.Model", {
     ModelWithoutID.FIXTURES = [
       {name: 'Erik'},
       {name: 'Alex'}
+    ];
+    ModelCamelizedAttr = Ember.Model.extend({
+      firstName: Ember.attr()
+    });
+    ModelCamelizedAttr.adapter = Ember.FixtureAdapter.create();
+    ModelCamelizedAttr.FIXTURES = [
+      {id: 1, first_name: 'Erik'},
+      {id: 2, first_name: 'Alex'}
     ];
   },
   teardown: function() {
@@ -205,6 +213,32 @@ test("record.toJSON() uses rootKey if it is defined", function() {
   record.on('didLoad', function() {
     start();
     deepEqual(record.toJSON(), { model: { name: 'Erik' } });
+  });
+  stop();
+});
+
+test("record.toJSON() underscores the keys if camelizeKeys is true", function() {
+  expect(1);
+
+  ModelCamelizedAttr.camelizeKeys = true;
+
+  var record = Ember.run(ModelCamelizedAttr, ModelCamelizedAttr.find, 1);
+  record.on('didLoad', function() {
+    start();
+    deepEqual(record.toJSON(), {first_name: 'Erik'});
+  });
+  stop();
+});
+
+test("loading a model with underscored keys correctly populates camelized attributes", function() {
+  expect(1);
+
+  ModelCamelizedAttr.camelizeKeys = true;
+
+  var record = Ember.run(ModelCamelizedAttr, ModelCamelizedAttr.find, 1);
+  record.on('didLoad', function() {
+    start();
+    equal(record.get('firstName'), 'Erik');
   });
   stop();
 });
