@@ -159,14 +159,17 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   toJSON: function() {
     var key, meta,
+        json = {},
         properties = this.getProperties(this.attributes);
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
       if (meta.type && meta.type.serialize) {
-        properties[key] = meta.type.serialize(properties[key]);
+        json[this.dataKey(key)] = meta.type.serialize(properties[key]);
       } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
-        properties[key] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+        json[this.dataKey(key)] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+      } else {
+        json[this.dataKey(key)] = properties[key];
       }
     }
 
@@ -183,18 +186,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         }
 
         if (data) {
-          properties[key] = data;
+          json[this.dataKey(key)] = data;
         }
       }
     }
 
     if (this.constructor.rootKey) {
-      var json = {};
-      json[this.constructor.rootKey] = properties;
+      var jsonRoot = {};
+      jsonRoot[this.constructor.rootKey] = json;
 
-      return json;
+      return jsonRoot;
     } else {
-      return properties;
+      return json;
     }
   },
 
