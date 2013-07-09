@@ -163,10 +163,14 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
+      var serializeKey = meta.options.key || key;
       if (meta.type && meta.type.serialize) {
         properties[key] = meta.type.serialize(properties[key]);
       } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
         properties[key] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+      } else if (meta.options.key) {
+        properties[serializeKey] = properties[key];
+        delete properties[key];
       }
     }
 
