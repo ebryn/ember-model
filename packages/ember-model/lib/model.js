@@ -152,7 +152,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         return record.toJSON();
       }
     } else {
-      var primaryKey = get(meta.type, 'primaryKey');
+      var type =meta.type;
+      if (typeof type === "string") {
+        type = Ember.get(Ember.lookup, type);
+      }
+      var primaryKey = get(type, 'primaryKey');
       return this.get(key + '.' + primaryKey);
     }
   },
@@ -183,7 +187,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         }
 
         if (data) {
-          properties[key] = data;
+          var serializeKey= key;
+          if (!Ember.isNone(meta.options) && !Ember.isNone(meta.options.key)) {
+            serializeKey = meta.options.key;
+          }
+          properties[serializeKey] = data;
         }
       }
     }
