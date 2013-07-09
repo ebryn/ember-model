@@ -403,6 +403,28 @@ test("toJSON includes non-embedded relationships", function() {
   equal(json.author, 1, "JSON should contain id of belongsTo relationship");
 });
 
+test("creating a record with camelizedKeys = true works as expected", function() {
+  expect(1);
+
+  var Page = Ember.Model.extend({
+    someAuthor: Ember.attr()
+  });
+  Page.camelizeKeys = true;
+  Page.adapter = Ember.FixtureAdapter.create();
+  Page.FIXTURES = [];
+
+  var record = Page.create({someAuthor: 'Brian'});
+
+  record.save();
+  stop();
+
+  record.on('didCreateRecord', function() {
+    start();
+
+    equal(record.get('someAuthor'), 'Brian', 'preserves data keys on didCreateRecord');
+  });
+});
+
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){

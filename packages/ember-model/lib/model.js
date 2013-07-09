@@ -243,7 +243,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (!this.constructor.recordCache) this.constructor.recordCache = {};
     this.constructor.recordCache[id] = this;
 
-    this.load(id, this.getProperties(this.attributes));
+    this._copyDirtyAttributesToData();
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
