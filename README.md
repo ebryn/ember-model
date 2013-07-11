@@ -153,7 +153,7 @@ var Post = Ember.Model.extend({
 
 ## Relationships
 
-Ember Model provides two types of relationships `hasMany` and `belongsTo`. Both types of relationships can ether be embedded or referenced by ids.
+Ember Model provides two types of relationships `hasMany` and `belongsTo`. Both types of relationships can either be embedded or referenced by ids.
 
 ### Defining Relationships
 
@@ -170,7 +170,7 @@ Both relationships take two arguments.
 - `options` - An object with two properties, `key` which is required and `embedded` which is optional and defaults to `false`.
 
   - `key` - indicates what property of json backing the model will be accessed to access the relationship
-  - `embedded` - If `true` the related objects are expected to be present in the data backing the model. If false only the primaryKeys are present in the data bacing the model. These keys will be used to load the correct model.
+  - `embedded` - If `true` the related objects are expected to be present in the data backing the model. If false only the primaryKeys are present in the data backing the model. These keys will be used to load the correct model.
 
 ### Relationship Examples
 
@@ -257,7 +257,7 @@ post.get('comments.lastObject').save(); // Saves the last comment associated to 
 
 ```
 
-Accesing a `hasMany` relationship returns a `ManyArray` or a `EmbeddedManyArray` which have useful methods for working with the collection of records. On any type of `hasMany` relationship you can calls `save()` and all the dirty records in the collection will have their `save()` methods called. When working with an embedded `hasMany` relationship you can use the `create(attrs)` method to add a new record to the collection.
+Accessing a `hasMany` relationship returns a `ManyArray` or a `EmbeddedManyArray` which have useful methods for working with the collection of records. On any type of `hasMany` relationship you can calls `save()` and all the dirty records in the collection will have their `save()` methods called. When working with an embedded `hasMany` relationship you can use the `create(attrs)` method to add a new record to the collection.
 
 ```javascript
 
