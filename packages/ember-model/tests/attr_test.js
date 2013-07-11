@@ -213,3 +213,20 @@ test("attr should camelize attributes when writing", function() {
   var json = page.toJSON();
   equal(json.some_author, "Alex", "json.some_author should be set to Alex");
 });
+
+test("toJSON should respect the key option in attr", function() {
+  var Page = Ember.Model.extend({
+    author: attr(String, { key: 'Author'})
+  });
+  var page = Page.create();
+
+  Ember.run(function() {
+    page.load(1, { Author: "Guilherme" });
+  });
+
+  var json = page.toJSON();
+  equal(page.get('author'), "Guilherme", "author should be Guilherme");
+  equal(page.get('Author'), undefined, "Author should be undefined");
+  equal(json.Author, "Guilherme", "json.Author should be Guilherme");
+  equal(json.author, undefined, "json.author should be undefined");
+});
