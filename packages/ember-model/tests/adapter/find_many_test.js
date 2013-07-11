@@ -37,3 +37,19 @@ test(".find([]) delegates to the adapter's findMany method", function() {
   });
 });
 
+test("should not call findMany when not implemented by adapter", function() {
+  expect(2);
+
+  var Model = Ember.Model.extend(),
+      Adapter = Ember.Adapter.extend({
+        find: function() {
+          ok(true, 'find was called');
+        }
+      });
+
+  Model.adapter = Adapter.create();
+  Ember.run(function() {
+    Model.find(1);
+    Model.find(2);
+  });
+});
