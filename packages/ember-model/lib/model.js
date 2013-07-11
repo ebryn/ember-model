@@ -160,7 +160,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   toJSON: function() {
     var key, meta,
         json = {},
-        properties = this.getProperties(this.attributes);
+        properties = this.attributes ? this.getProperties(this.attributes) : {};
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
@@ -174,10 +174,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
 
     if (this.relationships) {
-      var data;
+      var data, relationshipKey;
+
       for(var i = 0; i < this.relationships.length; i++) {
         key = this.relationships[i];
         meta = this.constructor.metaForProperty(key);
+        relationshipKey = meta.options.key || key;
 
         if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
@@ -186,7 +188,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         }
 
         if (data) {
-          json[this.dataKey(key)] = data;
+          json[this.dataKey(relationshipKey)] = data;
         }
       }
     }
