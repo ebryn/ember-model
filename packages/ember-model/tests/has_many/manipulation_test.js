@@ -35,9 +35,17 @@ test("pushing record without an id adds a reference to the content", function() 
 
   Ember.run(comments, comments.pushObject, comment);
 
-
   var content = comments.get('content');
   equal(comments.get('length'), 4);
   equal(content[3].record, comment, "content should contain reference with added object");
   ok(!content[3].id, "id should in the reference should be empty");
+
+  var commentTwo = comments.objectAt(1);
+  var commentThree = comments.objectAt(2);
+
+  comments.removeObject(commentTwo);
+
+  var index = comments.indexOf(commentThree);
+
+  equal(index, 1);
 });
