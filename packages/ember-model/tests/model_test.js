@@ -369,28 +369,54 @@ test("toJSON includes non-embedded relationships", function() {
         id: Ember.attr(),
         name: Ember.attr()
       }),
+      Link = Ember.Model.extend({
+        id: Ember.attr(),
+        href: Ember.attr()
+      }),
+      Publisher = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
       Article = Ember.Model.extend({
         id: 1,
         title: Ember.attr(),
         comments: Ember.hasMany(Comment, { key: 'comments' }),
-        author: Ember.belongsTo(Author, { key: 'author' })
+        author: Ember.belongsTo(Author, { key: 'author' }),
+        links: Ember.hasMany('Link', { key: 'link_ids' }),
+        publisher: Ember.belongsTo('Publisher', { key: 'publisher_id' })
       });
 
   var articleData = {
     id: 1,
     title: 'foo',
     comments: [1, 2, 3],
-    author: 1
+    author: 1,
+    publisher_id: 1,
+    link_ids: [1, 2]
   };
 
   Author.adapter = Ember.FixtureAdapter.create();
   Comment.adapter = Ember.FixtureAdapter.create();
+  Publisher.adapter = Ember.FixtureAdapter.create();
+  Link.adapter = Ember.FixtureAdapter.create();
+
+
+  //If relationship types are specified as Strings, the Model class definitions need to be global so that the Ember.lookup succeeds
+  Ember.set(Ember.lookup, 'Author', Author);
+  Ember.set(Ember.lookup, 'Publisher', Comment);
+  Ember.set(Ember.lookup, 'Link', Article);
+
 
   Author.FIXTURES = [{id: 1, name: 'drogus'}];
   Comment.FIXTURES = [
     {id: 1, text: 'uno'},
     {id: 2, text: 'dos'},
     {id: 3, text: 'tres'}
+  ];
+  Publisher.FIXTURES = [{id: 1, name: 'Africa books'}];
+  Link.FIXTURES = [
+    {id: 1, href: 'http://www.emberjs.com'},
+    {id: 2, href: 'https://github.com/ebryn/ember-model'}
   ];
 
 
@@ -401,54 +427,8 @@ test("toJSON includes non-embedded relationships", function() {
 
   deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
   equal(json.author, 1, "JSON should contain id of belongsTo relationship");
-});
-
-
-test("toJSON includes non-embedded relationships when relationship type is a string", function() {
-
-  var Comment = Ember.Model.extend({
-      id: Ember.attr(),
-      text: Ember.attr()
-    }), Author = Ember.Model.extend({
-      id: Ember.attr(),
-      name: Ember.attr()
-    }), Article = Ember.Model.extend({
-      id: 1,
-      title: Ember.attr(),
-      comments: Ember.hasMany('Comment', { key: 'comment_ids' }),
-      author: Ember.belongsTo('Author', { key: 'author_id' })
-    });
-
-  //The Model class definitions need to be global so that the Ember.lookup succeeds when the relationship types are specified as Strings
-  Ember.set(Ember.lookup, 'Author', Author);
-  Ember.set(Ember.lookup, 'Comment', Comment);
-  Ember.set(Ember.lookup, 'Article', Article);
-
-  var articleData = {
-    id: 1,
-    title: 'foo',
-    comment_ids: [1, 2, 3],
-    author_id: 1
-  };
-
-  Author.adapter = Ember.FixtureAdapter.create();
-  Comment.adapter = Ember.FixtureAdapter.create();
-
-  Author.FIXTURES = [{id: 1, name: 'drogus'}];
-  Comment.FIXTURES = [
-    {id: 1, text: 'uno'},
-    {id: 2, text: 'dos'},
-    {id: 3, text: 'tres'}
-  ];
-
-
-  var article = Article.create();
-  Ember.run(article, article.load, articleData.id, articleData);
-
-  var json = Ember.run(article, article.toJSON);
-
-  deepEqual(json.comment_ids, [1, 2, 3], "JSON should contain ids of hasMany relationship");
-  equal(json.author_id, 1, "JSON should contain id of belongsTo relationship");
+  deepEqual(json.link_ids, [1, 2], "JSON should contain ids of hasMany relationship");
+  equal(json.publisher_id, 1, "JSON should contain id of belongsTo relationship");
 });
 
 test("creating a record with camelizedKeys = true works as expected", function() {
