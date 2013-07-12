@@ -371,6 +371,7 @@ If you prefer to run tests in a browser, you may start a development server usin
 * [Digital Science](http://www.digital-science.com)
 * [Travis CI](https://travis-ci.org)
 * [Bugzilla-Ember](https://github.com/ebryn/bugzilla-ember)
+* [Embriak](http://github.com/joachimhs/Embriak)
 
 Are you using Ember Model? Submit a pull request to add your project to this list!
 
