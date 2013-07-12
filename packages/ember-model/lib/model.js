@@ -408,7 +408,7 @@ Ember.Model.reopenClass({
   _fetchById: function(record, id) {
     var adapter = get(this, 'adapter');
 
-    if (adapter.findMany) {
+    if (adapter.findMany && !adapter.findMany.isUnimplemented) {
       if (this._currentBatchIds) {
         if (!contains(this._currentBatchIds, id)) { this._currentBatchIds.push(id); }
       } else {
