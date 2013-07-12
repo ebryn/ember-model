@@ -165,12 +165,12 @@ Relationships are defined by using relationship computed property macros in plac
 
 Both relationships take two arguments. 
 
-- `type` - Class of the related model or string repersentation (eg. App.Comment or 'App.Comment').
+- `type` - Class of the related model or string representation (eg. App.Comment or 'App.Comment').
 
 - `options` - An object with two properties, `key` which is required and `embedded` which is optional and defaults to `false`.
 
-  - `key` - indicates what property of json backing the model will be accessed to access the relationship
-  - `embedded` - If `true` the related objects are expected to be present in the data backing the model. If false only the primaryKeys are present in the data backing the model. These keys will be used to load the correct model.
+  - `key` - indicates what property of the JSON backing the model will be accessed to access the relationship
+  - `embedded` - If `true` the related objects are expected to be present in the data backing the model. If `false` only the primaryKeys are present in the data backing the model. These keys will be used to load the correct model.
 
 ### Relationship Examples
 
@@ -207,14 +207,13 @@ App.Comment = Ember.Model.extend({
 ```
 
 ```javascript
-// Id Referenced
- Relationship Example
+// ID-based Relationship Example
 
 postJson = {
   id: 99,
   title: 'Post Title',
   body: 'Post Body',
-  comment_ids: [1,2]
+  comment_ids: [1, 2]
 };
 
 commentsJson = [
@@ -234,7 +233,7 @@ App.Post = Ember.Model.extend({
   id: Ember.attr(),
   title: Ember.attr(),
   body: Ember.attr()
-  comments: Ember.hasMany('App.Comment', {key: 'comment_ids', embedded: false})
+  comments: Ember.hasMany('App.Comment', {key: 'comment_ids'})
 });
 
 App.Comment = Ember.Model.extend({
@@ -242,31 +241,27 @@ App.Comment = Ember.Model.extend({
   body: Ember.attr(),
   post: Ember.belongsTo('App.Post', {key: 'post_id'})
 })
-
 ```
 
 ### Working with relationships
 
-Working with a `belongsTo` relationship is just like working any other Ember Model. An Ember Model instance is returned when accessing a `belongsTo` relationship, so any `Model` methods can be used such as `save()` or `reload()`.
+Working with a `belongsTo` relationship is just like working any other `Ember.Model`. An `Ember.Model` instance is returned when accessing a `belongsTo` relationship, so any `Model` methods can be used such as `save()` or `reload()`.
 
 ```javascript
-
 comment.get('post').reload(); // Reloads the comments post
 
 post.get('comments.lastObject').save(); // Saves the last comment associated to post
-
 ```
 
-Accessing a `hasMany` relationship returns a `ManyArray` or a `EmbeddedManyArray` which have useful methods for working with the collection of records. On any type of `hasMany` relationship you can calls `save()` and all the dirty records in the collection will have their `save()` methods called. When working with an embedded `hasMany` relationship you can use the `create(attrs)` method to add a new record to the collection.
+Accessing a `hasMany` relationship returns a `HasManyArray` or an `EmbeddedHasManyArray` which have useful methods for working with the collection of records. On any type of `hasMany` relationship you can call `save()` and all the dirty records in the collection will have their `save()` methods called. When working with an embedded `hasMany` relationship you can use the `create(attrs)` method to add a new record to the collection.
 
 ```javascript
-
 post.get('comments').save(); // Saves all dirty comments on post
 
 // Below only works on embedded relationships
 post.get('comments').create({body: 'New Comment Body'}); // Creates a new comment associated to post
-
 ```
+
 ## Customizing
 
 There are a few properties you can set on your class to customize how either
