@@ -109,3 +109,22 @@ test("when fetching an association getHasMany is called", function() {
 
   equal(article.get('comments'), 'foobar', "value returned from getHasMany should be returned as an association");
 });
+
+test("toJSON uses the given relationship key", function() {
+  expect(1);
+
+  var Comment = Ember.Model.extend({
+        token: Ember.attr(String)
+      }),
+      Article = Ember.Model.extend({
+        comments: Ember.hasMany(Comment, { key: 'comment_ids' })
+      });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create();
+
+  Ember.run(article, article.load, 1, { comment_ids: Ember.A(['a'] )});
+
+  deepEqual(article.toJSON(), { comment_ids: ['a'] }, "Relationship ids should be serialized only under the given key");
+});
