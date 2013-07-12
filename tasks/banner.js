@@ -1,28 +1,33 @@
-var execSync = require('execSync').exec;
-
-function gitSha(){
-  var tags = execSync('git describe --tags'),
-      sha  = execSync('git log -n 1 --format="%h (%ci)"'),
-      banner = '';
-
-  if (!tags.code) {
-    banner = banner + "// " + tags.stdout;
-  }
-
-  if (!sha.code) {
-    banner = banner + "// " + sha.stdout;
-  }
-
-  return banner;
-}
+var exec = require('child_process').exec;
 
 module.exports = function(grunt){
   grunt.registerMultiTask('banner', 'Append a banner to production', function(){
-    var options = this.options(),
-        license = grunt.file.read(options.license),
-        gitInfo = gitSha(),
-        code = grunt.file.read(this.file.src);
+    var done = this.async(),
+        task = this;
+    exec('git describe --tags', 
+      function(tags_error, tags_stdout, tags_stderr) {
+        var tags =  tags_stdout;
+        exec('git log -n 1 --format="%h (%ci)"', 
+          function(sha_error, sha_stdout, sha_stderr) {
+            var sha  = sha_stdout,
+                banner = '';
 
-    grunt.file.write(this.file.src, [license, gitInfo, code].join("\n"));
+            if (!tags_error) {
+              banner = banner + "// " + tags;
+            }
+
+            if (!sha_error) {
+              banner = banner + "// " + sha;
+            }
+
+            var options = task.options(),
+                license = grunt.file.read(options.license),
+                gitInfo = banner,
+                code = grunt.file.read(task.file.src);
+
+            grunt.file.write(task.file.src, [license, gitInfo, code].join("\n"));
+            done();
+          });
+      });
   });
 };
