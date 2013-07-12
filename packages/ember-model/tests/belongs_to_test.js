@@ -129,3 +129,25 @@ test("when fetching an association getBelongsTo is called", function() {
 
   equal(comment.get('article'), 'foobar', "value returned from getBelongsTo should be returned as an association");
 });
+
+test("toJSON uses the given relationship key in belongsTo", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    token: Ember.attr(String)
+  });
+
+  Article.primaryKey = 'token';
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ token: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article, { key: 'article_id' })
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article_id: 2 });
+
+  deepEqual(comment.toJSON(), { article_id: 2 }, "belongsTo id should be serialized only under the given key");
+});

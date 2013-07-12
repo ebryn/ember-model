@@ -8,15 +8,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     if (!content.length) { return; }
 
-    // TODO: Create a LazilyMaterializedRecordArray class and test it
-    if (this._records && this._records[idx]) { return this._records[idx]; }
-
-    var record = this.materializeRecord(idx);
-
-    if (!this._records) { this._records = {}; }
-    this._records[idx] = record;
-
-    return record;
+    return this.materializeRecord(idx);
   },
 
   save: function() {
@@ -85,7 +77,8 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
       return reference.record;
     } else {
       var record = klass.create({ _reference: reference });
-      if(attrs) {
+      reference.record = record;
+      if (attrs) {
         record.load(attrs[primaryKey], attrs);
       }
       return record;
