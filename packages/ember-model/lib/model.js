@@ -192,7 +192,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         }
 
         if (data) {
-          json[this.dataKey(relationshipKey)] = data;
+          json[relationshipKey] = data;
         }
       }
     }
