@@ -4,14 +4,22 @@ Ember.belongsTo = function(type, options) {
   options = options || {};
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo' },
-      key = options.key;
+      relationshipKey = options.key;
 
-  return Ember.computed(function() {
+  return Ember.computed(function(key, value) {
     if (typeof type === "string") {
       type = Ember.get(Ember.lookup, type);
     }
-
-    return this.getBelongsTo(key, type, meta);
+    if (arguments.length === 2) {
+      if (value) {
+        Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
+                     [value.constructor, type]),
+                     value instanceof type);
+      }
+      return value === undefined ? null : value;  
+    } else {
+      return this.getBelongsTo(relationshipKey, type, meta);
+    }
   }).property('data').meta(meta);
 };
 
@@ -20,11 +28,11 @@ Ember.Model.reopen({
     var idOrAttrs = get(this, 'data.' + key),
         record;
 
-    if(Ember.isNone(idOrAttrs)) {
+    if (Ember.isNone(idOrAttrs)) {
       return null;
     }
 
-    if(meta.options.embedded) {
+    if (meta.options.embedded) {
       var primaryKey = get(type, 'primaryKey');
       record = type.create({ isLoaded: false });
       record.load(idOrAttrs[primaryKey], idOrAttrs);
