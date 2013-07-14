@@ -343,6 +343,12 @@ Ember.Model.reopenClass({
 
   _clientIdCounter: 1,
 
+  createAndBind: function() {
+    var record = this.create.apply(this, arguments);
+    record.constructor.addToRecordArrays(record);
+    return record;
+  },
+
   fetch: function() {
     return Ember.loadPromise(this.find.apply(this, arguments));
   },
@@ -494,6 +500,9 @@ Ember.Model.reopenClass({
   },
 
   addToRecordArrays: function(record) {
+    if (record.get('isAdded')) return;
+    record.set('isAdded', true);
+
     if (this._findAllRecordArray) {
       this._findAllRecordArray.pushObject(record);
     }
