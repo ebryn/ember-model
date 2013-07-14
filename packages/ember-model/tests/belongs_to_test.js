@@ -151,3 +151,151 @@ test("toJSON uses the given relationship key in belongsTo", function() {
 
   deepEqual(comment.toJSON(), { article_id: 2 }, "belongsTo id should be serialized only under the given key");
 });
+
+test("un-embedded belongsTo CP should handle set", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100});
+    post.load(1, {id: 1, author_id: null});
+  });
+
+  Ember.run(function() {
+    post.set('author', author);
+  });
+
+  deepEqual(post.toJSON(), {id: 1, author_id: 100});
+
+});
+
+test("embedded belongsTo CP should handle set", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100});
+    post.load(1, {id: 1, author_id: null});
+  });
+
+  Ember.run(function() {
+    post.set('author', author);
+  });
+
+  deepEqual(post.toJSON(), {id: 1, author: {id: 100}});
+
+});
+
+test("must be set with value of same type", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      postTwo = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_id: null});
+    postTwo.load(2, {id: 2, author_id: null});
+  });
+
+  expectAssertion(function() {
+      post.set('author', postTwo);
+    },
+    /Attempted to set property of type/);
+});
+
+test("should be able to set relationship to null", function() {
+  expect(2);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_id: 100});
+    author.load(100, {id: 100});
+  });
+
+  Ember.run(function() {
+    post.set('author', null);
+  });
+
+  equal(post.get('author'), null);
+  deepEqual(post.toJSON(), {id: 1, author_id: null});
+});
+
+test("setting relationship should make parent dirty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100, name: 'bob'});
+    post.load(1, {id: 1, author_id: null});
+  });
+
+  Ember.run(function() {
+    post.set('author', author);
+  });
+
+  ok(post.get('isDirty'));
+});
