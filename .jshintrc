@@ -23,7 +23,8 @@
         "strictEqual",
         "module",
         "expect",
-        "minispade"
+        "minispade",
+        "expectAssertion"
     ],
 
     "node" : false,

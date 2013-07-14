@@ -30,6 +30,31 @@ function hasCachedValue(object, key) {
   }
 }
 
+function extractDirty(object, attrsOrRelations, dirtyAttributes) {
+  var key, desc, descMeta, type, dataValue, cachedValue, isDirty;
+  for (var i = 0, l = attrsOrRelations.length; i < l; i++) {
+    key = attrsOrRelations[i];
+    if (!hasCachedValue(object, key)) { continue; }
+    cachedValue = object.cacheFor(key);
+    dataValue = get(object, 'data.' + object.dataKey(key));
+    desc = meta(object).descs[key];
+    descMeta = desc && desc.meta();
+    type = descMeta.type;
+
+    if (type && type.isEqual) {
+      isDirty = !type.isEqual(dataValue, cachedValue);
+    } else if (dataValue !== cachedValue) {
+      isDirty = true;
+    } else {
+      isDirty = false;
+    }
+
+    if (isDirty) {
+      dirtyAttributes.push(key);
+    }
+  }
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -52,29 +77,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   isDirty: Ember.computed(function() {
     var attributes = this.attributes,
-        dirtyAttributes = Ember.A(), // just for removeObject
-        key, cachedValue, dataValue, desc, descMeta, type, isDirty;
+        relationships = this.relationships,
+        dirtyAttributes = Ember.A(); // just for removeObject
 
-    for (var i = 0, l = attributes.length; i < l; i++) {
-      key = attributes[i];
-      if (!hasCachedValue(this, key)) { continue; }
-      cachedValue = this.cacheFor(key);
-      dataValue = get(this, 'data.'+this.dataKey(key));
-      desc = meta(this).descs[key];
-      descMeta = desc && desc.meta();
-      type = descMeta.type;
-
-      if (type && type.isEqual) {
-        isDirty = !type.isEqual(dataValue, cachedValue);
-      } else if (dataValue !== cachedValue) {
-        isDirty = true;
-      } else {
-        isDirty = false;
-      }
-
-      if (isDirty) {
-        dirtyAttributes.push(key);
-      }
+    extractDirty(this, attributes, dirtyAttributes);
+    if (relationships) {
+      extractDirty(this, relationships, dirtyAttributes);
     }
 
     if (dirtyAttributes.length) {
@@ -152,9 +160,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   serializeBelongsTo: function(key, meta) {
     if (meta.options.embedded) {
       var record = this.get(key);
-      if (record) {
-        return record.toJSON();
-      }
+      return record ? record.toJSON() : null;
     } else {
       var primaryKey = get(meta.type, 'primaryKey');
       return this.get(key + '.' + primaryKey);
@@ -191,9 +197,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           data = this.serializeHasMany(key, meta);
         }
 
-        if (data) {
-          json[relationshipKey] = data;
-        }
+        json[relationshipKey] = data;
+
       }
     }
 
