@@ -357,6 +357,9 @@ directory.
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system
 and test runner, and [bower](http://bower.io/) for dependency management.
 
+If you have not used any of these tools before, you will need to run `npm install -g bower` and
+`npm install -g grunt-cli` to be able to use them.
+
 To test Ember Model run `npm install` to install build dependencies, `bower install` to install the
 runtime dependencies and `grunt test` to execute the test suite headlessly via phantomjs.
 
