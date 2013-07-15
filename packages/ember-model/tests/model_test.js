@@ -209,6 +209,23 @@ test("record.toJSON() uses rootKey if it is defined", function() {
   stop();
 });
 
+test("record.toJSON() can use computed property as rootKey", function() {
+  expect(1);
+  
+  var CPRoot = Model.extend();
+  CPRoot.reopenClass({
+    rootKey: Ember.computed(function() {
+      return 'computed';
+    })
+  });
+
+  var record = CPRoot.create({
+    name: 'Tom Dale'
+  });
+
+  deepEqual(record.toJSON(), {computed: {name: 'Tom Dale'}});
+});
+
 test("Model.fetch() returns a promise", function() {
   expect(1);
 
