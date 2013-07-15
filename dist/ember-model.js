@@ -467,7 +467,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       var record = this.get(key);
       return record ? record.toJSON() : null;
     } else {
-      var primaryKey = get(meta.type, 'primaryKey');
+      var primaryKey = get(meta.getType(), 'primaryKey');
       return this.get(key + '.' + primaryKey);
     }
   },
@@ -943,16 +943,22 @@ Ember.Model.reopen({
 
 var get = Ember.get;
 
+function getType() {
+  if (typeof this.type === "string") {
+    this.type =  Ember.get(Ember.lookup, this.type);
+  }
+  return this.type;
+}
+
 Ember.belongsTo = function(type, options) {
   options = options || {};
 
-  var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo' },
+  var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType },
       relationshipKey = options.key;
 
   return Ember.computed(function(key, value) {
-    if (typeof type === "string") {
-      type = Ember.get(Ember.lookup, type);
-    }
+    type = meta.getType();
+
     if (arguments.length === 2) {
       if (value) {
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
