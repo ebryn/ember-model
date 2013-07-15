@@ -475,7 +475,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   toJSON: function() {
     var key, meta,
         json = {},
-        properties = this.attributes ? this.getProperties(this.attributes) : {};
+        properties = this.attributes ? this.getProperties(this.attributes) : {},
+        rootKey = get(this.constructor, 'rootKey');
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
@@ -507,10 +508,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
     }
 
-    if (this.constructor.rootKey) {
+    if (rootKey) {
       var jsonRoot = {};
-      jsonRoot[this.constructor.rootKey] = json;
-
+      jsonRoot[rootKey] = json;
       return jsonRoot;
     } else {
       return json;

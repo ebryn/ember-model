@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-// 0.0.3-25-g082aa6c
-// 082aa6c (2013-07-14 15:00:47 -0700)
+// 0.0.3-28-gee4e1e6
+// ee4e1e6 (2013-07-14 17:42:33 -0700)
 
 (function() {
 
@@ -484,7 +484,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   toJSON: function() {
     var key, meta,
         json = {},
-        properties = this.attributes ? this.getProperties(this.attributes) : {};
+        properties = this.attributes ? this.getProperties(this.attributes) : {},
+        rootKey = get(this.constructor, 'rootKey');
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
@@ -516,10 +517,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
     }
 
-    if (this.constructor.rootKey) {
+    if (rootKey) {
       var jsonRoot = {};
-      jsonRoot[this.constructor.rootKey] = json;
-
+      jsonRoot[rootKey] = json;
       return jsonRoot;
     } else {
       return json;
