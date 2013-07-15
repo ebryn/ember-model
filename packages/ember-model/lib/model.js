@@ -31,7 +31,7 @@ function hasCachedValue(object, key) {
 }
 
 function extractDirty(object, attrsOrRelations, dirtyAttributes) {
-  var key, desc, descMeta, type, dataValue, cachedValue, isDirty;
+  var key, desc, descMeta, type, dataValue, cachedValue, isDirty, dataType;
   for (var i = 0, l = attrsOrRelations.length; i < l; i++) {
     key = attrsOrRelations[i];
     if (!hasCachedValue(object, key)) { continue; }
@@ -40,9 +40,12 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     desc = meta(object).descs[key];
     descMeta = desc && desc.meta();
     type = descMeta.type;
+    dataType = Ember.Model.dataTypes[type];
 
     if (type && type.isEqual) {
       isDirty = !type.isEqual(dataValue, cachedValue);
+    } else if (dataType && dataType.isEqual) {
+      isDirty = !dataType.isEqual(dataValue, cachedValue);
     } else if (dataValue !== cachedValue) {
       isDirty = true;
     } else {
