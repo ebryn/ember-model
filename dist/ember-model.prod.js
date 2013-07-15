@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-// 0.0.3-28-gee4e1e6
-// ee4e1e6 (2013-07-14 17:42:33 -0700)
+// 0.0.3-31-g28fce58
+// 28fce58 (2013-07-14 19:01:39 -0700)
 
 (function() {
 
@@ -40,8 +40,9 @@ var get = Ember.get;
 Ember.FixtureAdapter = Ember.Adapter.extend({
   _findData: function(klass, id) {
     var fixtures = klass.FIXTURES,
+        idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
-        data = Ember.A(fixtures).find(function(el) { return el[primaryKey] === id; });
+        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; });
 
     return data;
   },
