@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-// 0.0.3-28-gee4e1e6
-// ee4e1e6 (2013-07-14 17:42:33 -0700)
+// 0.0.3-32-g68c4d71
+// 68c4d71 (2013-07-15 15:34:19 -0500)
 
 (function() {
 
@@ -476,7 +476,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       var record = this.get(key);
       return record ? record.toJSON() : null;
     } else {
-      var primaryKey = get(meta.type, 'primaryKey');
+      var primaryKey = get(meta.getType(), 'primaryKey');
       return this.get(key + '.' + primaryKey);
     }
   },
@@ -952,16 +952,22 @@ Ember.Model.reopen({
 
 var get = Ember.get;
 
+function getType() {
+  if (typeof this.type === "string") {
+    this.type =  Ember.get(Ember.lookup, this.type);
+  }
+  return this.type;
+}
+
 Ember.belongsTo = function(type, options) {
   options = options || {};
 
-  var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo' },
+  var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType },
       relationshipKey = options.key;
 
   return Ember.computed(function(key, value) {
-    if (typeof type === "string") {
-      type = Ember.get(Ember.lookup, type);
-    }
+    type = meta.getType();
+
     if (arguments.length === 2) {
       if (value) {
         0;
