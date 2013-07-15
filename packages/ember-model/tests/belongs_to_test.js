@@ -299,3 +299,30 @@ test("setting relationship should make parent dirty", function() {
 
   ok(post.get('isDirty'));
 });
+
+test("relationships should be seralized when specified with string", function() {
+  expect(1);
+
+  Ember.Author = Ember.Model.extend({
+    id: Ember.attr(),
+    name: Ember.attr()
+  });
+
+  Ember.Post = Ember.Model.extend({
+    id: Ember.attr(),
+    author: Ember.belongsTo('Ember.Author', {key: 'author_id'})
+  });
+
+  Ember.Post.adapter = Ember.FixtureAdapter.create();
+  Ember.Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Ember.Post.create(),
+      author = Ember.Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100, name: 'bob'});
+    post.load(1, {id: 1, author_id: 100});
+  });
+
+  deepEqual(post.toJSON(), {id: 1, author_id: 100});
+});
