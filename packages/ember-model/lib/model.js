@@ -162,7 +162,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       var record = this.get(key);
       return record ? record.toJSON() : null;
     } else {
-      var primaryKey = get(meta.type, 'primaryKey');
+      var type =meta.type;
+      if (typeof type === "string") {
+        type = Ember.get(Ember.lookup, type);
+      }
+      var primaryKey = get(type, 'primaryKey');
       return this.get(key + '.' + primaryKey);
     }
   },
