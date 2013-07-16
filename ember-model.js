@@ -1,9 +1,14 @@
 (function() {
 
+<<<<<<< HEAD:ember-model.js
 Ember.Adapter = Ember.Object.extend({
   find: function(record, id) {
     throw new Error('Ember.Adapter subclasses must implement find');
   },
+=======
+// 0.0.3-32-gc54b5ff
+// c54b5ff (2013-07-15 05:36:53 -0500)
+>>>>>>> Initial test cases for FixtureModel:dist/ember-model.prod.js
 
   findQuery: function(klass, records, params) {
     throw new Error('Ember.Adapter subclasses must implement findQuery');
