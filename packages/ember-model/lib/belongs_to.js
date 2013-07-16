@@ -43,7 +43,7 @@ Ember.Model.reopen({
       record = type.create({ isLoaded: false });
       record.load(idOrAttrs[primaryKey], idOrAttrs);
     } else {
-      record = type.findById(idOrAttrs);
+      record = type.find(idOrAttrs);
     }
 
     return record;

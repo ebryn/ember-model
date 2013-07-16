@@ -37,7 +37,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
     if (reference.record) {
       record = reference.record;
     } else {
-      record = klass.findById(reference.id);
+      record = klass.find(reference.id);
     }
 
     return record;
