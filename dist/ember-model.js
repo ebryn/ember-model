@@ -648,8 +648,119 @@ Ember.Model.reopenClass({
 
   _clientIdCounter: 1,
 
-  fetch: function() {
-    return Ember.loadPromise(this.find.apply(this, arguments));
+  fetch: function(id) {
+    if (!arguments.length) {
+      return Ember.loadPromise(this.find.apply(this, arguments));
+      //return this.fetchAll();
+    } else if (Ember.isArray(id)) {
+      return Ember.loadPromise(this.find.apply(this, arguments));
+      //return this.fetchMany(id);
+    } else if (typeof id === 'object') {
+      return Ember.loadPromise(this.find.apply(this, arguments));
+      //return this.fetchQuery(id);
+    } else {
+      return this.fetchById(id);
+    }
+  },
+
+  fetchMany: function(ids) {
+    Ember.assert("fetchMany requires an array", Ember.isArray(ids));
+
+    var records = Ember.RecordArray.create({_ids: ids});
+
+    if (!this.recordArrays) { this.recordArrays = []; }
+    this.recordArrays.push(records);
+
+    if (this._currentBatchIds) {
+      concatUnique(this._currentBatchIds, ids);
+      this._currentBatchRecordArrays.push(records);
+    } else {
+      this._currentBatchIds = concatUnique([], ids);
+      this._currentBatchRecordArrays = [records];
+    }
+
+    
+
+    var deferred = Ember.Deferred.create();
+
+    deferred.then(
+      function() {
+        return records;
+      },
+      function(errorXHR) {
+        return errorXHR;
+      }
+    );
+
+    if(!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
+    this._currentBatchDeferreds.push(deferred);
+
+    Ember.run.scheduleOnce('data', this, this._executeBatch);
+
+    return deferred;
+  },
+
+  fetchAll: function() {
+    if (this._findAllRecordArray) { return this._findAllRecordArray; }
+
+    var records = this._findAllRecordArray = Ember.RecordArray.create();
+
+    var promise = this.adapter.findAll(this, records);
+
+    promise.then(
+      function() {
+        return records;
+      },
+      function(errorXHR) {
+        return errorXHR;
+      });
+
+    return promise;
+  },
+
+  fetchQuery: function(params) {
+    var records = Ember.RecordArray.create();
+
+    var promise = this.adapter.findQuery(this, records, params);
+
+    promise.then(
+      function() {
+        return records;
+      },
+      function(errorXHR) {
+        return errorXHR;
+      });
+
+    return promise;
+  },
+
+  fetchById: function(id) {
+    var record = this.cachedRecordForId(id),
+        isLoaded = get(record, 'isLoaded'),
+        adapter = get(this, 'adapter');
+
+    // If adapter does not implement findMany _fetchById will return a promise for us.
+    if ((!adapter.findMany || adapter.findMany.isUnimplemented) && !isLoaded) {
+      return this._fetchById(record, id);
+    } else {
+      
+      var deferred = Ember.Deferred.create();
+
+      deferred.then(
+        function() {
+          return record;
+        },
+        function(errorXHR) {
+          return errorXHR;
+        });
+
+      if(!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
+      this._currentBatchDeferreds.push(deferred);
+
+      this._fetchById(record, id);
+
+      return deferred;
+    }
   },
 
   find: function(id) {
@@ -697,6 +808,7 @@ Ember.Model.reopenClass({
 
   _currentBatchIds: null,
   _currentBatchRecordArrays: null,
+  _currentBatchDeferreds: null,
 
   findById: function(id) {
     var record = this.cachedRecordForId(id);
@@ -736,6 +848,7 @@ Ember.Model.reopenClass({
   _executeBatch: function() {
     var batchIds = this._currentBatchIds,
         batchRecordArrays = this._currentBatchRecordArrays,
+        batchDeferreds = this._currentBatchDeferreds,
         self = this,
         requestIds = [],
         promise,
@@ -743,6 +856,7 @@ Ember.Model.reopenClass({
 
     this._currentBatchIds = null;
     this._currentBatchRecordArrays = null;
+    this._currentBatchDeferreds = null;
 
     for (i = 0; i < batchIds.length; i++) {
       if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
@@ -765,6 +879,18 @@ Ember.Model.reopenClass({
     promise.then(function() {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
         batchRecordArrays[i].loadForFindMany(self);
+      }
+    }).then(function() {
+      if(batchDeferreds) {
+        for (var i = 0, l = batchDeferreds.length; i < l; i++) {
+          batchDeferreds[i].resolve();
+        }
+      }
+    }).then(null, function(errorXHR) {
+      if(batchDeferreds) {
+        for (var i = 0, l = batchDeferreds.length; i < l; i++) {
+          batchDeferreds[i].reject(errorXHR);
+        }
       }
     });
   },
