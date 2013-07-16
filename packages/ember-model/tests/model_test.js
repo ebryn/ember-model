@@ -108,6 +108,20 @@ test(".revert() sets the data back to its saved state", function() {
   stop();
 });
 
+test(".revert() works on new records with no attributes", function() {
+  expect(4);
+
+  var record = Model.create();
+  ok(!record.get('isDirty'));
+
+  record.set('name', 'Brian');
+  ok(record.get('isDirty'));
+  record.revert();
+
+  equal(record.get('name'), null);
+  ok(!record.get('isDirty'));
+});
+
 test(".find(id) called multiple times returns the same object (identity map)", function() {
   expect(1);
 
