@@ -5,5 +5,7 @@ require('ember-model/filtered_record_array');
 require('ember-model/has_many_array');
 require('ember-model/model');
 require('ember-model/has_many');
+require('ember-model/belongs_to');
 require('ember-model/attr');
 require('ember-model/rest_adapter');
+require('ember-model/load_promise');

@@ -1,6 +1,6 @@
 var attr = Ember.attr;
 
-module("Ember.HasManyArray - embedded objects saving");
+module("Ember.EmbeddedHasManyArray - embedded objects saving");
 
 test("derp", function() {
   var json = {
@@ -13,39 +13,36 @@ test("derp", function() {
     ]
   };
 
-  var Article = Ember.Model.extend({
-    title: attr(),
-
-    comments: Ember.computed(function(key) {
-      return Ember.HasManyArray.create({
-        parent: this,
-        modelClass: Comment,
-        content: Ember.A(this.get('data.comments'))
-      });
-    }).property()
-  });
-
   var Comment = Ember.Model.extend({
     id: attr(),
     text: attr()
   });
 
-  Comment.adapter = {
-    createRecord: function(record) {
-      Ember.run.later(function() {
-        record.load(4, {text: 'quattro'});
-        record.didCreateRecord();
-      }, 1);
+  var Article = Ember.Model.extend({
+    title: attr(),
 
-      return record;
+    comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+  });
+
+  Comment.adapter = {
+
+    createRecord: function(record) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        Ember.run.later(function() {
+          record.load(4, {text: 'quattro'});
+          record.didCreateRecord();
+          resolve(record);
+        }, 1);
+      });
     },
 
     saveRecord: function(record) {
-      Ember.run.later(function() {
-        record.didSaveRecord();
-      }, 1);
-
-      return record;
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        Ember.run.later(function() {
+          record.didSaveRecord();
+          resolve(record);
+        }, 1);
+      });
     }
   };
 
@@ -61,7 +58,7 @@ test("derp", function() {
 
   Ember.run(function() {
     stop();
-    comments.save().then(function() {
+    comments.save().then(function(record) {
       start();
       ok(!newComment.get('isDirty'), "New comment is not dirty");
       equal(newComment.get('id'), 4, "New comment has an ID");

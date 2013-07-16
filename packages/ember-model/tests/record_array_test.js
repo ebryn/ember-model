@@ -30,7 +30,7 @@ test("when called with findMany, should contain an array of the IDs contained in
   ok(!records.get('isLoaded'));
   stop();
 
-  Ember.run(records, records.then, function() {
+  records.one('didLoad', function() {
     start();
     equal(records.get('length'), 3);
   });

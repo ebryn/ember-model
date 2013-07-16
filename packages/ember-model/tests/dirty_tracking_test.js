@@ -178,3 +178,17 @@ test("dirty checking works with boolean attributes", function() {
   obj.set('canSwim', false);
   ok(obj.get('isDirty'), "toggling a boolean value makes the record dirty");
 });
+
+test("dirty checking works with date attributes", function() {
+  var Model = Ember.Model.extend({
+    createdAt: attr(Date)
+  });
+
+  var obj = Model.create();
+  Ember.run(function() {
+    obj.load(1, {createdAt: '2013-01-01T00:00:00.000Z'});
+  });
+
+  ok(obj.get('createdAt'), new Date(2013, 0, 0));
+  ok(!obj.get('isDirty'));
+});

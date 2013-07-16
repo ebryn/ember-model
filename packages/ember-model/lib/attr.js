@@ -38,6 +38,11 @@ Ember.Model.dataTypes[Date] = {
   serialize: function (date) {
     if(!date) { return null; }
     return date.toISOString();
+  },
+  isEqual: function(obj1, obj2) {
+    if (obj1 instanceof Date) { obj1 = this.serialize(obj1); }
+    if (obj2 instanceof Date) { obj2 = this.serialize(obj2); }
+    return obj1 === obj2;
   }
 };
 
@@ -63,7 +68,7 @@ function deserialize(value, type) {
 }
 
 
-Ember.attr = function(type) {
+Ember.attr = function(type, options) {
   return Ember.computed(function(key, value) {
     var data = get(this, 'data'),
         dataKey = this.dataKey(key),
@@ -80,5 +85,5 @@ Ember.attr = function(type) {
     }
 
     return this.getAttr(key, deserialize(dataValue, type));
-  }).property('data').meta({isAttribute: true, type: type});
+  }).property('data').meta({isAttribute: true, type: type, options: options});
 };

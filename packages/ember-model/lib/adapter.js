@@ -1,33 +1,21 @@
+function mustImplement(message) {
+  var fn = function() {
+    throw new Error(message);
+  };
+  fn.isUnimplemented = true;
+  return fn;
+}
+
 Ember.Adapter = Ember.Object.extend({
-  find: function(record, id) {
-    throw new Error('Ember.Adapter subclasses must implement find');
-  },
-
-  findQuery: function(klass, records, params) {
-    throw new Error('Ember.Adapter subclasses must implement findQuery');
-  },
-
-  findMany: function(klass, records, ids) {
-    throw new Error('Ember.Adapter subclasses must implement findMany');
-  },
-
-  findAll: function(klass, records) {
-    throw new Error('Ember.Adapter subclasses must implement findAll');
-  },
+  find: mustImplement('Ember.Adapter subclasses must implement find'),
+  findQuery: mustImplement('Ember.Adapter subclasses must implement findQuery'),
+  findMany: mustImplement('Ember.Adapter subclasses must implement findMany'),
+  findAll: mustImplement('Ember.Adapter subclasses must implement findAll'),
+  createRecord: mustImplement('Ember.Adapter subclasses must implement createRecord'),
+  saveRecord: mustImplement('Ember.Adapter subclasses must implement saveRecord'),
+  deleteRecord: mustImplement('Ember.Adapter subclasses must implement deleteRecord'),
 
   load: function(record, id, data) {
     record.load(id, data);
-  },
-
-  createRecord: function(record) {
-    throw new Error('Ember.Adapter subclasses must implement createRecord');
-  },
-
-  saveRecord: function(record) {
-    throw new Error('Ember.Adapter subclasses must implement saveRecord');
-  },
-
-  deleteRecord: function(record) {
-    throw new Error('Ember.Adapter subclasses must implement deleteRecord');
   }
 });

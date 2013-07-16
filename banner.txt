@@ -1,7 +1,5 @@
 // ==========================================================================
-// Project:   Ember Data
-// Copyright: ©2011-2012 Tilde Inc. and contributors.
-//            Portions ©2011 Living Social Inc. and contributors.
+// Project:   Ember Model
+// Copyright: ©2013 Erik Bryn and contributors.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-

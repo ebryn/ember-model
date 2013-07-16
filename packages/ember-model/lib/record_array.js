@@ -1,7 +1,7 @@
 var get = Ember.get,
     set = Ember.set;
 
-Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, Ember.DeferredMixin, {
+Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
   isLoaded: false,
   isLoading: Ember.computed.not('isLoaded'),
 
@@ -19,7 +19,6 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, Ember.DeferredMixin, 
   notifyLoaded: function() {
     set(this, 'isLoaded', true);
     this.trigger('didLoad');
-    this.resolve(this);
   },
 
   materializeData: function(klass, data) {
