@@ -31,8 +31,9 @@ var get = Ember.get;
 Ember.FixtureAdapter = Ember.Adapter.extend({
   _findData: function(klass, id) {
     var fixtures = klass.FIXTURES,
+        idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
-        data = Ember.A(fixtures).find(function(el) { return el[primaryKey] === id; });
+        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; });
 
     return data;
   },
