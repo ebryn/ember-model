@@ -235,7 +235,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   revert: function() {
     if (this.get('isDirty')) {
-      var data = get(this, 'data'),
+      var data = get(this, 'data') || {},
           reverts = {};
       for (var i = 0; i < this._dirtyAttributes.length; i++) {
         var attr = this._dirtyAttributes[i];
