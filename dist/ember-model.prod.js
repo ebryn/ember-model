@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-// 0.0.3-32-g68c4d71
-// 68c4d71 (2013-07-15 15:34:19 -0500)
+// 0.0.3-37-gf1bec43
+// f1bec43 (2013-07-16 06:25:39 -0700)
 
 (function() {
 
@@ -40,8 +40,9 @@ var get = Ember.get;
 Ember.FixtureAdapter = Ember.Adapter.extend({
   _findData: function(klass, id) {
     var fixtures = klass.FIXTURES,
+        idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
-        data = Ember.A(fixtures).find(function(el) { return el[primaryKey] === id; });
+        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; });
 
     return data;
   },
@@ -345,7 +346,7 @@ function hasCachedValue(object, key) {
 }
 
 function extractDirty(object, attrsOrRelations, dirtyAttributes) {
-  var key, desc, descMeta, type, dataValue, cachedValue, isDirty;
+  var key, desc, descMeta, type, dataValue, cachedValue, isDirty, dataType;
   for (var i = 0, l = attrsOrRelations.length; i < l; i++) {
     key = attrsOrRelations[i];
     if (!hasCachedValue(object, key)) { continue; }
@@ -354,9 +355,12 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     desc = meta(object).descs[key];
     descMeta = desc && desc.meta();
     type = descMeta.type;
+    dataType = Ember.Model.dataTypes[type];
 
     if (type && type.isEqual) {
       isDirty = !type.isEqual(dataValue, cachedValue);
+    } else if (dataType && dataType.isEqual) {
+      isDirty = !dataType.isEqual(dataValue, cachedValue);
     } else if (dataValue !== cachedValue) {
       isDirty = true;
     } else {
@@ -549,7 +553,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   revert: function() {
     if (this.get('isDirty')) {
-      var data = get(this, 'data'),
+      var data = get(this, 'data') || {},
           reverts = {};
       for (var i = 0; i < this._dirtyAttributes.length; i++) {
         var attr = this._dirtyAttributes[i];
@@ -1045,6 +1049,11 @@ Ember.Model.dataTypes[Date] = {
   serialize: function (date) {
     if(!date) { return null; }
     return date.toISOString();
+  },
+  isEqual: function(obj1, obj2) {
+    if (obj1 instanceof Date) { obj1 = this.serialize(obj1); }
+    if (obj2 instanceof Date) { obj2 = this.serialize(obj2); }
+    return obj1 === obj2;
   }
 };
 
