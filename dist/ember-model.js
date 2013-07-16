@@ -336,7 +336,7 @@ function hasCachedValue(object, key) {
 }
 
 function extractDirty(object, attrsOrRelations, dirtyAttributes) {
-  var key, desc, descMeta, type, dataValue, cachedValue, isDirty;
+  var key, desc, descMeta, type, dataValue, cachedValue, isDirty, dataType;
   for (var i = 0, l = attrsOrRelations.length; i < l; i++) {
     key = attrsOrRelations[i];
     if (!hasCachedValue(object, key)) { continue; }
@@ -345,9 +345,12 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     desc = meta(object).descs[key];
     descMeta = desc && desc.meta();
     type = descMeta.type;
+    dataType = Ember.Model.dataTypes[type];
 
     if (type && type.isEqual) {
       isDirty = !type.isEqual(dataValue, cachedValue);
+    } else if (dataType && dataType.isEqual) {
+      isDirty = !dataType.isEqual(dataValue, cachedValue);
     } else if (dataValue !== cachedValue) {
       isDirty = true;
     } else {
@@ -1038,6 +1041,11 @@ Ember.Model.dataTypes[Date] = {
   serialize: function (date) {
     if(!date) { return null; }
     return date.toISOString();
+  },
+  isEqual: function(obj1, obj2) {
+    if (obj1 instanceof Date) { obj1 = this.serialize(obj1); }
+    if (obj2 instanceof Date) { obj2 = this.serialize(obj2); }
+    return obj1 === obj2;
   }
 };
 
