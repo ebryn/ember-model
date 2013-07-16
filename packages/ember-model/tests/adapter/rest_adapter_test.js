@@ -317,7 +317,7 @@ test("findQuery loads the full JSON payload when collectionKey isn't specified",
   };
 
   Ember.run(function() {
-    records = RESTModel.findQuery();
+    records = RESTModel.findQuery({});
   });
 
   equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
@@ -340,7 +340,7 @@ test("findQuery loads the data from a specified collectionKey", function() {
   };
 
   Ember.run(function() {
-    records = RESTModel.findQuery();
+    records = RESTModel.findQuery({});
   });
 
   equal(records.get('length'), data.people.length, "The proper number of items should have been loaded.");
@@ -368,7 +368,7 @@ test("findQuery uses Ember.get for a collectionKey", function() {
   };
 
   Ember.run(function() {
-    records = RESTModel.findQuery();
+    records = RESTModel.findQuery({});
   });
 
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");

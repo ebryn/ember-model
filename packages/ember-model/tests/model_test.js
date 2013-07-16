@@ -91,6 +91,21 @@ test(".reload() loads the record via the adapter after it was loaded", function(
   Ember.run(record, record.reload);
 });
 
+test(".reload() returns a promise", function() {
+  expect(2);
+
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  var record = Ember.run(Model, Model.find, 'a');
+
+  var promise = Ember.run(record, record.reload);
+  promise.then(function(resolvedRecord) {
+    start();
+    ok(resolvedRecord === record, ".reload() resolved with same record");
+    ok(true, ".reload() returned a promise");
+  });
+  stop();
+});
+
 test(".revert() sets the data back to its saved state", function() {
   expect(3);
 
@@ -489,6 +504,150 @@ test("record is available in record cache when load is run in cachedRecordForId"
   Post.cachedRecordForId('1');
 
   ok(recordFromCache, 'record should be available in recordCache when running load');
+});
+
+test("fetchQuery returns a promise", function() {
+  expect(1);
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params) {
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
+  promise.then(function(records) {
+    start();
+    ok(records.get('isLoaded'));
+  });
+  stop();
+});
+
+test("fetchAll returns a promise", function() {
+    var promise = Ember.run(Model, Model.fetchAll);
+    promise.then(function(records) {
+      start();
+      ok(records.get('isLoaded'));
+    });
+    stop();
+});
+
+test("fetchMany returns a promise", function() {
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findMany: function(klass, records, params) {
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
+  promise.then(function(records) {
+    start();
+    ok(records.get('isLoaded'));
+  });
+  stop();
+});
+
+test("fetchById returns a promise", function() {
+  expect(1);
+
+  var promise = Ember.run(Model, Model.fetchById, 'a');
+  promise.then(function(record) {
+    start();
+    ok(record.get('isLoaded'));
+  });
+  stop();
+});
+
+test("fetchQuery resolves with error object", function() {
+  expect(1);
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
+  promise.then(null, function(error) {
+    start();
+    deepEqual(error, {error: true});
+  });
+  stop();
+});
+
+test("fetchAll resolves with error object", function() {
+  expect(1);
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findAll: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchAll);
+  promise.then(null, function(error) {
+    start();
+    deepEqual(error, {error: true});
+  });
+  stop();
+});
+
+test("fetchById resolves with error object", function() {
+  expect(1);
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    find: function(record, id) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchById, 'a');
+  promise.then(null, function(error) {
+    start();
+    deepEqual(error, {error: true});
+  });
+  stop();
+});
+
+test("fetchMany resolves with error object", function() {
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findMany: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
+  promise.then(null, function(error) {
+    start();
+    deepEqual(error, {error: true});
+  });
+  stop();
 });
 
 // TODO: test that creating a record calls load
