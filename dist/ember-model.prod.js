@@ -1,12 +1,3 @@
-// ==========================================================================
-// Project:   Ember Model
-// Copyright: ©2013 Erik Bryn and contributors.
-// License:   Licensed under MIT license (see license.js)
-// ==========================================================================
-
-// 0.0.3-37-gf1bec43
-// f1bec43 (2013-07-16 06:25:39 -0700)
-
 (function() {
 
 function mustImplement(message) {
@@ -678,7 +669,7 @@ Ember.Model.reopenClass({
   },
 
   findMany: function(ids) {
-    0;
+    Ember.assert("findMany requires an array", Ember.isArray(ids));
 
     var records = Ember.RecordArray.create({_ids: ids});
 
@@ -891,7 +882,7 @@ Ember.Model.reopenClass({
   _createReference: function(id) {
     if (!this._idToReference) { this._idToReference = {}; }
 
-    0;
+    Ember.assert('The id ' + id + ' has alread been used with another record of type ' + this.toString() + '.', !id || !this._idToReference[id]);
 
     var reference = {
       id: id,
@@ -974,7 +965,9 @@ Ember.belongsTo = function(type, options) {
 
     if (arguments.length === 2) {
       if (value) {
-        0;
+        Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
+                     [value.constructor, type]),
+                     value instanceof type);
       }
       return value === undefined ? null : value;  
     } else {
@@ -1215,13 +1208,17 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       return urlRoot + ".json";
     }
   },
-
-  _ajax: function(url, params, method) {
-    var settings = {
+  
+  ajaxSettings: function(url, method) {
+    return {
       url: url,
       type: method,
       dataType: "json"
     };
+  },
+
+  _ajax: function(url, params, method) {
+    var settings = this.ajaxSettings(url, method);
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {

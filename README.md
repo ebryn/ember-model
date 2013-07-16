@@ -75,6 +75,8 @@ existingUser.save(); // PUT /users/1.json
 
 `Model#save` - save or update record
 
+`Model#deleteRecord` - delete a record
+
 `Model#load` - load JSON into the record (typically used inside adapter definition)
 
 `Model#toJSON` - serialize the record to JSON
@@ -106,6 +108,7 @@ Ember.Adapter = Ember.Object.extend({
   deleteRecord: function(record) {} // delete a record on the server
 });
 ```
+
 ## Attribute types
 
 Attributes by default have no type and are not typecast from the representation
@@ -318,7 +321,9 @@ GET /users.json
 {"users": [{"id": 1, "name": "Brian"}]}
 ```
 
+
 ### camelizeKeys
+
 
 If the server sends keys with underscores (ex: ```created_at```),
 rather than camelized (ex: ```createdAt```), setting this option to ```true```
@@ -339,6 +344,45 @@ GET /users/1.json
 ```javascript
 user.get('firstName') // => Brian
 ```
+
+
+### Customize Ajax Settings
+
+When using `RESTAdapter` custom headers and ajax settings can be applied by extending `RESTAdapter` and defining `ajaxSettings`
+
+```
+App.CustomAdapter = Ember.RESTAdapter.extend({
+  ajaxSettings: function(url, method) {
+    return {
+      url: url,
+      type: method,
+      headers: {
+        "authentication": "xxx-yyy"
+      },
+      dataType: "json"
+    };
+  }
+});
+```
+
+or it can be done at create time of the RESTAdapter
+
+```
+App.User.adapter = Ember.RESTAdapter.create({
+  ajaxSettings: function(url, method) {
+    return {
+      url: url,
+      type: method,
+      headers: {
+        "authentication": "xxx-yyy"
+      },
+      dataType: "json"
+    };
+  }
+});
+```
+
+
 
 ## Building Ember Model
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
