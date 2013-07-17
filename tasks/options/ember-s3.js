@@ -1,3 +1,4 @@
 module.exports = {
-  bucketName: 'ember-model'
+  bucketName: 'builds.erikbryn.com',
+  prefix: 'ember-model'
 };

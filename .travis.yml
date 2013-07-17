@@ -9,5 +9,5 @@ script: grunt test
 after_success: 'grunt ember-s3'
 env:
   global:
-  - secure: 0yn84dQAxUkbLCAu/IHftJrbF0D9+K0Kq1TckTFj9qYzrAY7AMvptbfW8yCdmnfApwMYWoO93C6kIeva4uYF1W2hXgJgrshV78aEsJu7O2fNXJbDp/OLG2VomHzVoD3muks97m1y8uYn5VNpysH6K9JUdLs6m0uKxtiepxmrq2U=
-  - secure: ja6WiZMxUilDS8N3FI3OhGPhEDeuB11pEQkryVhO37+kcxcAGqYQHL5CkUTmmexTz7i4Vk6VVL9EwmsGFIB/1mmNV6EIvOOlENxPgBFG0UZm7Pm2G4fxTOKf/71GCX2P4PhTfD9fGV7hvSh5Vp+MTrjozBKe6EBylZz1BHLNStM=
+  - secure: "yZza3bojrAzCGFm3EOMIQYTSOEsRiORmOHwFy9fcvB2UviEmVIfvDxvX6giEZzDz8Ai9G7k8KODKzjX2PWsCiHT1P5EIe2pPNYCIvwAkIiFw5adWnAiydjNYf0oXaTym+v94/2G1c1nWX4WmTJeON+oD0C9wz+gIlx1RU7O2Gx4="
+  - secure: "gMJekjrQPDGOa+RfXaXOdd+mb/YLKJtbv18wCsb3Ay8KYOhezhMz9HX6uS0ArU2ohxxaMWqQ9E85blGj0n+s+jcH/H4wenOZW2rJsIUW2dK+iqYUmoScsoYWiRB946Aa5ZGTn0Oi69NybUBrnpsgiIZbalZseJnFphtPHHyz9lA="
