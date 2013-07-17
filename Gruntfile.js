@@ -20,7 +20,8 @@ module.exports = function(grunt) {
     clean: config('clean'),
     copy:  config('copy'),
     connect: config('connect'),
-    watch: config('watch')
+    watch: config('watch'),
+    'ember-s3': config('ember-s3')
   });
 
   // Load the node modules that provide tasks
