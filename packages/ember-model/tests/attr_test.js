@@ -208,7 +208,7 @@ test("attr should camelize attributes when writing", function() {
     page = Page.create({someAuthor: "Alex"});
   });
 
-  var data = page.get('data');
+  var data = page.get('_data');
   equal(data.some_author, "Alex", "data.some_author should be set to Alex");
   var json = page.toJSON();
   equal(json.some_author, "Alex", "json.some_author should be set to Alex");

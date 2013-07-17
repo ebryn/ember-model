@@ -70,7 +70,7 @@ function deserialize(value, type) {
 
 Ember.attr = function(type, options) {
   return Ember.computed(function(key, value) {
-    var data = get(this, 'data'),
+    var data = get(this, '_data'),
         dataKey = this.dataKey(key),
         dataValue = data && get(data, dataKey),
         beingCreated = meta(this).proto === this;
@@ -78,12 +78,12 @@ Ember.attr = function(type, options) {
     if (arguments.length === 2) {
       if (beingCreated && !data) {
         data = {};
-        set(this, 'data', data);
+        set(this, '_data', data);
         data[dataKey] = value;
       }
       return wrapObject(value);
     }
 
     return this.getAttr(key, deserialize(dataValue, type));
-  }).property('data').meta({isAttribute: true, type: type, options: options});
+  }).property('_data').meta({isAttribute: true, type: type, options: options});
 };

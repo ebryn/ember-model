@@ -36,7 +36,7 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     key = attrsOrRelations[i];
     if (!hasCachedValue(object, key)) { continue; }
     cachedValue = object.cacheFor(key);
-    dataValue = get(object, 'data.' + object.dataKey(key));
+    dataValue = get(object, '_data.' + object.dataKey(key));
     desc = meta(object).descs[key];
     descMeta = desc && desc.meta();
     type = descMeta.type;
@@ -135,7 +135,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   load: function(id, hash) {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
-    set(this, 'data', Ember.merge(data, hash));
+    set(this, '_data', Ember.merge(data, hash));
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this._createReference();
@@ -238,7 +238,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   revert: function() {
     if (this.get('isDirty')) {
-      var data = get(this, 'data') || {},
+      var data = get(this, '_data') || {},
           reverts = {};
       for (var i = 0; i < this._dirtyAttributes.length; i++) {
         var attr = this._dirtyAttributes[i];
@@ -282,12 +282,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   _copyDirtyAttributesToData: function() {
     if (!this._dirtyAttributes) { return; }
     var dirtyAttributes = this._dirtyAttributes,
-        data = get(this, 'data'),
+        data = get(this, '_data'),
         key;
 
     if (!data) {
       data = {};
-      set(this, 'data', data);
+      set(this, '_data', data);
     }
     for (var i = 0, l = dirtyAttributes.length; i < l; i++) {
       // TODO: merge Object.create'd object into prototype
@@ -299,7 +299,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   dataDidChange: Ember.observer(function() {
     this._reloadHasManys();
-  }, 'data'),
+  }, '_data'),
 
   _registerHasManyArray: function(array) {
     if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
@@ -318,7 +318,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   _getHasManyContent: function(key, type, embedded) {
-    var content = get(this, 'data.' + key);
+    var content = get(this, '_data.' + key);
 
     if (content) {
       var mapFunction, primaryKey, reference;
