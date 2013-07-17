@@ -192,3 +192,86 @@ test("dirty checking works with date attributes", function() {
   ok(obj.get('createdAt'), new Date(2013, 0, 0));
   ok(!obj.get('isDirty'));
 });
+
+
+test("getting embedded array attribute after load should not make parent dirty", function() {
+  expect(2);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: [1,2,3,4]
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.attr()
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'loaded record for post is not dirty');
+
+  var author = post.get('author');
+  equal(post.get('isDirty'), false, 'get array does not dirty post record');
+});
+
+test("getting embedded object attribute after load should not make parent dirty", function() {
+  expect(2);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.attr()
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'loaded record for post is not dirty');
+
+  var author = post.get('author');
+  equal(post.get('isDirty'), false, 'get belongsTo relationship does not dirty post record');
+});
+
+test("getting embedded belongsTo attribute after load should not make parent dirty", function() {
+  expect(2);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'loaded record for post is not dirty');
+
+  var author = post.get('author');
+  equal(post.get('isDirty'), false, 'get belongsTo relationship does not dirty post record');
+});
+
