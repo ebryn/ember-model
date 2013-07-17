@@ -386,8 +386,8 @@ Ember.Model.reopenClass({
   findAll: function() {
     if (this._findAllRecordArray) { return this._findAllRecordArray; }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create();
-
+    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
+    
     this.adapter.findAll(this, records);
 
     return records;

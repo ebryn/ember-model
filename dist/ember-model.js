@@ -140,6 +140,15 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     return Ember.A(data.map(function(el) {
       return klass.findFromCacheOrLoad(el); // FIXME
     }));
+  },
+
+  reload: function() {
+    var modelClass = this.get('modelClass');
+    Ember.assert("Reload can only be called on findAll RecordArrays",
+      modelClass && modelClass._findAllRecordArray === this);
+    
+    set(this, 'isLoading', true);
+    modelClass.adapter.findAll(modelClass, this);
   }
 });
 
@@ -692,8 +701,8 @@ Ember.Model.reopenClass({
   findAll: function() {
     if (this._findAllRecordArray) { return this._findAllRecordArray; }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create();
-
+    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
+    
     this.adapter.findAll(this, records);
 
     return records;

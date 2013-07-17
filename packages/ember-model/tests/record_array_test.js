@@ -1,5 +1,11 @@
 var Model;
 
+function ajaxSuccess(data) {
+  return new Ember.RSVP.Promise(function(resolve, reject) {
+    resolve(data);
+  });
+}
+
 module("Ember.RecordArray", {
   setup: function() {
     Model = Ember.Model.extend({
@@ -34,4 +40,115 @@ test("when called with findMany, should contain an array of the IDs contained in
     start();
     equal(records.get('length'), 3);
   });
+});
+
+test("implements reload", function() {
+  expect(4);
+
+  var data = [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ],
+      RESTModel = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      adapter = Ember.RESTAdapter.create(),
+      records, changed;
+  
+  RESTModel.url = '/fake/api';
+  RESTModel.adapter = adapter;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), 2);
+
+  data.push({id: 3, name: 'Ray'});
+  data[1].name = 'Amos';
+
+  Ember.run(function() {
+    records.reload();
+  });
+
+  equal(records.get('length'), 3);
+  ok(records.get('isLoaded'));
+  deepEqual(RESTModel.find(2).toJSON(), {id: 2, name: 'Amos'});
+
+});
+
+test("assert when reload called on RecordArrays that are not findAll", function() {
+  expect(1);
+
+  var data = [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ],
+      RESTModel = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      adapter = Ember.RESTAdapter.create(),
+      records, changed;
+  
+  RESTModel.url = '/fake/api';
+  RESTModel.adapter = adapter;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findQuery({foo: 'bar'});
+  });
+
+  expectAssertion(function() {
+      records.reload();
+    },
+    /Reload can only be called on findAll RecordArrays/
+  );
+});
+
+test("reload handles record removal", function() {
+  expect(4);
+
+  var data = [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'},
+        {id: 3, name: 'Ray'}
+      ],
+      RESTModel = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      adapter = Ember.RESTAdapter.create(),
+      records, changed;
+  
+  RESTModel.url = '/fake/api';
+  RESTModel.adapter = adapter;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), 3);
+
+  data.splice(1, 1);
+
+  Ember.run(function() {
+    records.reload();
+  });
+
+  equal(records.get('length'), 2);
+  deepEqual(records.objectAt(0).toJSON(), {id: 1, name: 'Erik'});
+  deepEqual(records.objectAt(1).toJSON(), {id: 3, name: 'Ray'});
 });

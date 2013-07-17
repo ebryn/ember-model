@@ -4,8 +4,8 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-// 0.0.3-40-g01a908b
-// 01a908b (2013-07-16 11:48:36 -0500)
+// 0.0.3-43-gc2da6bf
+// c2da6bf (2013-07-17 08:33:34 -0500)
 
 (function() {
 
@@ -149,6 +149,14 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     return Ember.A(data.map(function(el) {
       return klass.findFromCacheOrLoad(el); // FIXME
     }));
+  },
+
+  reload: function() {
+    var modelClass = this.get('modelClass');
+    0;
+    
+    set(this, 'isLoading', true);
+    modelClass.adapter.findAll(modelClass, this);
   }
 });
 
@@ -701,8 +709,8 @@ Ember.Model.reopenClass({
   findAll: function() {
     if (this._findAllRecordArray) { return this._findAllRecordArray; }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create();
-
+    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
+    
     this.adapter.findAll(this, records);
 
     return records;
