@@ -1,7 +1,13 @@
+---
 language: node_js
 before_script:
-  - "npm install grunt-cli bower"
-  - "bower install"
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-script: "grunt test"
+- npm install grunt-cli bower
+- bower install
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+script: grunt test
+after_success: 'grunt ember-s3'
+env:
+  global:
+  - secure: 0yn84dQAxUkbLCAu/IHftJrbF0D9+K0Kq1TckTFj9qYzrAY7AMvptbfW8yCdmnfApwMYWoO93C6kIeva4uYF1W2hXgJgrshV78aEsJu7O2fNXJbDp/OLG2VomHzVoD3muks97m1y8uYn5VNpysH6K9JUdLs6m0uKxtiepxmrq2U=
+  - secure: ja6WiZMxUilDS8N3FI3OhGPhEDeuB11pEQkryVhO37+kcxcAGqYQHL5CkUTmmexTz7i4Vk6VVL9EwmsGFIB/1mmNV6EIvOOlENxPgBFG0UZm7Pm2G4fxTOKf/71GCX2P4PhTfD9fGV7hvSh5Vp+MTrjozBKe6EBylZz1BHLNStM=
