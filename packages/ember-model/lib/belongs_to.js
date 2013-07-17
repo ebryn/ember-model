@@ -26,12 +26,12 @@ Ember.belongsTo = function(type, options) {
     } else {
       return this.getBelongsTo(relationshipKey, type, meta);
     }
-  }).property('data').meta(meta);
+  }).property('_data').meta(meta);
 };
 
 Ember.Model.reopen({
   getBelongsTo: function(key, type, meta) {
-    var idOrAttrs = get(this, 'data.' + key),
+    var idOrAttrs = get(this, '_data.' + key),
         record;
 
     if (Ember.isNone(idOrAttrs)) {

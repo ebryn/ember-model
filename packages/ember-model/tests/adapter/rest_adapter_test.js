@@ -183,7 +183,7 @@ test("findById", function() {
     record = RESTModel.find(1);
   });
 
-  deepEqual(record.get('data'), data.post, "The data should be properly loaded");
+  deepEqual(record.get('_data'), data.post, "The data should be properly loaded");
 });
 
 test("findById loads the full JSON payload when rootKey isn't specified", function() {

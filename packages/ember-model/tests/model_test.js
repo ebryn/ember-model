@@ -456,6 +456,21 @@ test("creating a record with camelizedKeys = true works as expected", function()
   });
 });
 
+test("can use data as attribute name", function() {
+  expect(1);
+
+  var DataModel = Ember.Model.extend({
+    id: Ember.attr(),
+    data: Ember.attr()
+  });
+
+  DataModel.adapter = Ember.FixtureAdapter.create();
+
+  var record = DataModel.create({id: 1, data: 'abc'});
+
+  deepEqual(record.toJSON(), {id: 1, data: 'abc'});
+});
+
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){
