@@ -6,7 +6,7 @@ before_script:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 script: grunt test
-after_success: 'grunt ember-s3'
+after_success: 'grunt build ember-s3'
 env:
   global:
   - secure: "yZza3bojrAzCGFm3EOMIQYTSOEsRiORmOHwFy9fcvB2UviEmVIfvDxvX6giEZzDz8Ai9G7k8KODKzjX2PWsCiHT1P5EIe2pPNYCIvwAkIiFw5adWnAiydjNYf0oXaTym+v94/2G1c1nWX4WmTJeON+oD0C9wz+gIlx1RU7O2Gx4="
