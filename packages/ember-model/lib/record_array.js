@@ -32,7 +32,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     Ember.assert("Reload can only be called on findAll RecordArrays",
       modelClass && modelClass._findAllRecordArray === this);
     
-    set(this, 'isLoading', true);
+    set(this, 'isLoaded', false);
     modelClass.adapter.findAll(modelClass, this);
   }
 });
