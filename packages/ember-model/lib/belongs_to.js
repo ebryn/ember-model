@@ -18,11 +18,15 @@ Ember.belongsTo = function(type, options) {
 
     if (arguments.length === 2) {
       if (value) {
+        if (typeof value === "string" || typeof value === "number") {
+          value = type.find(value);
+        }
+
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
                      [value.constructor, type]),
                      value instanceof type);
       }
-      return value === undefined ? null : value;  
+      return value === undefined ? null : value;
     } else {
       return this.getBelongsTo(relationshipKey, type, meta);
     }

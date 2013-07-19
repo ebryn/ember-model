@@ -300,6 +300,37 @@ test("setting relationship should make parent dirty", function() {
   ok(post.get('isDirty'));
 });
 
+test("setting relationship using the ID should work", function() {
+  expect(2);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+  Author.FIXTURES = [{ id: 100, name: 'bob' }];
+
+  var post = Post.create();
+  Ember.run(post, post.load, 1, { article_id: 100 });
+  Ember.run(function() {
+    post.set('author', 100);
+  });
+  var author = Ember.run(post, post.get, 'author');
+
+  stop();
+  author.one('didLoad', function() {
+    start();
+    equal(author.get('id'), 100);
+    ok(author instanceof Author);
+  });
+});
+
 test("relationships should be seralized when specified with string", function() {
   expect(1);
 
