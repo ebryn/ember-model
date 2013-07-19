@@ -230,3 +230,20 @@ test("toJSON should respect the key option in attr", function() {
   equal(json.Author, "Guilherme", "json.Author should be Guilherme");
   equal(json.author, undefined, "json.author should be undefined");
 });
+
+test("attributes array should be prepared after defining a model", function() {
+  var Model = Ember.Model.extend({
+    id: attr()
+  });
+
+  var Page = Model.extend({
+    title: attr()
+  });
+
+  var Person = Model.extend({
+    name: attr()
+  });
+
+  deepEqual(Page.create().attributes, ['id', 'title']);
+  deepEqual(Person.create().attributes, ['id', 'name']);
+});

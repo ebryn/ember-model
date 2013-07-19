@@ -149,7 +149,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       var meta = value.meta();
 
       if (meta.isAttribute) {
-        if (!proto.attributes) { proto.attributes = []; }
+        proto.attributes = proto.attributes ? proto.attributes.slice() : [];
         proto.attributes.push(key);
       } else if (meta.isRelationship) {
         if (!proto.relationships) { proto.relationships = []; }
@@ -389,7 +389,7 @@ Ember.Model.reopenClass({
     if (this._findAllRecordArray) { return this._findAllRecordArray; }
 
     var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
-    
+
     this.adapter.findAll(this, records);
 
     return records;
