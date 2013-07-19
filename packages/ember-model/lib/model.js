@@ -152,7 +152,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         proto.attributes = proto.attributes ? proto.attributes.slice() : [];
         proto.attributes.push(key);
       } else if (meta.isRelationship) {
-        if (!proto.relationships) { proto.relationships = []; }
+        proto.relationships = proto.relationships ? proto.relationships.slice() : [];
         proto.relationships.push(key);
       }
     }
