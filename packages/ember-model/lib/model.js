@@ -438,16 +438,7 @@ Ember.Model.reopenClass({
     if ((!adapter.findMany || adapter.findMany.isUnimplemented) && !isLoaded) {
       return this._fetchById(record, id);
     } else {
-      
       var deferred = Ember.Deferred.create();
-
-      deferred.then(
-        function() {
-          return record;
-        },
-        function(errorXHR) {
-          return errorXHR;
-        });
 
       if(!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
       this._currentBatchDeferreds.push(deferred);
@@ -571,14 +562,14 @@ Ember.Model.reopenClass({
       }
     }
 
-    promise.then(function() {
+    promise.then(function(record) {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
         batchRecordArrays[i].loadForFindMany(self);
       }
-    }).then(function() {
+
       if(batchDeferreds) {
-        for (var i = 0, l = batchDeferreds.length; i < l; i++) {
-          batchDeferreds[i].resolve();
+        for (i = 0, l = batchDeferreds.length; i < l; i++) {
+          batchDeferreds[i].resolve(record);
         }
       }
     }).then(null, function(errorXHR) {
