@@ -42,10 +42,10 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     var data = this._findData(record.constructor, id);
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      setTimeout(function() {
+      Ember.run.later(this, function() {
         Ember.run(record, record.load, id, data);
         resolve(record);
-      });
+      }, 0);
     });
   },
 
@@ -58,10 +58,10 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      setTimeout(function() {
+      Ember.run.later(this, function() {
         Ember.run(records, records.load, klass, requestedData);
         resolve(records);
-      });
+      }, 0);
     });
   },
 
@@ -69,10 +69,10 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     var fixtures = klass.FIXTURES;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      setTimeout(function() {
+      Ember.run.later(this, function() {
         Ember.run(records, records.load, klass, fixtures);
         resolve(records);
-      });
+      }, 0);
     });
   },
 
@@ -81,29 +81,29 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
         fixtures = klass.FIXTURES;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      setTimeout(function() {
+      Ember.run.later(this, function() {
         fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
         record.didCreateRecord();
         resolve(record);
-      });
+      }, 0);
     });
   },
 
   saveRecord: function(record) {
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      setTimeout(function() {
+      Ember.run.later(this, function() {
         record.didSaveRecord();
         resolve(record);
-      });
+      }, 0);
     });
   },
 
   deleteRecord: function(record) {
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      setTimeout(function() {
+      Ember.run.later(this, function() {
         record.didDeleteRecord();
         resolve(record);
-      });
+      }, 0);
     });
   }
 });
@@ -464,10 +464,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       var meta = value.meta();
 
       if (meta.isAttribute) {
-        if (!proto.attributes) { proto.attributes = []; }
+        proto.attributes = proto.attributes ? proto.attributes.slice() : [];
         proto.attributes.push(key);
       } else if (meta.isRelationship) {
-        if (!proto.relationships) { proto.relationships = []; }
+        proto.relationships = proto.relationships ? proto.relationships.slice() : [];
         proto.relationships.push(key);
       }
     }
@@ -704,7 +704,7 @@ Ember.Model.reopenClass({
     if (this._findAllRecordArray) { return this._findAllRecordArray; }
 
     var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
-    
+
     this.adapter.findAll(this, records);
 
     return records;
