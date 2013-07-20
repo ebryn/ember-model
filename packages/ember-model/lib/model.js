@@ -345,14 +345,11 @@ Ember.Model.reopenClass({
 
   fetch: function(id) {
     if (!arguments.length) {
-      return Ember.loadPromise(this.find.apply(this, arguments));
-      //return this.fetchAll();
+      return this.fetchAll();
     } else if (Ember.isArray(id)) {
-      return Ember.loadPromise(this.find.apply(this, arguments));
-      //return this.fetchMany(id);
+      return this.fetchMany(id);
     } else if (typeof id === 'object') {
-      return Ember.loadPromise(this.find.apply(this, arguments));
-      //return this.fetchQuery(id);
+      return this.fetchQuery(id);
     } else {
       return this.fetchById(id);
     }
@@ -377,15 +374,7 @@ Ember.Model.reopenClass({
     
 
     var deferred = Ember.Deferred.create();
-
-    deferred.then(
-      function() {
-        return records;
-      },
-      function(errorXHR) {
-        return errorXHR;
-      }
-    );
+    Ember.setMeta(deferred, 'resolveWith', records);
 
     if(!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
     this._currentBatchDeferreds.push(deferred);
@@ -439,6 +428,9 @@ Ember.Model.reopenClass({
       return this._fetchById(record, id);
     } else {
       var deferred = Ember.Deferred.create();
+
+      //Attached the record to the deferred so we can resolove it later.
+      Ember.setMeta(deferred, 'resolveWith', record);
 
       if(!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
       this._currentBatchDeferreds.push(deferred);
@@ -562,14 +554,15 @@ Ember.Model.reopenClass({
       }
     }
 
-    promise.then(function(record) {
+    promise.then(function() {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
         batchRecordArrays[i].loadForFindMany(self);
       }
 
       if(batchDeferreds) {
         for (i = 0, l = batchDeferreds.length; i < l; i++) {
-          batchDeferreds[i].resolve(record);
+          var resolveWith = Ember.getMeta(batchDeferreds[i], 'resolveWith');
+          batchDeferreds[i].resolve(resolveWith);
         }
       }
     }).then(null, function(errorXHR) {
