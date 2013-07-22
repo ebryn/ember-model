@@ -99,6 +99,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   }).property().volatile(),
 
+  set: function(keyName, value) {
+    set(this, keyName, value);
+    this.notifyPropertyChange('isDirty');
+    return this;
+  },
+
   dataKey: function(key) {
     var camelizeKeys = get(this.constructor, 'camelizeKeys');
     var meta = this.constructor.metaForProperty(key);
