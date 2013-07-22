@@ -476,6 +476,21 @@ test("can use data as attribute name", function() {
   deepEqual(record.toJSON(), {id: 1, data: 'abc'});
 });
 
+test("record is available in record cache when load is run in cachedRecordForId", function() {
+  var recordFromCache,
+      Post = Ember.Model.extend({
+        load: function() {
+          recordFromCache = this.constructor.recordCache['1'];
+        }
+      });
+
+  Post.sideloadedData = { '1': { id: '1' } };
+
+  Post.cachedRecordForId('1');
+
+  ok(recordFromCache, 'record should be available in recordCache when running load');
+});
+
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){

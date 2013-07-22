@@ -488,11 +488,11 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
+      this.recordCache[id] = record;
       var sideloadedData = this.sideloadedData && this.sideloadedData[id];
       if (sideloadedData) {
         record.load(id, sideloadedData);
       }
-      this.recordCache[id] = record;
     }
 
     return record;
