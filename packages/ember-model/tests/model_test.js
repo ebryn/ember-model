@@ -225,7 +225,7 @@ test("record.toJSON() uses rootKey if it is defined", function() {
 
 test("record.toJSON() can use computed property as rootKey", function() {
   expect(1);
-  
+
   var CPRoot = Model.extend();
   CPRoot.reopenClass({
     rootKey: Ember.computed(function() {
@@ -344,13 +344,18 @@ test("relationships are added to relationships list", function() {
   var Comment = Ember.Model.extend(),
       Rating = Ember.Model.extend(),
       Author = Ember.Model.extend(),
+      Site = Ember.Model.extend(),
       Article = Ember.Model.extend({
         comments: Ember.hasMany(Comment, { key: 'comments' }),
         author: Ember.belongsTo(Author, { key: 'author' }),
         ratings: Ember.hasMany(Rating, { key: 'ratings' })
+      }),
+      News = Article.extend({
+        source: Ember.belongsTo(Site, { key: 'site' })
       });
 
   deepEqual(Article.proto().relationships, ['comments', 'author', 'ratings'], 'relationships keys should be saved into relationships attribute');
+  deepEqual(News.proto().relationships, ['comments', 'author', 'ratings', 'source'], 'relationships keys should be saved into relationships attribute');
 });
 
 test("toJSON includes embedded relationships", function() {
