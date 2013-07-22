@@ -145,7 +145,7 @@ test("materializing the relationship should should not dirty the record", functi
 
   var post = Ember.run(Post, Post.create);
   post.get('id');
-  ok(!post.get('isDirty'));
+  ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('authors');
-  ok(!post.get('isDirty'));
+  ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
 });

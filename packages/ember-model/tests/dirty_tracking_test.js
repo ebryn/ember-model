@@ -52,14 +52,14 @@ test("when properties defined in create have not changed on a model, isDirty sho
   });
 
   var obj = Ember.run(Model, Model.create, {name: 'Jeffrey', city: 'SF'});
-  ok(!obj.get('isDirty'));
+  ok(!obj.get('isDirty'), 'is not dirty before calling set');
 
   obj.set('name', 'Jeffrey');
   obj.set('city', 'SF');
-  ok(!obj.get('isDirty'));
+  ok(!obj.get('isDirty'), 'is not dirty after calling set');
 
   obj.set('name', 'Erik');
-  ok(obj.get('isDirty'));
+  ok(obj.get('isDirty'), 'is dirty after changing data');
 });
 
 test("when properties are changed back to the loaded value, isDirty should be false", function() {
