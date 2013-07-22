@@ -128,3 +128,24 @@ test("toJSON uses the given relationship key", function() {
 
   deepEqual(article.toJSON(), { comment_ids: ['a'] }, "Relationship ids should be serialized only under the given key");
 });
+
+test("materializing the relationship should should not dirty the record", function() {
+  expect(2);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Ember.run(Post, Post.create);
+  post.get('id');
+  ok(!post.get('isDirty'));
+  post.get('authors');
+  ok(!post.get('isDirty'));
+});

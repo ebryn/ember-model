@@ -42,11 +42,17 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     type = descMeta.type;
     dataType = Ember.Model.dataTypes[type];
 
+    if (descMeta.kind === 'belongsTo' && dataValue === undefined) {
+      dataValue = null;
+    }
+
     if (type && type.isEqual) {
       isDirty = !type.isEqual(dataValue, cachedValue);
     } else if (dataType && dataType.isEqual) {
       isDirty = !dataType.isEqual(dataValue, cachedValue);
     } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
+      isDirty = get(cachedValue, 'isDirty');
+    } else if (dataValue === undefined && cachedValue instanceof Ember.ManyArray) { // hasMany case
       isDirty = get(cachedValue, 'isDirty');
     } else if (dataValue !== cachedValue) {
       isDirty = true;
