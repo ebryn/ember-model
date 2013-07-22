@@ -76,9 +76,11 @@ Ember.attr = function(type, options) {
         beingCreated = meta(this).proto === this;
 
     if (arguments.length === 2) {
-      if (beingCreated && !data) {
-        data = {};
-        set(this, '_data', data);
+      if (beingCreated) {
+        if (!data) {
+          data = {};
+          set(this, '_data', data);
+        }
         data[dataKey] = value;
       }
       return wrapObject(value);

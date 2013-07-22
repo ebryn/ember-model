@@ -43,6 +43,25 @@ test("when properties have changed on a model, isDirty should be set", function(
   Ember.run(obj, obj.save);
 });
 
+test("when properties defined in create have not changed on a model, isDirty should be false", function() {
+  expect(3);
+
+  var Model = Ember.Model.extend({
+    name: attr(),
+    city: attr()
+  });
+
+  var obj = Ember.run(Model, Model.create, {name: 'Jeffrey', city: 'SF'});
+  ok(!obj.get('isDirty'));
+
+  obj.set('name', 'Jeffrey');
+  obj.set('city', 'SF');
+  ok(!obj.get('isDirty'));
+
+  obj.set('name', 'Erik');
+  ok(obj.get('isDirty'));
+});
+
 test("when properties are changed back to the loaded value, isDirty should be false", function() {
   expect(6);
 
@@ -219,4 +238,3 @@ test("getting embedded belongsTo attribute after load should not make parent dir
   var author = post.get('author');
   equal(post.get('isDirty'), false, 'get belongsTo relationship does not dirty post record');
 });
-
