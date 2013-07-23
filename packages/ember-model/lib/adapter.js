@@ -1,19 +1,21 @@
 function mustImplement(message) {
   var fn = function() {
-    throw new Error(message);
+    var className = this.constructor.toString();
+
+    throw new Error(message.replace('{{className}}', className));
   };
   fn.isUnimplemented = true;
   return fn;
 }
 
 Ember.Adapter = Ember.Object.extend({
-  find: mustImplement('Ember.Adapter subclasses must implement find'),
-  findQuery: mustImplement('Ember.Adapter subclasses must implement findQuery'),
-  findMany: mustImplement('Ember.Adapter subclasses must implement findMany'),
-  findAll: mustImplement('Ember.Adapter subclasses must implement findAll'),
-  createRecord: mustImplement('Ember.Adapter subclasses must implement createRecord'),
-  saveRecord: mustImplement('Ember.Adapter subclasses must implement saveRecord'),
-  deleteRecord: mustImplement('Ember.Adapter subclasses must implement deleteRecord'),
+  find: mustImplement('{{className}} must implement find'),
+  findQuery: mustImplement('{{className}} must implement findQuery'),
+  findMany: mustImplement('{{className}} must implement findMany'),
+  findAll: mustImplement('{{className}} must implement findAll'),
+  createRecord: mustImplement('{{className}} must implement createRecord'),
+  saveRecord: mustImplement('{{className}} must implement saveRecord'),
+  deleteRecord: mustImplement('{{className}} must implement deleteRecord'),
 
   load: function(record, id, data) {
     record.load(id, data);
