@@ -212,6 +212,23 @@ test("dirty checking works with date attributes", function() {
   ok(!obj.get('isDirty'));
 });
 
+test("dirty checking works with array attributes", function() {
+  var Model = Ember.Model.extend({
+    countries: attr()
+  });
+
+  var obj = Model.create();
+  Ember.run(function() {
+    obj.load(1, {countries: ['my', 'us']});
+  });
+
+  ok(obj.get('countries'), ['my', 'us']);
+  ok(!obj.get('isDirty'), 'is not dirty after calling get');
+
+  obj.set('countries', ['my', 'sg']);
+  ok(obj.get('isDirty'), 'is dirty after calling set');
+});
+
 test("getting embedded belongsTo attribute after load should not make parent dirty", function() {
   expect(2);
   var json = {
