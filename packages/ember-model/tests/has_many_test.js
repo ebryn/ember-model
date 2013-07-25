@@ -130,7 +130,7 @@ test("toJSON uses the given relationship key", function() {
 });
 
 test("materializing the relationship should should not dirty the record", function() {
-  expect(2);
+  expect(4);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -148,4 +148,11 @@ test("materializing the relationship should should not dirty the record", functi
   ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('authors');
   ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
+
+  var postWithData = Post.create();
+  postWithData.load(1, {author_ids: [2]});
+  postWithData.get('id');
+  ok(!postWithData.get('isDirty'), 'with data is not dirty before materializing the relationship');
+  postWithData.get('authors');
+  ok(!postWithData.get('isDirty'), 'with data is not dirty after materializing the relationship');
 });

@@ -15,6 +15,8 @@ Ember.belongsTo = function(type, options) {
 
   return Ember.computed(function(key, value) {
     type = meta.getType();
+    var data = get(this, '_data'),
+      beingCreated = Ember.meta(this).proto === this;
 
     if (arguments.length === 2) {
       if (value) {
@@ -22,7 +24,15 @@ Ember.belongsTo = function(type, options) {
                      [value.constructor, type]),
                      value instanceof type);
       }
-      return value === undefined ? null : value;  
+      var result = value === undefined ? null : value;
+      if (beingCreated) {
+        if (!data) {
+          data = {};
+          Ember.set(this, '_data', data);
+        }
+        data[this.dataKey(key)] = result;
+      }
+      return result;
     } else {
       return this.getBelongsTo(relationshipKey, type, meta);
     }

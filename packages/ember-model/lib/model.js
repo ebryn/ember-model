@@ -52,7 +52,7 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
       isDirty = !dataType.isEqual(dataValue, cachedValue);
     } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
       isDirty = get(cachedValue, 'isDirty');
-    } else if (dataValue === undefined && cachedValue instanceof Ember.ManyArray) { // hasMany case
+    } else if (cachedValue instanceof Ember.ManyArray) { // hasMany case
       isDirty = get(cachedValue, 'isDirty');
     } else if (dataValue !== cachedValue) {
       isDirty = true;
