@@ -533,8 +533,35 @@ test("fetchAll returns a promise", function() {
     promise.then(function(records) {
       start();
       ok(records.get('isLoaded'));
+      equal(records.get('length'), 1);  
     });
     stop();
+});
+
+test("fetchAll returns promise if findAll RecordArray already exists", function() {
+  expect(1);
+  var promise = Ember.run(Model, Model.fetch);
+  promise.then(function(records) {
+    start();
+    var secondPromise = Ember.run(Model, Model.fetch);
+    secondPromise.then(function() {
+      start();
+      ok(true, "Second fetch returned a promise");
+    });
+    stop(); 
+  });
+  stop();
+});
+
+test("fetchAll resolves to same RecordArray when called multiple times", function() {
+  expect(1);
+  var promiseOne = Ember.run(Model, Model.fetch);
+  var promiseTwo = Ember.run(Model, Model.fetch);
+  Ember.RSVP.all([promiseOne, promiseTwo]).then(function(records) {
+    start();
+    ok(records[0] === records[1], "Both promises resolve with same RecordArray");
+  });
+  stop();
 });
 
 test("fetchMany returns a promise", function() {

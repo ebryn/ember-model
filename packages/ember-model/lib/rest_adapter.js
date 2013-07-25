@@ -9,6 +9,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return this.ajax(url).then(function(data) {
       self.didFind(record, id, data);
+      return record;
     });
   },
 
@@ -25,6 +26,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return this.ajax(url).then(function(data) {
       self.didFindAll(klass, records, data);
+      return records;
     });
   },
 
@@ -41,6 +43,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return this.ajax(url, params).then(function(data) {
       self.didFindQuery(klass, records, params, data);
+      return records;
     });
   },
 
@@ -57,6 +60,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return this.ajax(url, record.toJSON(), "POST").then(function(data) {
       self.didCreateRecord(record, data);
+      return record;
     });
   },
 
@@ -64,7 +68,6 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var rootKey = get(record.constructor, 'rootKey'),
         primaryKey = get(record.constructor, 'primaryKey'),
         dataToLoad = rootKey ? data[rootKey] : data;
-
     record.load(dataToLoad[primaryKey], dataToLoad);
     record.didCreateRecord();
   },
@@ -76,6 +79,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
       self.didSaveRecord(record, data);
+      return record;
     });
   },
 
