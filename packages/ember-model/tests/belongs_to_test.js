@@ -270,6 +270,27 @@ test("should be able to set relationship to null", function() {
   deepEqual(post.toJSON(), {id: 1, author_id: null});
 });
 
+test("materializing the relationship should should not dirty the record", function() {
+  expect(2);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Ember.run(Post, Post.create);
+  post.get('id');
+  ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
+  post.get('author');
+  ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
+});
+
 test("setting relationship should make parent dirty", function() {
   expect(1);
 

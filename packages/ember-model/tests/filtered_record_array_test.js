@@ -125,7 +125,6 @@ test("loading a record that matches the filter after creating a FilteredRecordAr
 
 test("changing a property that matches the filter should update the FilteredRecordArray to include it", function() {
   expect(5);
-
   Model.fetch().then(function() {
     start();
     var recordArray = Ember.FilteredRecordArray.create({
@@ -140,12 +139,14 @@ test("changing a property that matches the filter should update the FilteredReco
     equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
 
     Model.fetch(2).then(function(record) {
+      start();
       record.set('name', 'Estefan');
 
       equal(recordArray.get('length'), 2, "There are 2 records after changing the name");
       equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
       equal(recordArray.get('lastObject.name'), 'Estefan', "The record data matches");
     });
+    stop();
   });
 
   stop();

@@ -678,3 +678,23 @@ test("Expect ajax settings to include a custom header", function() {
   equal(settings.url, RESTModel.url);
 
 });
+
+test("find with 0", function() {
+  expect(3);
+
+  var RESTModel = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      adapter = RESTModel.adapter = Ember.RESTAdapter.create();
+
+  RESTModel.url = '/posts';
+
+  adapter._ajax = function(url, params, method) {
+    equal(url, "/posts/0.json");
+    equal(params, undefined);
+    equal(method, "GET");
+    return ajaxSuccess();
+  };
+  Ember.run(RESTModel, RESTModel.find, 0);
+});

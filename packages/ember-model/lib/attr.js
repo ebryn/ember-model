@@ -32,11 +32,11 @@ Ember.Model.dataTypes = {};
 
 Ember.Model.dataTypes[Date] = {
   deserialize: function(string) {
-    if(!string) { return null; }
+    if (!string) { return null; }
     return new Date(string);
   },
   serialize: function (date) {
-    if(!date) { return null; }
+    if (!date) { return null; }
     return date.toISOString();
   },
   isEqual: function(obj1, obj2) {
@@ -76,9 +76,11 @@ Ember.attr = function(type, options) {
         beingCreated = meta(this).proto === this;
 
     if (arguments.length === 2) {
-      if (beingCreated && !data) {
-        data = {};
-        set(this, '_data', data);
+      if (beingCreated) {
+        if (!data) {
+          data = {};
+          set(this, '_data', data);
+        }
         data[dataKey] = value;
       }
       return wrapObject(value);
