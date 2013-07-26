@@ -441,7 +441,17 @@ Ember.Model.reopenClass({
   },
 
   _findFetchAll: function(isFetch) {
-    if (this._findAllRecordArray) { return this._findAllRecordArray; }
+    var self = this;
+
+    if (this._findAllRecordArray) { 
+      if (isFetch) {
+        return new Ember.RSVP.Promise(function(resolve) {
+          resolve(self._findAllRecordArray);
+        });
+      } else {
+        return this._findAllRecordArray;
+      }
+    }
 
     var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
 
