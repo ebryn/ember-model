@@ -59,8 +59,13 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
       isDirty = get(cachedValue, 'isDirty');
     } else if (cachedValue instanceof Ember.ManyArray) { // hasMany case
-      var dset = Ember.makeArray(dataValue).sort(),
-          cset = cachedValue.toJSON().sort();
+      var dset, cset;
+      if (dataValue instanceof Ember.ManyArray) {
+        dset = dataValue.toJSON().sort();
+      } else {
+        dset = Ember.makeArray(dataValue).sort();
+      }
+      cset = cachedValue.toJSON().sort();
       isDirty = Ember.compare(dset, cset) !== 0 || get(cachedValue, 'isDirty');
     } else if (dataValue !== cachedValue) {
       isDirty = true;
