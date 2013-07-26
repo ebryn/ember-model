@@ -57,7 +57,18 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     } else if (dataType && dataType.isEqual) {
       isDirty = !dataType.isEqual(dataValue, cachedValue);
     } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
-      isDirty = get(cachedValue, 'isDirty');
+      var serializedDataValue = dataValue,
+          serializedCachedValue = cachedValue.toJSON();
+
+      if (dataValue instanceof Ember.Model) {
+        serializedDataValue = dataValue.toJSON();
+      } else if (typeof dataValue === 'object') {
+        serializedCachedValue = cachedValue.toJSON();
+      } else {
+        serializedCachedValue = cachedValue.getPrimaryKey();
+      }
+
+      isDirty = Ember.compare(serializedDataValue, serializedCachedValue) !== 0 || get(cachedValue, 'isDirty');
     } else if (dataValue === undefined && cachedValue instanceof Ember.ManyArray) { // hasMany case
       isDirty = get(cachedValue, 'isDirty');
     } else if (dataValue !== cachedValue) {
