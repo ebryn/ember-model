@@ -11,6 +11,10 @@ Ember.ManyArray = Ember.RecordArray.extend({
     return this.materializeRecord(idx);
   },
 
+  nextObject: function(idx, previousObject, context) {
+    return this.objectAtContent(idx);
+  },
+
   save: function() {
     // TODO: loop over dirty records only
     return Ember.RSVP.all(this.map(function(record) {
@@ -24,7 +28,11 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }, this);
 
     this._super(index, removed, added);
-  }
+  },
+
+  isDirty: Ember.computed(function() {
+    return this.findProperty('isDirty') !== undefined;
+  }).property().volatile()
 });
 
 Ember.HasManyArray = Ember.ManyArray.extend({
