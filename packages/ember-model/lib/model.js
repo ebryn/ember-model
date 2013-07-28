@@ -103,13 +103,14 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didDefineProperty: function(proto, key, value) {
     if (value instanceof Ember.Descriptor) {
       var meta = value.meta();
+      var klass = proto.constructor;
 
       if (meta.isAttribute) {
-        proto.attributes = proto.attributes ? proto.attributes.slice() : [];
-        proto.attributes.push(key);
+        if (!klass._attributes) { klass._attributes = []; }
+        klass._attributes.push(key);
       } else if (meta.isRelationship) {
-        proto.relationships = proto.relationships ? proto.relationships.slice() : [];
-        proto.relationships.push(key);
+        if (!klass._relationships) { klass._relationships = []; }
+        klass._relationships.push(key);
       }
     }
   },
@@ -131,7 +132,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   toJSON: function() {
     var key, meta,
         json = {},
-        properties = this.attributes ? this.getProperties(this.attributes) : {},
+        attributes = this.constructor.getAttributes(),
+        relationships = this.constructor.getRelationships(),
+        properties = attributes ? this.getProperties(attributes) : {},
         rootKey = get(this.constructor, 'rootKey');
 
     for (key in properties) {
@@ -145,11 +148,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
     }
 
-    if (this.relationships) {
+    if (relationships) {
       var data, relationshipKey;
 
-      for(var i = 0; i < this.relationships.length; i++) {
-        key = this.relationships[i];
+      for(var i = 0; i < relationships.length; i++) {
+        key = relationships[i];
         meta = this.constructor.metaForProperty(key);
         relationshipKey = meta.options.key || key;
 
@@ -270,7 +273,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var i, j;
     for (i = 0; i < this._hasManyArrays.length; i++) {
       var array = this._hasManyArrays[i],
-          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));     
+          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
         for (j = 0; j < array.get('length'); j++) {
           if (array.objectAt(j).get('isNew')) {
             hasManyContent.addObject(array.objectAt(j)._reference);
@@ -308,6 +311,24 @@ Ember.Model.reopenClass({
   adapter: Ember.Adapter.create(),
 
   _clientIdCounter: 1,
+
+  getAttributes: function() {
+    this.proto(); // force class "compilation" if it hasn't been done.
+    var attributes = this._attributes || [];
+    if (typeof this.superclass.getAttributes === 'function') {
+      attributes = this.superclass.getAttributes().concat(attributes);
+    }
+    return attributes;
+  },
+
+  getRelationships: function() {
+    this.proto(); // force class "compilation" if it hasn't been done.
+    var relationships = this._relationships || [];
+    if (typeof this.superclass.getRelationships === 'function') {
+      relationships = this.superclass.getRelationships().concat(relationships);
+    }
+    return relationships;
+  },
 
   fetch: function(id) {
     if (!arguments.length) {
@@ -398,7 +419,7 @@ Ember.Model.reopenClass({
   _findFetchAll: function(isFetch) {
     var self = this;
 
-    if (this._findAllRecordArray) { 
+    if (this._findAllRecordArray) {
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -475,7 +496,7 @@ Ember.Model.reopenClass({
       this._currentBatchDeferreds.push(deferred);
 
       Ember.run.scheduleOnce('data', this, this._executeBatch);
-      
+
       return deferred;
     } else {
       return adapter.find(record, id);
