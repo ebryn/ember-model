@@ -56,7 +56,7 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
       isDirty = !type.isEqual(dataValue, cachedValue);
     } else if (dataType && dataType.isEqual) {
       isDirty = !dataType.isEqual(dataValue, cachedValue);
-    } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
+    } else if (cachedValue instanceof Ember.Model) { // belongsTo case
       var serializedDataValue = dataValue,
           serializedCachedValue = cachedValue.toJSON();
 
