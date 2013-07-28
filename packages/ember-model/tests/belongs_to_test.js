@@ -270,7 +270,7 @@ test("should be able to set relationship to null", function() {
   deepEqual(post.toJSON(), {id: 1, author_id: null});
 });
 
-test("materializing the relationship should should not dirty the record", function() {
+test("materializing the relationship should not dirty the record", function() {
   expect(2);
 
   var Author = Ember.Model.extend({
@@ -353,7 +353,38 @@ test("setting existing nonembedded relationship should make parent dirty", funct
   ok(post.get('isDirty'));
 });
 
-test("relationships should be seralized when specified with string", function() {
+test("dirtying the relationship should make parent dirty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100, name: 'bob'});
+    post.load(1, {id: 1, author_id: 100});
+  });
+
+  Ember.run(function() {
+    author.set('name', 'billy');
+  });
+
+  post.get('author');
+  ok(post.get('isDirty'));
+});
+
+test("relationships should be serialized when specified with string", function() {
   expect(1);
 
   Ember.Author = Ember.Model.extend({

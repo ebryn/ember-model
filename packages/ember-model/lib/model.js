@@ -62,9 +62,7 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
 
       if (dataValue instanceof Ember.Model) {
         serializedDataValue = dataValue.toJSON();
-      } else if (typeof dataValue === 'object') {
-        serializedCachedValue = cachedValue.toJSON();
-      } else {
+      } else if (typeof dataValue !== 'object') {
         serializedCachedValue = cachedValue.getPrimaryKey();
       }
 
@@ -164,6 +162,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this._createReference();
+    if (!this.constructor.recordCache) this.constructor.recordCache = {};
+    this.constructor.recordCache[id] = this;
     this.trigger('didLoad');
   },
 
@@ -460,7 +460,7 @@ Ember.Model.reopenClass({
   _findFetchAll: function(isFetch) {
     var self = this;
 
-    if (this._findAllRecordArray) { 
+    if (this._findAllRecordArray) {
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -537,7 +537,7 @@ Ember.Model.reopenClass({
       this._currentBatchDeferreds.push(deferred);
 
       Ember.run.scheduleOnce('data', this, this._executeBatch);
-      
+
       return deferred;
     } else {
       return adapter.find(record, id);
