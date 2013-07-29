@@ -146,13 +146,13 @@ test(".find(id) called multiple times returns the same object (identity map)", f
   equal(first, second);
 });
 
-test(".forget(model) removes models from caches and subsequent find(id) return new objects", function() {
+test(".purge(model) removes models from caches and subsequent find(id) return new objects", function() {
   expect(4);
 
   var first = Ember.run(Model, Model.find, 'a'),
       second = Ember.run(Model, Model.find, 'a');
 
-  Model.forget(first);
+  Model.purge(first);
 
   first.set('token', 'b')
   ok(first.get('token') === second.get('token'), "record models are the same object");

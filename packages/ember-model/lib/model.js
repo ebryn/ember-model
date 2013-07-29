@@ -615,7 +615,7 @@ Ember.Model.reopenClass({
     }
   },
 
-  forget: function (record) {
+  purge: function (record) {
     this.removeFromRecordArrays(record);
     var primaryKey = record.get(get(this, 'primaryKey'));
     this.removeFromCache(primaryKey);
