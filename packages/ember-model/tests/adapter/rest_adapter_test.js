@@ -699,7 +699,7 @@ test("find with 0", function() {
   Ember.run(RESTModel, RESTModel.find, 0);
 });
 
-test("find() resolves with recordd", function() {
+test("find() resolves with record", function() {
   expect(1);
 
   var data = {id: 1, name: 'Erik'},
