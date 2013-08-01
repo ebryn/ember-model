@@ -69,6 +69,55 @@ test("it should recognize array values and clone the whole array", function() {
   equal(Ember.typeOf(page.get("authors")), "array");
 });
 
+test("it should recognize items in arrays and wrap or include them", function() {
+  var Authors = Ember.Model.extend({
+    authorsJson: attr()
+  });
+
+  var authors = Authors.create(),
+      origArray = [ { user: "Mister", id: "llcoolj", items: ["i1", "i2", {taco: "chocolate"}] }, { user: "Theking", id: "Lebron", items: ["i3", "i4", {taco: "chaco"}] } ];
+
+  Ember.run(function() {
+    authors.load(1, { authorsJson: origArray });
+  });
+
+  ok(authors.get("authorsJson")[0].hasOwnProperty("user"), "attributes of arrays that are attributes should exist on the array");
+  ok(authors.get("authorsJson")[0].hasOwnProperty("id"), "attributes of arrays that are attributes should exist on the array");
+  ok(authors.get("authorsJson")[0].hasOwnProperty("items"), "attributes of arrays that are attributes should exist on the array");
+  ok(authors.get("authorsJson")[0].items[2].hasOwnProperty("taco"), "items of arrays that are attributes should exist on the array");
+  equal(Ember.typeOf(authors.get("authorsJson")), "array");
+});
+
+test("it should be able to sideload from a pojo[] attribute", function() {
+  var Authors = Ember.Model.extend({
+    authorsJson: attr()
+  });
+
+  var Author = Ember.Model.extend({
+    user:  attr(),
+    id:    attr(),
+    items: attr()
+  });
+
+  var authors = Authors.create(),
+      origArray = [ { user: "Mister", id: "llcoolj", items: ["i1", "i2", {taco: "chocolate"}] }, { user: "TheKing", id: "Lebron", items: ["i3", "i4", {taco: "chaco"}] } ];
+
+  Ember.run(function() {
+    authors.load(1, { authorsJson: origArray });
+  });
+
+  Author.load(authors.get("authorsJson"));
+
+  var author1, author2;
+
+  Ember.run(function() {
+    author1 = Author.find("llcoolj"), author2 = Author.find("Lebron");
+  });
+
+  ok(author1.get("user") === "Mister", "you should be able to sideload from attributes");
+  ok(author2.get("user") === "TheKing", "you should be able to sideload from attributes");
+});
+
 test("attr should deserialize when type has a deserialize method", function() {
   var Time = {
     deserialize: function(string) {
