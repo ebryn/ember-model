@@ -627,10 +627,10 @@ Ember.Model.reopenClass({
   },
 
   removeFromCache: function (key) {
-    if (!!this.sideloadedData && !!this.sideloadedData[key]) {
+    if (this.sideloadedData && this.sideloadedData[key]) {
       delete this.sideloadedData[key];
     }
-    if (!!this.recordCache && !!this.recordCache[key]) {
+    if (this.recordCache && this.recordCache[key]) {
       delete this.recordCache[key];
     }
   },

@@ -154,16 +154,16 @@ test(".unload(model) removes models from caches and subsequent find(id) return n
 
   Model.unload(first);
 
-  first.set('token', 'b')
+  first.set('token', 'b');
   ok(first.get('token') === second.get('token'), "record models are the same object");
 
   second = Ember.run(Model, Model.find, 'a');
   ok(first.get('token') !== second.get('token'), "records ids are different");
 
-  second.set('token', 'b')
+  second.set('token', 'b');
   ok(first.get('token') === second.get('token'));
 
-  second.set('token', 'c')
+  second.set('token', 'c');
   ok(first.get('token') !== second.get('token'));
 });
 
