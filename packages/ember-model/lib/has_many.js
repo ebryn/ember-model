@@ -28,7 +28,7 @@ Ember.Model.reopen({
       key: key
     });
 
-    this._registerHasManyArray(collection);
+    this._registerHasManyArray(collection, type);
 
     return collection;
   }

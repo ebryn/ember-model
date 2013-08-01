@@ -309,10 +309,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     this._reloadHasManys();
   }, '_data'),
 
-  _registerHasManyArray: function(array) {
+  _registerHasManyArray: function(array, type) {
     if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
 
     this._hasManyArrays.pushObject(array);
+    type.pushIntoRecordCache(array);
   },
 
   _reloadHasManys: function() {
@@ -578,18 +579,31 @@ Ember.Model.reopenClass({
     });
   },
 
-  cachedRecordForId: function(id) {
-    if (!this.recordCache) { this.recordCache = {}; }
-    var record;
+  pushIntoRecordCache: function(records){
+    var primaryKey = get(this, 'primaryKey'), self = this;
+    if (!this.recordCache) this.recordCache = {};
+    
+    records.forEach(function(record){
+      self.recordCache[get(record, primaryKey)] = record;
+    });
 
-    if (this.recordCache[id]) {
-      record = this.recordCache[id];
-    } else {
+  },
+
+  getFromRecordCache: function(id){
+    if (!this.recordCache) this.recordCache = {};
+    return this.recordCache[id];
+  },
+
+
+  cachedRecordForId: function(id) {
+    var record = this.getFromRecordCache(id);
+
+    if (!record) {
       var primaryKey = get(this, 'primaryKey'),
-          attrs = {isLoaded: false};
+        attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      this.recordCache[id] = record;
+      this.pushIntoRecordCache([record]);
       var sideloadedData = this.sideloadedData && this.sideloadedData[id];
       if (sideloadedData) {
         record.load(id, sideloadedData);
