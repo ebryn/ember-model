@@ -347,3 +347,21 @@ test("relationships should be seralized when specified with string", function() 
 
   deepEqual(post.toJSON(), {id: 1, author_id: 100});
 });
+
+
+test("belongsTo from an embedded source maps up", function() {
+  var Comment = Ember.Model.extend({
+        token: Ember.attr(String)
+      }),
+      Article = Ember.Model.extend({
+        comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+      });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create();
+  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
+
+  equal(article.get('comments.length'), 2);
+  equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
+});

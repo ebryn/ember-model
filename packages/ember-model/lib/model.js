@@ -309,11 +309,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     this._reloadHasManys();
   }, '_data'),
 
-  _registerHasManyArray: function(array, type) {
+  _registerHasManyArray: function(array) {
     if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
 
     this._hasManyArrays.pushObject(array);
-    type.pushIntoRecordCache(array);
   },
 
   _reloadHasManys: function() {
@@ -582,18 +581,16 @@ Ember.Model.reopenClass({
   pushIntoRecordCache: function(records){
     var primaryKey = get(this, 'primaryKey'), self = this;
     if (!this.recordCache) this.recordCache = {};
-    
+
     records.forEach(function(record){
       self.recordCache[get(record, primaryKey)] = record;
     });
-
   },
 
   getFromRecordCache: function(id){
     if (!this.recordCache) this.recordCache = {};
     return this.recordCache[id];
   },
-
 
   cachedRecordForId: function(id) {
     var record = this.getFromRecordCache(id);
@@ -612,6 +609,7 @@ Ember.Model.reopenClass({
 
     return record;
   },
+
 
   addToRecordArrays: function(record) {
     if (this._findAllRecordArray) {
