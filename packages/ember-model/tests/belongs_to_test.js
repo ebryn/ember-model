@@ -356,20 +356,19 @@ test("belongsTo from an embedded source is able to materialize without having to
      id: Ember.attr('string'),
      title: Ember.attr('string'),
      projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
-    
   }),
-      Project = Ember.Project = Ember.Model.extend({
+    Project = Ember.Project = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
         posts: Ember.hasMany('Ember.Post', {key: 'posts', embedded: true}),
         company: Ember.belongsTo('Ember.Company', {key:'company'})
-  }),
-      Post = Ember.Post = Ember.Model.extend({
+    }),
+    Post = Ember.Post = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
         body: Ember.attr('string'),
         project: Ember.belongsTo('Ember.Project', {key:'project'})
-  });
+    });
 
   var compJson = {
     id:1,
@@ -380,7 +379,8 @@ test("belongsTo from an embedded source is able to materialize without having to
           company: 1, 
           posts: [{id: 1, title: 'title', body: 'body', project:1 }, 
                   {id: 2, title: 'title two', body: 'body two', project:1 }]
-      }] };
+      }] 
+    };
 
   Company.load([compJson]);
   var company = Company.find(1);
