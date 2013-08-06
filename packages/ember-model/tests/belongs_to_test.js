@@ -349,19 +349,48 @@ test("relationships should be seralized when specified with string", function() 
 });
 
 
-test("belongsTo from an embedded source maps up", function() {
-  var Comment = Ember.Model.extend({
-        token: Ember.attr(String)
-      }),
-      Article = Ember.Model.extend({
-        comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
-      });
+test("belongsTo from an embedded source is able to materialize without having to re-find", function() {
 
-  Comment.primaryKey = 'token';
 
-  var article = Article.create();
-  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
+  var Company = Ember.Company = Ember.Model.extend({
+     id: Ember.attr('string'),
+     title: Ember.attr('string'),
+     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+    
+  }),
+      Project = Ember.Project = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        posts: Ember.hasMany('Ember.Post', {key: 'posts', embedded: true}),
+        company: Ember.belongsTo('Ember.Company', {key:'company'})
+  }),
+      Post = Ember.Post = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        body: Ember.attr('string'),
+        project: Ember.belongsTo('Ember.Project', {key:'project'})
+  });
 
-  equal(article.get('comments.length'), 2);
-  equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
+  var compJson = {
+    id:1,
+    title:'coolio',
+    projects:[{
+          id: 1,
+          title: 'project one title',
+          company: 1, 
+          posts: [{id: 1, title: 'title', body: 'body', project:1 }, 
+                  {id: 2, title: 'title two', body: 'body two', project:1 }]
+      }] };
+
+  Company.load([compJson]);
+  var company = Company.find(1);
+
+  equal(company.get('projects.length'), 1);
+  equal(company.get('projects.firstObject.posts.length'), 2);
+  
+  var project1 = company.get('projects.firstObject');
+  equal(company, project1.get('company'));
+
+  var post1 = project1.get('posts.firstObject');
+  equal(project1, post1.get('project'));
 });
