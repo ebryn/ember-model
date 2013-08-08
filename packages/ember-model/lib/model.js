@@ -45,6 +45,12 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     if (descMeta.kind === 'belongsTo' && dataValue === undefined) {
       dataValue = null;
     }
+    
+    if (descMeta.kind === 'belongsTo' && 
+        descMeta.options.embedded !== true && 
+        cachedValue instanceof Ember.Model) {
+      cachedValue = cachedValue.get(get(type, 'primaryKey'));
+    }
 
     if (type && type.isEqual) {
       isDirty = !type.isEqual(dataValue, cachedValue);
