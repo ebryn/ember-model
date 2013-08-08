@@ -74,27 +74,7 @@ test("with a filter will return only the relevant loaded records", function() {
   stop();
 });
 
-test("will include relevant records fetched after the filter was created", function() {
-  expect(2);
-
-  var recordArray = Ember.FilteredRecordArray.create({
-    modelClass: Model,
-    filterFunction: function(record) {
-      return record.get('name') === 'Erik';
-    },
-    filterProperties: ['name']
-  });
-
-  Model.fetch().then(function() {
-    start();
-    equal(recordArray.get('length'), 1, "There is 1 record");
-    equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
-  });
-
-  stop();
-});
-
-test("creating a record that doesn't match the filter after creating a FilteredRecordArray shouldn't change the content", function() {
+test("loading a record that doesn't match the filter after creating a FilteredRecordArray shouldn't change the content", function() {
   expect(2);
 
   Model.fetch().then(function() {
@@ -118,7 +98,7 @@ test("creating a record that doesn't match the filter after creating a FilteredR
   stop();
 });
 
-test("creating a record that matches the filter after creating a FilteredRecordArray should update the content of it", function() {
+test("loading a record that matches the filter after creating a FilteredRecordArray should update the content of it", function() {
   expect(3);
 
   Model.fetch().then(function() {

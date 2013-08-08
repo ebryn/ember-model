@@ -21,15 +21,6 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
     this.updateFilter();
   },
 
-  // Semantically it doesn't make much sense to push an object onto a FilteredRecordArray,
-  // but if the record is of the correct type, we can add the observers and apply the filter.
-  pushObject: function(record) {
-    if (record.constructor === get(this, 'modelClass')) {
-      this.registerObserversOnRecord(record);
-      this.updateFilter();
-    }
-  },
-
   updateFilter: function() {
     var self = this,
         results = [];
