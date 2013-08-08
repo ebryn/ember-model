@@ -247,3 +247,43 @@ test("attributes array should be prepared after defining a model", function() {
   deepEqual(Page.create().attributes, ['id', 'title']);
   deepEqual(Person.create().attributes, ['id', 'name']);
 });
+
+
+test("custom attributes should revert correctly", function() {
+  var Time = {
+    serialize: function (time) {
+      return time.hour + ":" + time.min;
+    },
+    deserialize: function (string) {
+      var array = string.split(":");
+      return {
+        hour: parseInt(array[0], 10),
+        min: parseInt(array[1], 10)
+      };
+    }
+  };
+
+  var Post = Ember.Model.extend({
+    time: Ember.attr(Time)
+  });
+
+  var post = Post.create({});
+  post.load(1, {time: "10:11"});
+
+  var t0 = post.get('time');
+  equal(t0.hour, 10, "Time should have correct hour");
+  equal(t0.min, 11, "Time should have correct minute");
+
+  post.set('time', { hour: 11, min: 12 });
+
+  var t1 = post.get('time');
+  equal(t1.hour, 11, "Time should have correct hour");
+  equal(t1.min, 12, "Time should have correct minute");
+
+  // Correct: t1 properly deserialized. I.e. t1.hour == 10, t1.min == 12
+
+  post.revert();
+  var t2 = post.get('time');
+  equal(t2.hour, 10, "Time should have correct hour");
+  equal(t2.min, 11, "Time should have correct minute");
+});
