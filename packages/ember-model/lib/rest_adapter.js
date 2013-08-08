@@ -142,6 +142,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       };
 
       settings.error = function(jqXHR, textStatus, errorThrown) {
+        // https://github.com/ebryn/ember-model/issues/202
+        if (jqXHR) {
+          jqXHR.then = null;
+        }
+        
         Ember.run(null, reject, jqXHR);
       };
 
