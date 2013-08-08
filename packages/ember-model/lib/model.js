@@ -323,11 +323,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   _reloadHasManys: function() {
     if (!this._hasManyArrays) { return; }
-
-    var i;
-    for(i = 0; i < this._hasManyArrays.length; i++) {
-      var array = this._hasManyArrays[i];
-      set(array, 'content', this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded')));
+    var i, j;
+    for (i = 0; i < this._hasManyArrays.length; i++) {
+      var array = this._hasManyArrays[i],
+          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));     
+        for (j = 0; j < array.get('length'); j++) {
+          if (array.objectAt(j).get('isNew')) {
+            hasManyContent.addObject(array.objectAt(j)._reference);
+          }
+        }
+      set(array, 'content', hasManyContent);
     }
   },
 
