@@ -29,6 +29,7 @@ Ember.Model.reopen({
     });
 
     this._registerHasManyArray(collection);
+    if (embedded) type.pushIntoRecordCache(collection);
 
     return collection;
   }
