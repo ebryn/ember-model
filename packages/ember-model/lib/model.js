@@ -633,6 +633,26 @@ Ember.Model.reopenClass({
     }
   },
 
+  unload: function (record) {
+    this.removeFromRecordArrays(record);
+    var primaryKey = record.get(get(this, 'primaryKey'));
+    this.removeFromCache(primaryKey);
+  },
+
+  clearCache: function () {
+    this.recordCache = undefined;
+    this.sideloadedData = undefined;
+  },
+
+  removeFromCache: function (key) {
+    if (this.sideloadedData && this.sideloadedData[key]) {
+      delete this.sideloadedData[key];
+    }
+    if (this.recordCache && this.recordCache[key]) {
+      delete this.recordCache[key];
+    }
+  },
+
   removeFromRecordArrays: function(record) {
     if (this._findAllRecordArray) {
       this._findAllRecordArray.removeObject(record);
@@ -678,8 +698,10 @@ Ember.Model.reopenClass({
   load: function(hashes) {
     if (!this.sideloadedData) { this.sideloadedData = {}; }
     for (var i = 0, l = hashes.length; i < l; i++) {
-      var hash = hashes[i];
-      this.sideloadedData[hash[get(this, 'primaryKey')]] = hash;
+      var hash = hashes[i],
+        primaryKey = hash[get(this, 'primaryKey')];
+      this.removeFromCache(primaryKey);
+      this.sideloadedData[primaryKey] = hash;
     }
   },
 
