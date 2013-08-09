@@ -5,6 +5,7 @@ var get = Ember.get,
     set = Ember.set,
     setProperties = Ember.setProperties,
     meta = Ember.meta,
+    camelize = Ember.String.camelize,
     underscore = Ember.String.underscore;
 
 function contains(array, element) {
@@ -45,9 +46,9 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     if (descMeta.kind === 'belongsTo' && dataValue === undefined) {
       dataValue = null;
     }
-    
-    if (descMeta.kind === 'belongsTo' && 
-        descMeta.options.embedded !== true && 
+
+    if (descMeta.kind === 'belongsTo' &&
+        descMeta.options.embedded !== true &&
         cachedValue instanceof Ember.Model) {
       cachedValue = cachedValue.get(get(type, 'primaryKey'));
     }
@@ -123,6 +124,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   init: function() {
     this._createReference();
     this._super();
+
+    this.one('didLoad', function() {
+      this.constructor.addToRecordArrays(this);
+    });
   },
 
   _createReference: function() {
@@ -154,6 +159,30 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isNew', false);
     this._createReference();
     this.trigger('didLoad');
+  },
+
+  merge: function(hash) {
+    var camelizeKeys = get(this.constructor, 'camelizeKeys'),
+        primaryKey = get(this.constructor, 'primaryKey'),
+        data = get(this, '_data'),
+        self = this,
+        deserialized = {};
+    delete hash[primaryKey];
+
+    Object.keys(hash).forEach(function(key) {
+      var value = hash[key],
+          dataKey = camelizeKeys ? camelize(key) : key,
+          type;
+      if (typeof value === 'string') {
+        type = self.constructor.metaForProperty(dataKey).type;
+        value = self.constructor.deserialize(value, type);
+      }
+      deserialized[dataKey] = value;
+    });
+    this.setProperties(deserialized);
+
+    this._copyDirtyAttributesToData();
+    set(this, 'isDirty', false);
   },
 
   didDefineProperty: function(proto, key, value) {
@@ -268,11 +297,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isNew', false);
 
-    if (!this.constructor.recordCache) this.constructor.recordCache = {};
-    this.constructor.recordCache[id] = this;
+    this.constructor.pushIntoRecordCache([this]);
 
     this._copyDirtyAttributesToData();
-    this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
   },
@@ -359,6 +386,50 @@ Ember.Model.reopenClass({
   adapter: Ember.Adapter.create(),
 
   _clientIdCounter: 1,
+
+  deserialize: function(value, type) {
+    if (type && type.deserialize) {
+      return type.deserialize(value);
+    } else if (type && Ember.Model.dataTypes[type]) {
+      return Ember.Model.dataTypes[type].deserialize(value);
+    } else {
+      return this.wrapObject(value);
+    }
+  },
+
+  wrapObject: function(value) {
+    if (Ember.isArray(value)) {
+      var clonedArray = value.slice();
+
+      // TODO: write test for recursive cloning
+      for (var i = 0, l = clonedArray.length; i < l; i++) {
+        clonedArray[i] = this.wrapObject(clonedArray[i]);
+      }
+
+      return Ember.A(clonedArray);
+    } else if (value && value.constructor === Date) {
+      return new Date(value.toISOString());
+    } else if (value && typeof value === "object") {
+      var clone = Ember.create(value), property;
+
+      for (property in value) {
+        if (value.hasOwnProperty(property) && typeof value[property] === "object") {
+          clone[property] = this.wrapObject(value[property]);
+        }
+      }
+      return clone;
+    } else {
+      return value;
+    }
+  },
+
+  filter: function(filterProperties, filterFunction) {
+    return Ember.FilteredRecordArray.create({
+      modelClass: this,
+      filterFunction: filterFunction,
+      filterProperties: filterProperties
+    });
+  },
 
   fetch: function(id) {
     if (!arguments.length) {
@@ -449,7 +520,7 @@ Ember.Model.reopenClass({
   _findFetchAll: function(isFetch) {
     var self = this;
 
-    if (this._findAllRecordArray) { 
+    if (this._findAllRecordArray) {
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -526,7 +597,7 @@ Ember.Model.reopenClass({
       this._currentBatchDeferreds.push(deferred);
 
       Ember.run.scheduleOnce('data', this, this._executeBatch);
-      
+
       return deferred;
     } else {
       return adapter.find(record, id);
@@ -623,12 +694,7 @@ Ember.Model.reopenClass({
     }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
-        if (recordArray instanceof Ember.FilteredRecordArray) {
-          recordArray.registerObserversOnRecord(record);
-          recordArray.updateFilter();
-        } else {
-          recordArray.pushObject(record);
-        }
+        recordArray.pushObject(record);
       });
     }
   },
@@ -703,6 +769,25 @@ Ember.Model.reopenClass({
       this.removeFromCache(primaryKey);
       this.sideloadedData[primaryKey] = hash;
     }
+  },
+
+  mergeOrLoad: function(hash) {
+    var primaryKey = get(this, 'primaryKey'),
+        id = hash[primaryKey],
+        record;
+
+    if (id) {
+      record = this.cachedRecordForId(id);
+      if (record && get(record, 'isLoaded')) {
+        record.merge(hash);
+      }
+    }
+
+    if (!record || !get(record, 'isLoaded')) {
+      record.load(id, hash);
+    }
+
+    return record;
   },
 
   _referenceForId: function(id) {

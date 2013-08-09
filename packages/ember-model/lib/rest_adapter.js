@@ -64,14 +64,6 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     });
   },
 
-  didCreateRecord: function(record, data) {
-    var rootKey = get(record.constructor, 'rootKey'),
-        primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? data[rootKey] : data;
-    record.load(dataToLoad[primaryKey], dataToLoad);
-    record.didCreateRecord();
-  },
-
   saveRecord: function(record) {
     var primaryKey = get(record.constructor, 'primaryKey'),
         url = this.buildURL(record.constructor, get(record, primaryKey)),

@@ -716,12 +716,47 @@ test("fetchMany resolves with error object", function() {
   stop();
 });
 
-// TODO: test that creating a record calls load
+test("mergeOrLoad loads a new record", function() {
+  expect(3);
 
-// test('Model#registerRecordArray', function(){
+  Model.reopen({
+    createdAt: Ember.attr(Date)
+  });
 
-// });
+  var createdAt = new Date(),
+      token = "mol",
+      record = Model.mergeOrLoad({
+        token: token,
+        name: "John Smith",
+        createdAt: createdAt.toJSON()
+      });
 
-// test('Model#unregisterRecordArray', function(){
+  equal(record.get("token"), token, "data matches expected");
+  equal(Model.getFromRecordCache(token).get("token"), token, "record is in record cache");
+  ok(record.get("createdAt") instanceof Date, "date attribute should be converted to a Date");
+});
 
-// });
+test("mergeOrLoad merges an existing record", function() {
+  expect(2);
+
+  Model.reopen({
+    createdAt: Ember.attr(Date)
+  });
+
+  var createdAt = new Date();
+
+  Model.fetch("a").then(function() {
+    start();
+
+    var record = Model.mergeOrLoad({
+      token: "a",
+      name: "Erik Updated",
+      createdAt: createdAt.toJSON()
+    });
+
+    equal(record.get("name"), "Erik Updated", "name matches");
+    ok(record.get("createdAt") instanceof Date, "date attribute should be converted to a Date");
+  });
+
+  stop();
+});
