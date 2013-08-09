@@ -623,12 +623,7 @@ Ember.Model.reopenClass({
     }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
-        if (recordArray instanceof Ember.FilteredRecordArray) {
-          recordArray.registerObserversOnRecord(record);
-          recordArray.updateFilter();
-        } else {
-          recordArray.pushObject(record);
-        }
+        recordArray.pushObject(record);
       });
     }
   },
