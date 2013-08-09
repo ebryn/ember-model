@@ -578,18 +578,29 @@ Ember.Model.reopenClass({
     });
   },
 
-  cachedRecordForId: function(id) {
-    if (!this.recordCache) { this.recordCache = {}; }
-    var record;
+  pushIntoRecordCache: function(records){
+    var primaryKey = get(this, 'primaryKey'), self = this;
+    if (!this.recordCache) this.recordCache = {};
 
-    if (this.recordCache[id]) {
-      record = this.recordCache[id];
-    } else {
+    records.forEach(function(record){
+      self.recordCache[get(record, primaryKey)] = record;
+    });
+  },
+
+  getFromRecordCache: function(id){
+    if (!this.recordCache) this.recordCache = {};
+    return this.recordCache[id];
+  },
+
+  cachedRecordForId: function(id) {
+    var record = this.getFromRecordCache(id);
+
+    if (!record) {
       var primaryKey = get(this, 'primaryKey'),
-          attrs = {isLoaded: false};
+        attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      this.recordCache[id] = record;
+      this.pushIntoRecordCache([record]);
       var sideloadedData = this.sideloadedData && this.sideloadedData[id];
       if (sideloadedData) {
         record.load(id, sideloadedData);
@@ -598,6 +609,7 @@ Ember.Model.reopenClass({
 
     return record;
   },
+
 
   addToRecordArrays: function(record) {
     if (this._findAllRecordArray) {
