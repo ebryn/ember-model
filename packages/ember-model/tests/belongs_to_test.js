@@ -392,43 +392,6 @@ test("dirtying the relationship should make parent dirty", function() {
   ok(post.get('isDirty'));
 });
 
-test("replacing the relationship should make parent dirty", function() {
-  expect(3);
-
-  var Author = Ember.Model.extend({
-        id: Ember.attr(),
-        name: Ember.attr()
-      }),
-      Post = Ember.Model.extend({
-        id: Ember.attr(),
-        author: Ember.belongsTo(Author, {key: 'author_id'})
-      });
-
-  Post.adapter = Ember.FixtureAdapter.create();
-  Author.adapter = Ember.FixtureAdapter.create();
-
-  var post = Post.create(),
-      author1 = Author.create(),
-      author2 = Author.create();
-
-  Ember.run(function() {
-    author1.load(100, {id: 100, name: 'bob'});
-    author2.load(200, {id: 200, name: 'billy'});
-    post.load(1, {id: 1, author_id: 100});
-  });
-
-  post.get('author');
-
-  Ember.run(post, post.set, 'author', author2);
-  ok(post.get('isDirty'));
-
-  Ember.run(post, post.set, 'author', null);
-  ok(post.get('isDirty'));
-
-  Ember.run(post, post.set, 'author', author1);
-  ok(!post.get('isDirty'));
-});
-
 test("relationships should be serialized when specified with string", function() {
   expect(1);
 
