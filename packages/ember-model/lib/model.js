@@ -437,6 +437,14 @@ Ember.Model.reopenClass({
 
     var promise = this.adapter.findAll(this, records);
 
+    // Remove the cached record array if the promise is rejected
+    if (promise.then) {
+      promise.then(null, function() {
+        self._findAllRecordArray = null;
+        return Ember.RSVP.reject.apply(null, arguments);
+      });
+    }
+
     return isFetch ? promise : records;
   },
 
