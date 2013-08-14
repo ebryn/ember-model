@@ -12,8 +12,6 @@ function wrapObject(value) {
     }
 
     return Ember.A(clonedArray);
-  } else if (value && value.constructor === Date) {
-    return new Date(value.toISOString());
   } else if (value && typeof value === "object") {
     var clone = Ember.create(value), property;
 
@@ -39,6 +37,9 @@ Ember.Model.dataTypes[Date] = {
     if (!date) { return null; }
     return date.toISOString();
   },
+  clone: function(date) {
+    return this.deserialize(this.serialize(date));
+  },
   isEqual: function(obj1, obj2) {
     if (obj1 instanceof Date) { obj1 = this.serialize(obj1); }
     if (obj2 instanceof Date) { obj2 = this.serialize(obj2); }
@@ -58,15 +59,18 @@ Ember.Model.dataTypes[Number] = {
 };
 
 function deserialize(value, type) {
-  if (type && type.deserialize) {
-    return type.deserialize(value);
-  } else if (type && Ember.Model.dataTypes[type]) {
-    return Ember.Model.dataTypes[type].deserialize(value);
-  } else {
-    return wrapObject(value);
-  }
+  return callDataTypeMethod(type, 'deserialize', wrapObject, value);
 }
 
+function callDataTypeMethod(type, method, defaultMethod, value) {
+  if (type && type[method]) {
+    return type[method](value);
+  } else if (type && Ember.Model.dataTypes[type] && Ember.Model.dataTypes[type][method]) {
+    return Ember.Model.dataTypes[type][method](value);
+  } else {
+    return defaultMethod(value);
+  }
+}
 
 Ember.attr = function(type, options) {
   return Ember.computed(function(key, value) {
@@ -83,7 +87,7 @@ Ember.attr = function(type, options) {
         }
         data[dataKey] = value;
       }
-      return wrapObject(value);
+      return callDataTypeMethod(type, 'clone', wrapObject, value);
     }
 
     return this.getAttr(key, deserialize(dataValue, type));
