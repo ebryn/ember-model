@@ -123,6 +123,31 @@ test("loading a record that matches the filter after creating a FilteredRecordAr
   stop();
 });
 
+test("unloading a record that matches the filter should remove the record from the FilteredRecordArray", function() {
+  expect(4);
+
+  Model.fetch().then(function() {
+    start();
+
+    var recordArray = Ember.FilteredRecordArray.create({
+      modelClass: Model,
+      filterFunction: function(record) {
+        return record.get('name') === 'Erik';
+      },
+      filterProperties: ['name']
+    });
+
+    equal(recordArray.get('length'), 1, "There is 1 record");
+    var model = recordArray.get('firstObject');
+    equal(Ember.observersFor(model, 'name').length, 1, "There is 1 name observer");
+    Model.unload(model);
+    equal(recordArray.get('length'), 0, "There are 0 records");
+    equal(Ember.observersFor(model, 'name').length, 0, "There are 0 name observers");
+  });
+
+  stop();
+});
+
 test("changing a property that matches the filter should update the FilteredRecordArray to include it", function() {
   expect(5);
   Model.fetch().then(function() {
