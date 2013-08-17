@@ -45,19 +45,22 @@ function extractDirty(object, attrsOrRelations, dirtyAttributes) {
     if (descMeta.kind === 'belongsTo' && dataValue === undefined) {
       dataValue = null;
     }
-    
-    if (descMeta.kind === 'belongsTo' && 
-        descMeta.options.embedded !== true && 
-        cachedValue instanceof Ember.Model) {
-      cachedValue = cachedValue.get(get(type, 'primaryKey'));
-    }
 
     if (type && type.isEqual) {
       isDirty = !type.isEqual(dataValue, cachedValue);
     } else if (dataType && dataType.isEqual) {
       isDirty = !dataType.isEqual(dataValue, cachedValue);
-    } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
-      isDirty = get(cachedValue, 'isDirty');
+    } else if (cachedValue instanceof Ember.Model) { // belongsTo case
+      var serializedDataValue = dataValue,
+          serializedCachedValue = cachedValue.toJSON();
+
+      if (dataValue instanceof Ember.Model) {
+        serializedDataValue = dataValue.toJSON();
+      } else if (typeof dataValue !== 'object') {
+        serializedCachedValue = cachedValue.getPrimaryKey();
+      }
+
+      isDirty = Ember.compare(serializedDataValue, serializedCachedValue) !== 0 || get(cachedValue, 'isDirty');
     } else if (dataValue === undefined && cachedValue instanceof Ember.ManyArray) { // hasMany case
       isDirty = get(cachedValue, 'isDirty');
     } else if (dataValue !== cachedValue) {
@@ -153,6 +156,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this._createReference();
+    if (!this.constructor.recordCache) this.constructor.recordCache = {};
+    this.constructor.recordCache[id] = this;
     this.trigger('didLoad');
   },
 
@@ -454,7 +459,7 @@ Ember.Model.reopenClass({
   _findFetchAll: function(isFetch) {
     var self = this;
 
-    if (this._findAllRecordArray) { 
+    if (this._findAllRecordArray) {
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -531,7 +536,7 @@ Ember.Model.reopenClass({
       this._currentBatchDeferreds.push(deferred);
 
       Ember.run.scheduleOnce('data', this, this._executeBatch);
-      
+
       return deferred;
     } else {
       return adapter.find(record, id);

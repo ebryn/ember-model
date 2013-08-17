@@ -270,8 +270,8 @@ test("should be able to set relationship to null", function() {
   deepEqual(post.toJSON(), {id: 1, author_id: null});
 });
 
-test("materializing the relationship should should not dirty the record", function() {
-  expect(2);
+test("materializing the relationship should not dirty the record", function() {
+  expect(4);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -289,6 +289,14 @@ test("materializing the relationship should should not dirty the record", functi
   ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('author');
   ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
+
+  var author = Author.create();
+  Ember.run(author, author.load, 100, {id: 100});
+
+  var postWithData = Post.create({author: author});
+  ok(!postWithData.get('isDirty'), 'with data is not dirty before materializing the relationship');
+  postWithData.get('author');
+  ok(!postWithData.get('isDirty'), 'with data is not dirty after materializing the relationship');
 });
 
 test("setting relationship should make parent dirty", function() {
@@ -353,7 +361,38 @@ test("setting existing nonembedded relationship should make parent dirty", funct
   ok(post.get('isDirty'));
 });
 
-test("relationships should be seralized when specified with string", function() {
+test("dirtying the relationship should make parent dirty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100, name: 'bob'});
+    post.load(1, {id: 1, author_id: 100});
+  });
+
+  Ember.run(function() {
+    author.set('name', 'billy');
+  });
+
+  post.get('author');
+  ok(post.get('isDirty'));
+});
+
+test("relationships should be serialized when specified with string", function() {
   expect(1);
 
   Ember.Author = Ember.Model.extend({
