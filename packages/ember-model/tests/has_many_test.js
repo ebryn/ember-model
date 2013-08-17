@@ -129,8 +129,8 @@ test("toJSON uses the given relationship key", function() {
   deepEqual(article.toJSON(), { comment_ids: ['a'] }, "Relationship ids should be serialized only under the given key");
 });
 
-test("materializing the relationship should should not dirty the record", function() {
-  expect(2);
+test("materializing the relationship should not dirty the record", function() {
+  expect(4);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -148,4 +148,136 @@ test("materializing the relationship should should not dirty the record", functi
   ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('authors');
   ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
+
+  var postWithData = Post.create();
+  postWithData.load(1, {author_ids: [2]});
+  postWithData.get('id');
+  ok(!postWithData.get('isDirty'), 'with data is not dirty before materializing the relationship');
+  postWithData.get('authors');
+  ok(!postWithData.get('isDirty'), 'with data is not dirty after materializing the relationship');
+});
+
+test("modifying a hasMany record should make parent dirty", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_ids: [100]});
+    author.load(100, {id: 100, name: 'bob'});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'));
+  author.set('name', 'billy');
+  ok(post.get('isDirty'));
+});
+
+test("adding or removing from the hasMany array should make parent dirty", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author1 = Author.create();
+  var author2 = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    author1.load(100, {id: 100, name: 'bob'});
+    author2.load(200, {id: 200, name: 'mark'});
+    post.load(1, {id: 1, author_ids: [100]});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'));
+
+  post.get('authors').pushObject(author2);
+  ok(post.get('isDirty', 'adding new record to hasMany dirties the parent'));
+
+  post.get('authors').removeObject(author2);
+  ok(!post.get('isDirty'), 'restoring the hasMany array undirties the parent');
+
+  post.get('authors').removeObject(author1);
+  ok(post.get('isDirty', 'removing record from hasMany dirties the parent'));
+});
+
+test("reordering the hasMany array should not make parent dirty", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author1 = Author.create();
+  var author2 = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    author1.load(100, {id: 100, name: 'bob'});
+    author2.load(200, {id: 200, name: 'mark'});
+    post.load(1, {id: 1, author_ids: [100, 200]});
+  });
+
+  var author = post.get('authors').popObject();
+  post.get('authors').unshiftObject(author);
+  ok(!post.get('isDirty'));
+});
+
+test("hasMany isDirty works for embedded arrays", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'authors', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    author.load(200, {id: 200, name: 'mark'});
+    post.load(1, {id: 1, authors: [{id: 100, name: 'bob'}]});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'));
+
+  post.get('authors').pushObject(author);
+  ok(post.get('isDirty', 'adding new record to hasMany dirties the parent'));
+
+  post.get('authors').removeObject(author);
+  ok(!post.get('isDirty'), 'restoring the hasMany array undirties the parent');
+
+  post.get('authors').popObject();
+  ok(post.get('isDirty', 'removing record from hasMany dirties the parent'));
 });
