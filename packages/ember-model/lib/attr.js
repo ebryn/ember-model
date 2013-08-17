@@ -73,7 +73,14 @@ Ember.attr = function(type, options) {
     var data = get(this, '_data'),
         dataKey = this.dataKey(key),
         dataValue = data && get(data, dataKey),
-        beingCreated = meta(this).proto === this;
+        beingCreated = meta(this).proto === this,
+        dirtyAttributes = get(this, '_dirtyAttributes'),
+        createdDirtyAttributes = false;
+
+    if (!dirtyAttributes) {
+      dirtyAttributes = [];
+      createdDirtyAttributes = true;
+    }
 
     if (arguments.length === 2) {
       if (beingCreated) {
@@ -81,9 +88,20 @@ Ember.attr = function(type, options) {
           data = {};
           set(this, '_data', data);
         }
-        data[dataKey] = value;
+        dataValue = data[dataKey] = value;
       }
-      return wrapObject(value);
+
+      if (dataValue !== value) {
+        dirtyAttributes.pushObject(key);
+      } else {
+        dirtyAttributes.removeObject(key);
+      }
+
+      if (createdDirtyAttributes) {
+        set(this, '_dirtyAttributes', dirtyAttributes);
+      }
+
+      return value;
     }
 
     return this.getAttr(key, deserialize(dataValue, type));

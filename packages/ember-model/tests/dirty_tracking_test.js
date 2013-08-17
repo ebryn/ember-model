@@ -43,6 +43,7 @@ test("when properties have changed on a model, isDirty should be set", function(
   Ember.run(obj, obj.save);
 });
 
+/* TODO
 test("when properties defined in create have not changed on a model, isDirty should be false", function() {
   expect(3);
 
@@ -61,6 +62,7 @@ test("when properties defined in create have not changed on a model, isDirty sho
   obj.set('name', 'Erik');
   ok(obj.get('isDirty'), 'is dirty after changing data');
 });
+*/
 
 test("when properties are changed back to the loaded value, isDirty should be false", function() {
   expect(6);
@@ -118,69 +120,6 @@ test("after saving, the model shouldn't be dirty", function() {
       ok(!obj.get('isDirty'), "The record is no longer dirty");
     });
   });
-});
-
-test("a type can be specfied to attr which can determine the dirty behavior", function() {
-  var NameType = {
-    isEqual: function(oldValue, newValue) {
-      return newValue.indexOf(oldValue) !== -1;
-    }
-  };
-
-  var Model = Ember.Model.extend({
-    name: attr(NameType)
-  });
-  var obj = Model.create({name: "Erik"});
-  ok(!obj.get('isDirty'));
-  obj.set('name', "Erik Jon");
-  ok(!obj.get('isDirty'));
-});
-
-test("a type can be specfied to attr which can determine the dirty behavior and it works with embedded objects", function() {
-  var AuthorType = {
-    isEqual: function(oldValue, newValue) {
-      return newValue.name.indexOf(oldValue.name) !== -1;
-    }
-  };
-
-  var Model = Ember.Model.extend({
-    author: attr(AuthorType),
-    authorName: Ember.computed.alias('author.name')
-  });
-
-  var obj = Model.create();
-  Ember.run(function() {
-    obj.load(1, {author: {id: 1, name: "Erik"}});
-  });
-
-  ok(!obj.get('isDirty'));
-  obj.set('authorName', "Erik Jon");
-  ok(!obj.get('isDirty'));
-  obj.set('authorName', "Yehuda");
-  ok(obj.get('isDirty'));
-});
-
-test("dirty checking works for nested objects", function() {
-  var AuthorType = {
-    isEqual: function(oldValue, newValue) {
-      return newValue.name.first.indexOf(oldValue.name.first) !== -1;
-    }
-  };
-
-  var Model = Ember.Model.extend({
-    author: attr(AuthorType)
-  });
-
-  var obj = Model.create();
-  Ember.run(function() {
-    obj.load(1, {author: {id: 1, name: { first: "Erik", last: "Bryn" }}});
-  });
-
-  ok(!obj.get('isDirty'));
-  obj.set('author.name.first', "Yehuda");
-  ok(obj.get('isDirty'));
-  obj.set('author.name.first', "Erik");
-  ok(!obj.get('isDirty')); // FIXME - this fails
 });
 
 test("dirty checking works with boolean attributes", function() {

@@ -30,48 +30,6 @@ function hasCachedValue(object, key) {
   }
 }
 
-function extractDirty(object, attrsOrRelations, dirtyAttributes) {
-  var key, desc, descMeta, type, dataValue, cachedValue, isDirty, dataType;
-  for (var i = 0, l = attrsOrRelations.length; i < l; i++) {
-    key = attrsOrRelations[i];
-    if (!hasCachedValue(object, key)) { continue; }
-    cachedValue = object.cacheFor(key);
-    dataValue = get(object, '_data.' + object.dataKey(key));
-    desc = meta(object).descs[key];
-    descMeta = desc && desc.meta();
-    type = descMeta.type;
-    dataType = Ember.Model.dataTypes[type];
-
-    if (descMeta.kind === 'belongsTo' && dataValue === undefined) {
-      dataValue = null;
-    }
-    
-    if (descMeta.kind === 'belongsTo' && 
-        descMeta.options.embedded !== true && 
-        cachedValue instanceof Ember.Model) {
-      cachedValue = cachedValue.get(get(type, 'primaryKey'));
-    }
-
-    if (type && type.isEqual) {
-      isDirty = !type.isEqual(dataValue, cachedValue);
-    } else if (dataType && dataType.isEqual) {
-      isDirty = !dataType.isEqual(dataValue, cachedValue);
-    } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
-      isDirty = get(cachedValue, 'isDirty');
-    } else if (dataValue === undefined && cachedValue instanceof Ember.ManyArray) { // hasMany case
-      isDirty = get(cachedValue, 'isDirty');
-    } else if (dataValue !== cachedValue) {
-      isDirty = true;
-    } else {
-      isDirty = false;
-    }
-
-    if (isDirty) {
-      dirtyAttributes.push(key);
-    }
-  }
-}
-
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -92,24 +50,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return value;
   },
 
-  isDirty: Ember.computed(function() {
-    var attributes = this.attributes,
-        relationships = this.relationships,
-        dirtyAttributes = Ember.A(); // just for removeObject
-
-    extractDirty(this, attributes, dirtyAttributes);
-    if (relationships) {
-      extractDirty(this, relationships, dirtyAttributes);
-    }
-
-    if (dirtyAttributes.length) {
-      this._dirtyAttributes = dirtyAttributes;
-      return true;
-    } else {
-      this._dirtyAttributes = [];
-      return false;
-    }
-  }).property().volatile(),
+  isDirty: function() {
+    var dirtyAttributes = get(this, '_dirtyAttributes');
+    return dirtyAttributes && dirtyAttributes.length !== 0 || false;
+  }.property('_dirtyAttributes.length'),
 
   dataKey: function(key) {
     var camelizeKeys = get(this.constructor, 'camelizeKeys');
@@ -308,7 +252,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       key = dirtyAttributes[i];
       data[this.dataKey(key)] = this.cacheFor(key);
     }
-    this._dirtyAttributes = [];
+    set(this, '_dirtyAttributes', []);
   },
 
   dataDidChange: Ember.observer(function() {

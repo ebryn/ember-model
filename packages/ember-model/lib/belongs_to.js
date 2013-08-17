@@ -1,4 +1,5 @@
-var get = Ember.get;
+var get = Ember.get,
+    set = Ember.set;
 
 function getType() {
   if (typeof this.type === "string") {
@@ -13,14 +14,32 @@ Ember.belongsTo = function(type, options) {
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType },
       relationshipKey = options.key;
 
-  return Ember.computed(function(key, value) {
+  return Ember.computed(function(key, value, oldValue) {
     type = meta.getType();
 
-    if (arguments.length === 2) {
+    var dirtyAttributes = get(this, '_dirtyAttributes'),
+        createdDirtyAttributes = false;
+
+    if (!dirtyAttributes) {
+      dirtyAttributes = [];
+      createdDirtyAttributes = true;
+    }
+
+    if (arguments.length > 1) {
       if (value) {
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
                      [value.constructor, type]),
                      value instanceof type);
+
+        if (oldValue !== value) {
+          dirtyAttributes.pushObject(key);
+        } else {
+          dirtyAttributes.removeObject(key);
+        }
+
+        if (createdDirtyAttributes) {
+          set(this, '_dirtyAttributes', dirtyAttributes);
+        }
       }
       return value === undefined ? null : value;  
     } else {
