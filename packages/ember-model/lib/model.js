@@ -682,5 +682,15 @@ Ember.Model.reopenClass({
     }
 
     return reference;
+  },
+
+  resetData: function() {
+    this._idToReference = null;
+    this.sideloadedData = null;
+    this.recordCache = null;
+    this.recordArrays = null;
+    this._currentBatchIds = null;
+    this._hasManyArrays = null;
+    this._findAllRecordArray = null;
   }
 });
