@@ -2,32 +2,6 @@ var get = Ember.get,
     set = Ember.set,
     meta = Ember.meta;
 
-function wrapObject(value) {
-  if (Ember.isArray(value)) {
-    var clonedArray = value.slice();
-
-    // TODO: write test for recursive cloning
-    for (var i = 0, l = clonedArray.length; i < l; i++) {
-      clonedArray[i] = wrapObject(clonedArray[i]);
-    }
-
-    return Ember.A(clonedArray);
-  } else if (value && value.constructor === Date) {
-    return new Date(value.toISOString());
-  } else if (value && typeof value === "object") {
-    var clone = Ember.create(value), property;
-
-    for (property in value) {
-      if (value.hasOwnProperty(property) && typeof value[property] === "object") {
-        clone[property] = wrapObject(value[property]);
-      }
-    }
-    return clone;
-  } else {
-    return value;
-  }
-}
-
 Ember.Model.dataTypes = {};
 
 Ember.Model.dataTypes[Date] = {
@@ -63,7 +37,7 @@ function deserialize(value, type) {
   } else if (type && Ember.Model.dataTypes[type]) {
     return Ember.Model.dataTypes[type].deserialize(value);
   } else {
-    return wrapObject(value);
+    return value;
   }
 }
 
