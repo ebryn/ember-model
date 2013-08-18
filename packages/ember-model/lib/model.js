@@ -200,7 +200,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           reverts = {};
       for (var i = 0; i < this._dirtyAttributes.length; i++) {
         var attr = this._dirtyAttributes[i];
-        reverts[attr] = data[attr];
+        reverts[attr] = 'Ember.Model.revertAttribute!';
       }
       setProperties(this, reverts);
     }

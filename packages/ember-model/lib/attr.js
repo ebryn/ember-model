@@ -56,7 +56,7 @@ Ember.attr = function(type, options) {
       createdDirtyAttributes = true;
     }
 
-    if (arguments.length === 2) {
+    if (arguments.length === 2 && arguments[1] !== 'Ember.Model.revertAttribute!') {
       if (beingCreated) {
         if (!data) {
           data = {};
