@@ -394,26 +394,61 @@ test("Model#create() works as expected", function() {
   stop();
 });
 
-test("relationships are added to relationships list", function() {
+test(".getAttributes() returns the model's attributes", function() {
+  var attr = Ember.attr,
+      BaseModel = Ember.Model.extend({
+        id: attr()
+      }),
+
+      Person = BaseModel.extend({
+        name: attr(),
+        nationality: attr()
+      }),
+
+      Employee = Person.extend({
+        employeeId: attr()
+      }),
+
+      Animal = BaseModel.extend({
+        order: attr(),
+        family: attr(),
+        genus: attr(),
+        species: attr()
+      });
+
+  deepEqual(Employee.getAttributes(), ['id', 'name', 'nationality', 'employeeId']);
+  deepEqual(Person.getAttributes(), ['id', 'name', 'nationality']);
+  deepEqual(Animal.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
+  deepEqual(BaseModel.getAttributes(), ['id']);
+});
+
+test(".getRelationships() returns the model's relationships", function() {
   var Comment = Ember.Model.extend(),
       Rating = Ember.Model.extend(),
       Author = Ember.Model.extend(),
       Site = Ember.Model.extend(),
-      Article = Ember.Model.extend({
+
+      Commentable = Ember.Model.extend({
         comments: Ember.hasMany(Comment, { key: 'comments' }),
+      }),
+
+      Article = Commentable.extend({
         author: Ember.belongsTo(Author, { key: 'author' }),
         ratings: Ember.hasMany(Rating, { key: 'ratings' })
       }),
+
       News = Article.extend({
         source: Ember.belongsTo(Site, { key: 'site' })
       });
 
-  deepEqual(Article.proto().relationships, ['comments', 'author', 'ratings'], 'relationships keys should be saved into relationships attribute');
-  deepEqual(News.proto().relationships, ['comments', 'author', 'ratings', 'source'], 'relationships keys should be saved into relationships attribute');
+  deepEqual(Commentable.getRelationships(), ['comments']);
+  deepEqual(Article.getRelationships(), ['comments', 'author', 'ratings']);
+  deepEqual(News.getRelationships(), ['comments', 'author', 'ratings', 'source']);
 });
 
 test("toJSON includes embedded relationships", function() {
-  var Comment = Ember.Model.extend({
+  var attr = Ember.attr,
+      Comment = Ember.Model.extend({
         id: Ember.attr(),
         text: Ember.attr()
       }),

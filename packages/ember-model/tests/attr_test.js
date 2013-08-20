@@ -24,21 +24,6 @@ test("getAttr hook is called when attribute is fetched", function() {
   equal(title, 'TEH ARTICLE', 'the value of the attr should be a value returned from getAttr hook');
 });
 
-test("when the attr is specified on an object it should Object.create the object", function() {
-  var Page = Ember.Model.extend({
-    author: attr()
-  });
-  var originalAuthorObject = {id: 1, name: "Erik"},
-      page = Page.create();
-
-  Ember.run(function() {
-    page.load(1, {author: originalAuthorObject});
-  });
-
-  var newAuthorObject = page.get('author');
-  ok(newAuthorObject !== originalAuthorObject, "The objects shouldn't be the same");
-});
-
 test("attr should not change null to object", function() {
   var Page = Ember.Model.extend({
     author: attr()
@@ -51,22 +36,6 @@ test("attr should not change null to object", function() {
 
   var author = page.get('author');
   equal(author, null, "author should be set to null");
-});
-
-test("it should recognize array values and clone the whole array", function() {
-  var Page = Ember.Model.extend({
-    authors: attr()
-  });
-
-  var page = Page.create(),
-      origArray = ["Erik", "Eryk"];
-
-  Ember.run(function() {
-    page.load(1, { authors: origArray });
-  });
-
-  ok(page.get("authors") !== origArray, "attribute's data array should be cloned");
-  equal(Ember.typeOf(page.get("authors")), "array");
 });
 
 test("attr should deserialize when type has a deserialize method", function() {
@@ -229,21 +198,4 @@ test("toJSON should respect the key option in attr", function() {
   equal(page.get('Author'), undefined, "Author should be undefined");
   equal(json.Author, "Guilherme", "json.Author should be Guilherme");
   equal(json.author, undefined, "json.author should be undefined");
-});
-
-test("attributes array should be prepared after defining a model", function() {
-  var Model = Ember.Model.extend({
-    id: attr()
-  });
-
-  var Page = Model.extend({
-    title: attr()
-  });
-
-  var Person = Model.extend({
-    name: attr()
-  });
-
-  deepEqual(Page.create().attributes, ['id', 'title']);
-  deepEqual(Person.create().attributes, ['id', 'name']);
 });

@@ -31,48 +31,6 @@ function hasCachedValue(object, key) {
   }
 }
 
-function extractDirty(object, attrsOrRelations, dirtyAttributes) {
-  var key, desc, descMeta, type, dataValue, cachedValue, isDirty, dataType;
-  for (var i = 0, l = attrsOrRelations.length; i < l; i++) {
-    key = attrsOrRelations[i];
-    if (!hasCachedValue(object, key)) { continue; }
-    cachedValue = object.cacheFor(key);
-    dataValue = get(object, '_data.' + object.dataKey(key));
-    desc = meta(object).descs[key];
-    descMeta = desc && desc.meta();
-    type = descMeta.type;
-    dataType = Ember.Model.dataTypes[type];
-
-    if (descMeta.kind === 'belongsTo' && dataValue === undefined) {
-      dataValue = null;
-    }
-
-    if (descMeta.kind === 'belongsTo' &&
-        descMeta.options.embedded !== true &&
-        cachedValue instanceof Ember.Model) {
-      cachedValue = cachedValue.get(get(type, 'primaryKey'));
-    }
-
-    if (type && type.isEqual) {
-      isDirty = !type.isEqual(dataValue, cachedValue);
-    } else if (dataType && dataType.isEqual) {
-      isDirty = !dataType.isEqual(dataValue, cachedValue);
-    } else if (dataValue && cachedValue instanceof Ember.Model) { // belongsTo case
-      isDirty = get(cachedValue, 'isDirty');
-    } else if (dataValue === undefined && cachedValue instanceof Ember.ManyArray) { // hasMany case
-      isDirty = get(cachedValue, 'isDirty');
-    } else if (dataValue !== cachedValue) {
-      isDirty = true;
-    } else {
-      isDirty = false;
-    }
-
-    if (isDirty) {
-      dirtyAttributes.push(key);
-    }
-  }
-}
-
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -93,24 +51,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return value;
   },
 
-  isDirty: Ember.computed(function() {
-    var attributes = this.attributes,
-        relationships = this.relationships,
-        dirtyAttributes = Ember.A(); // just for removeObject
-
-    extractDirty(this, attributes, dirtyAttributes);
-    if (relationships) {
-      extractDirty(this, relationships, dirtyAttributes);
-    }
-
-    if (dirtyAttributes.length) {
-      this._dirtyAttributes = dirtyAttributes;
-      return true;
-    } else {
-      this._dirtyAttributes = [];
-      return false;
-    }
-  }).property().volatile(),
+  isDirty: function() {
+    var dirtyAttributes = get(this, '_dirtyAttributes');
+    return dirtyAttributes && dirtyAttributes.length !== 0 || false;
+  }.property('_dirtyAttributes.length'),
 
   dataKey: function(key) {
     var camelizeKeys = get(this.constructor, 'camelizeKeys');
@@ -188,13 +132,14 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didDefineProperty: function(proto, key, value) {
     if (value instanceof Ember.Descriptor) {
       var meta = value.meta();
+      var klass = proto.constructor;
 
       if (meta.isAttribute) {
-        proto.attributes = proto.attributes ? proto.attributes.slice() : [];
-        proto.attributes.push(key);
+        if (!klass._attributes) { klass._attributes = []; }
+        klass._attributes.push(key);
       } else if (meta.isRelationship) {
-        proto.relationships = proto.relationships ? proto.relationships.slice() : [];
-        proto.relationships.push(key);
+        if (!klass._relationships) { klass._relationships = []; }
+        klass._relationships.push(key);
       }
     }
   },
@@ -216,7 +161,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   toJSON: function() {
     var key, meta,
         json = {},
-        properties = this.attributes ? this.getProperties(this.attributes) : {},
+        attributes = this.constructor.getAttributes(),
+        relationships = this.constructor.getRelationships(),
+        properties = attributes ? this.getProperties(attributes) : {},
         rootKey = get(this.constructor, 'rootKey');
 
     for (key in properties) {
@@ -230,11 +177,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
     }
 
-    if (this.relationships) {
+    if (relationships) {
       var data, relationshipKey;
 
-      for(var i = 0; i < this.relationships.length; i++) {
-        key = this.relationships[i];
+      for(var i = 0; i < relationships.length; i++) {
+        key = relationships[i];
         meta = this.constructor.metaForProperty(key);
         relationshipKey = meta.options.key || key;
 
@@ -335,7 +282,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       key = dirtyAttributes[i];
       data[this.dataKey(key)] = this.cacheFor(key);
     }
-    this._dirtyAttributes = [];
+    set(this, '_dirtyAttributes', []);
   },
 
   dataDidChange: Ember.observer(function() {
@@ -350,11 +297,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   _reloadHasManys: function() {
     if (!this._hasManyArrays) { return; }
-
-    var i;
-    for(i = 0; i < this._hasManyArrays.length; i++) {
-      var array = this._hasManyArrays[i];
-      set(array, 'content', this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded')));
+    var i, j;
+    for (i = 0; i < this._hasManyArrays.length; i++) {
+      var array = this._hasManyArrays[i],
+          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
+        for (j = 0; j < array.get('length'); j++) {
+          if (array.objectAt(j).get('isNew')) {
+            hasManyContent.addObject(array.objectAt(j)._reference);
+          }
+        }
+      set(array, 'content', hasManyContent);
     }
   },
 
@@ -393,32 +345,6 @@ Ember.Model.reopenClass({
     } else if (type && Ember.Model.dataTypes[type]) {
       return Ember.Model.dataTypes[type].deserialize(value);
     } else {
-      return this.wrapObject(value);
-    }
-  },
-
-  wrapObject: function(value) {
-    if (Ember.isArray(value)) {
-      var clonedArray = value.slice();
-
-      // TODO: write test for recursive cloning
-      for (var i = 0, l = clonedArray.length; i < l; i++) {
-        clonedArray[i] = this.wrapObject(clonedArray[i]);
-      }
-
-      return Ember.A(clonedArray);
-    } else if (value && value.constructor === Date) {
-      return new Date(value.toISOString());
-    } else if (value && typeof value === "object") {
-      var clone = Ember.create(value), property;
-
-      for (property in value) {
-        if (value.hasOwnProperty(property) && typeof value[property] === "object") {
-          clone[property] = this.wrapObject(value[property]);
-        }
-      }
-      return clone;
-    } else {
       return value;
     }
   },
@@ -429,6 +355,24 @@ Ember.Model.reopenClass({
       filterFunction: filterFunction,
       filterProperties: filterProperties
     });
+  },
+
+  getAttributes: function() {
+    this.proto(); // force class "compilation" if it hasn't been done.
+    var attributes = this._attributes || [];
+    if (typeof this.superclass.getAttributes === 'function') {
+      attributes = this.superclass.getAttributes().concat(attributes);
+    }
+    return attributes;
+  },
+
+  getRelationships: function() {
+    this.proto(); // force class "compilation" if it hasn't been done.
+    var relationships = this._relationships || [];
+    if (typeof this.superclass.getRelationships === 'function') {
+      relationships = this.superclass.getRelationships().concat(relationships);
+    }
+    return relationships;
   },
 
   fetch: function(id) {

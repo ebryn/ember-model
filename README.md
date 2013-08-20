@@ -20,7 +20,6 @@ Need more help getting started? Join us in #ember-model on Freenode.
 - Relationships (hasMany/belongsTo)
 - Focused on performance
 - Automatic coalescing of multiple findById calls into a single findMany
-- Customizable dirty tracking (great for embedded objects)
 - Fixtures
 - Identity map (per class)
 - Promises everywhere
@@ -112,10 +111,7 @@ Ember.Adapter = Ember.Object.extend({
 ## Attribute types
 
 Attributes by default have no type and are not typecast from the representation
-provided in the JSON format. Objects and arrays are cloned, so that clean copy
-of the attribute is maintained internally in case of wanting to revert a dirty
-record to a clean state.
-
+provided in the JSON format.
 
 ### Built in attribute types
 
