@@ -363,7 +363,7 @@ Ember.Model.reopenClass({
   },
 
   _findFetchQuery: function(params, isFetch) {
-    var records = Ember.RecordArray.create();
+    var records = Ember.RecordArray.create({modelClass: this, _query: params});
 
     var promise = this.adapter.findQuery(this, records, params);
 
@@ -381,7 +381,7 @@ Ember.Model.reopenClass({
   _findFetchMany: function(ids, isFetch) {
     Ember.assert("findFetchMany requires an array", Ember.isArray(ids));
 
-    var records = Ember.RecordArray.create({_ids: ids}),
+    var records = Ember.RecordArray.create({_ids: ids, modelClass: this}),
         deferred;
 
     if (!this.recordArrays) { this.recordArrays = []; }
@@ -471,7 +471,7 @@ Ember.Model.reopenClass({
 
   reload: function(id) {
     var record = this.cachedRecordForId(id);
-
+    record.set('isLoaded', false);
     return this._fetchById(record, id);
   },
 
