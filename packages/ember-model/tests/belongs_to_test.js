@@ -380,6 +380,45 @@ test("relationships should be seralized when specified with string", function() 
   deepEqual(post.toJSON(), {id: 1, author_id: 100});
 });
 
+test("belongsTo from an embedded source is stored in the model cache", function(){
+  var Company = Ember.Company = Ember.Model.extend({
+    id: Ember.attr('string'),
+    name: Ember.attr('string'),
+    market: Ember.belongsTo('Ember.Market', {key: 'market', embedded: true})
+  });
+
+  var Market = Ember.Market = Ember.Model.extend({
+    id: Ember.attr('string'),
+    name: Ember.attr('string')
+  });
+
+  var findWasNotCalled = true;
+  Market.adapter = Ember.FixtureAdapter.create({
+    find: function(id, record){
+      findWasNotCalled = false;
+      return record;
+    }
+  });
+
+  var companyJson = {
+    id: 1,
+    name: 'Google, Inc',
+    market: {
+      id: 1,
+      name: 'NYSE'
+    }
+  };
+
+  Company.load([companyJson]);
+
+  var company = Company.find(1);
+  var market  = company.get('market');
+
+  var cachedMarket = Market.find(1);
+  ok(findWasNotCalled, "A call to Market.adapter.find did not occur");
+  equal(market, cachedMarket, "The loaded market is cached");
+
+});
 
 test("belongsTo from an embedded source is able to materialize without having to re-find", function() {
 
