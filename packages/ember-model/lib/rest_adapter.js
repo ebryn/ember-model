@@ -2,7 +2,7 @@ require('ember-model/adapter');
 
 var get = Ember.get;
 
-Ember.RESTAdapter = Ember.Adapter.extend({
+Ember.RESTAdapter = Ember.Adapter.extend(Ember.WellBehavedAdapter, {
   find: function(record, id) {
     var url = this.buildURL(record.constructor, id),
         self = this;
@@ -107,7 +107,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       return urlRoot + ".json";
     }
   },
-  
+
   ajaxSettings: function(url, method) {
     return {
       url: url,
@@ -138,7 +138,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         if (jqXHR) {
           jqXHR.then = null;
         }
-        
+
         Ember.run(null, reject, jqXHR);
       };
 
