@@ -159,7 +159,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
         } else {
-          data = this.serializeHasMany(key, meta);
+          //continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
+          data = this.serializeHasMany(key, meta); //its here to pass tests
         }
 
         json[relationshipKey] = data;
@@ -299,6 +300,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         mapFunction = function(id) { return type._referenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
+    } else if (this.get('id') && type.adapter.loadHasMany) {
+        content = type.adapter.loadHasMany(this, key, type);
     }
 
     return Ember.A(content || []);
@@ -515,7 +518,8 @@ Ember.Model.reopenClass({
     this._currentBatchIds = null;
     this._currentBatchRecordArrays = null;
     this._currentBatchDeferreds = null;
-
+    
+    if (!batchIds) return;
     for (i = 0; i < batchIds.length; i++) {
       if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
         requestIds.push(batchIds[i]);
