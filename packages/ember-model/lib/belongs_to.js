@@ -61,6 +61,10 @@ Ember.Model.reopen({
       var primaryKey = get(type, 'primaryKey');
       record = type.create({ isLoaded: false });
       record.load(idOrAttrs[primaryKey], idOrAttrs);
+
+      // store this model in the cache
+      if (!type.recordCache) { type.recordCache = {}; }
+      type.recordCache[idOrAttrs[primaryKey]] = record;
     } else {
       record = type.find(idOrAttrs);
     }
