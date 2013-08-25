@@ -426,3 +426,51 @@ test("belongsTo from an embedded source is able to materialize without having to
   var post1 = project1.get('posts.firstObject');
   equal(project1, post1.get('project'));
 });
+
+
+test("unloaded records are removed from reference cache", function() {
+
+
+  var Company = Ember.Company = Ember.Model.extend({
+     id: Ember.attr('string'),
+     title: Ember.attr('string'),
+     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+  }),
+    Project = Ember.Project = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        company: Ember.belongsTo('Ember.Company', {key:'company'})
+    });
+
+  var compJson = {
+    id:1,
+    title:'coolio',
+    projects:[{ id: 1, title: 'project one title', company: 1 },
+              { id: 2, title: 'project two title', company: 1 }]  
+    }, compJson2 = {
+    id:1,
+    title:'coolio',
+    projects:[{ id: 1, title: 'project one new title', company: 1 },
+              { id: 2, title: 'project two new title', company: 1 }]  
+    };
+
+  Company.load([compJson]);
+  var company = Company.find(1);
+  var project1 = company.get('projects.firstObject');
+
+  equal(company.get('projects.length'), 2);
+
+  Company.unload(company);
+  company.get('projects').forEach(function(project){
+   Project.unload(project);
+  });
+
+  Company.load([compJson2]);
+  company = Company.find(1);
+  var reloadedProject1 = company.get('projects.firstObject');
+
+
+  notEqual(project1, reloadedProject1);
+  equal(project1.get('title'), 'project one title');
+  equal(reloadedProject1.get('title'), 'project one new title');
+});

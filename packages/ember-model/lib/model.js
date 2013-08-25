@@ -612,6 +612,7 @@ Ember.Model.reopenClass({
   clearCache: function () {
     this.recordCache = undefined;
     this.sideloadedData = undefined;
+    this._idToReference = undefined;
   },
 
   removeFromCache: function (key) {
@@ -620,6 +621,9 @@ Ember.Model.reopenClass({
     }
     if (this.recordCache && this.recordCache[key]) {
       delete this.recordCache[key];
+    }
+    if(this._idToReference && this._idToReference[key]) {
+      delete this._idToReference[key];
     }
   },
 
