@@ -55,6 +55,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return dirtyAttributes && dirtyAttributes.length !== 0 || false;
   }.property('_dirtyAttributes.length'),
 
+  _relationshipBecameDirty: function(name) {
+    var dirtyAttributes = get(this, '_dirtyAttributes');
+    dirtyAttributes.pushObject(name);
+  },
+
+  _relationshipBecameClean: function(name) {
+    var dirtyAttributes = get(this, '_dirtyAttributes');
+    dirtyAttributes.removeObject(name);
+  },
+
   dataKey: function(key) {
     var camelizeKeys = get(this.constructor, 'camelizeKeys');
     var meta = this.constructor.metaForProperty(key);
@@ -66,6 +76,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   init: function() {
     this._createReference();
+    if (!this._dirtyAttributes) {
+      set(this, '_dirtyAttributes', []);
+    }
     this._super();
   },
 
@@ -111,6 +124,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else if (meta.isRelationship) {
         if (!klass._relationships) { klass._relationships = []; }
         klass._relationships.push(key);
+        meta.relationshipKey = key;
       }
     }
   },

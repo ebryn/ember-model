@@ -25,7 +25,8 @@ Ember.Model.reopen({
       modelClass: type,
       content: this._getHasManyContent(key, type, embedded),
       embedded: embedded,
-      key: key
+      key: key,
+      relationshipKey: meta.relationshipKey
     });
 
     this._registerHasManyArray(collection);
