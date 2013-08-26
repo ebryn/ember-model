@@ -199,3 +199,48 @@ test("toJSON should respect the key option in attr", function() {
   equal(json.Author, "Guilherme", "json.Author should be Guilherme");
   equal(json.author, undefined, "json.author should be undefined");
 });
+
+test("custom attributes should revert correctly", function () {
+  var Time = {
+    serialize: function (time) {
+      return time.hour + ":" + time.min;
+    },
+    deserialize: function (string) {
+      var array = string.split(":");
+      return {
+        hour: parseInt(array[0], 10),
+        min: parseInt(array[1], 10)
+      };
+    }
+  };
+
+
+  var Post = Ember.Model.extend({
+    time: Ember.attr(Time)
+  });
+
+
+  var post = Post.create({});
+  post.load(1, { time: "10:11" });
+
+
+  var t0 = post.get('time');
+  equal(t0.hour, 10, "Time should have correct hour");
+  equal(t0.min, 11, "Time should have correct minute");
+
+
+  post.set('time', { hour: 11, min: 12 });
+
+
+  var t1 = post.get('time');
+  equal(t1.hour, 11, "Time should have correct hour");
+  equal(t1.min, 12, "Time should have correct minute");
+
+  post.revert();
+  var t2 = post.get('time');
+  equal(t2.hour, 10, "Time should have correct hour");
+  equal(t2.min, 11, "Time should have correct minute");
+
+  // should not be dirty now
+  ok(post.get('isDirty') === false, "model should no longer be dirty after reverting changes");
+});
