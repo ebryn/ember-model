@@ -219,7 +219,20 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         var attr = this._dirtyAttributes[i];
         reverts[attr] = data[attr];
       }
-      setProperties(this, reverts);
+
+      var cache = meta(this).cache;
+      for (var keyName in reverts) {
+        if (keyName in cache) {
+          if (meta(this).watching[keyName]) {
+            Ember.propertyWillChange(this, keyName);
+            delete cache[keyName];
+            Ember.propertyDidChange(this, keyName);
+          } else {
+            delete cache[keyName];
+          }
+        }
+      }
+      this._dirtyAttributes.clear();
     }
   },
 
