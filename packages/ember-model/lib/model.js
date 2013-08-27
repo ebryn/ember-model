@@ -212,28 +212,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   revert: function() {
-    if (this.get('isDirty')) {
-      var data = get(this, '_data') || {},
-          reverts = {};
-      for (var i = 0; i < this._dirtyAttributes.length; i++) {
-        var attr = this._dirtyAttributes[i];
-        reverts[attr] = data[attr];
-      }
-
-      var cache = meta(this).cache;
-      for (var keyName in reverts) {
-        if (keyName in cache) {
-          if (meta(this).watching[keyName]) {
-            Ember.propertyWillChange(this, keyName);
-            delete cache[keyName];
-            Ember.propertyDidChange(this, keyName);
-          } else {
-            delete cache[keyName];
-          }
-        }
-      }
-      this._dirtyAttributes.clear();
-    }
+    this.getWithDefault('_dirtyAttributes', []).clear();
+    this.notifyPropertyChange('_data');
   },
 
   didCreateRecord: function() {
