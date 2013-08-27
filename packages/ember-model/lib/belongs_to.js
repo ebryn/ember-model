@@ -14,34 +14,48 @@ Ember.belongsTo = function(type, options) {
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType },
       relationshipKey = options.key;
 
-  return Ember.computed(function(key, value, oldValue) {
+  return Ember.computed(function(key, value) {
     type = meta.getType();
 
     var dirtyAttributes = get(this, '_dirtyAttributes'),
-        createdDirtyAttributes = false;
+        createdDirtyAttributes = false,
+        data, compareValue, dataValue;
 
     if (!dirtyAttributes) {
       dirtyAttributes = [];
       createdDirtyAttributes = true;
     }
 
-    if (arguments.length > 1) {
-      if (value) {
+    if (arguments.length === 2) {
+      if (value instanceof Ember.Model) {
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
                      [value.constructor, type]),
                      value instanceof type);
 
-        if (oldValue !== value) {
-          dirtyAttributes.pushObject(key);
-        } else {
-          dirtyAttributes.removeObject(key);
+        compareValue = value.getPrimaryKey();
+      } else {
+        // Non-falsy, non-model value ..
+        if (!Ember.isNone(value)) {
+          Ember.assert(Ember.String.fmt('Attempted to set property to: %@', [value]));
+          return;
         }
 
-        if (createdDirtyAttributes) {
-          set(this, '_dirtyAttributes', dirtyAttributes);
-        }
+        compareValue = null;
       }
-      return value === undefined ? null : value;  
+
+      dataValue = get(this, '_data.'+relationshipKey);
+
+      if (dataValue !== compareValue) {
+        dirtyAttributes.pushObject(key);
+      } else {
+        dirtyAttributes.removeObject(key);
+      }
+
+      if (createdDirtyAttributes) {
+        set(this, '_dirtyAttributes', dirtyAttributes);
+      }
+
+      return Ember.isNone(value) ? null : value;
     } else {
       return this.getBelongsTo(relationshipKey, type, meta);
     }
