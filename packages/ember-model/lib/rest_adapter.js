@@ -2,7 +2,7 @@ require('ember-model/adapter');
 
 var get = Ember.get;
 
-Ember.RESTAdapter = Ember.Adapter.extend({
+Ember.RESTAdapter = Ember.Adapter.extend(Ember.WellBehavedAdapter, {
   find: function(record, id) {
     var url = this.buildURL(record.constructor, id),
         self = this;
@@ -64,14 +64,6 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     });
   },
 
-  didCreateRecord: function(record, data) {
-    var rootKey = get(record.constructor, 'rootKey'),
-        primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? data[rootKey] : data;
-    record.load(dataToLoad[primaryKey], dataToLoad);
-    record.didCreateRecord();
-  },
-
   saveRecord: function(record) {
     var primaryKey = get(record.constructor, 'primaryKey'),
         url = this.buildURL(record.constructor, get(record, primaryKey)),
@@ -115,7 +107,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       return urlRoot + ".json";
     }
   },
-  
+
   ajaxSettings: function(url, method) {
     return {
       url: url,
@@ -146,7 +138,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         if (jqXHR) {
           jqXHR.then = null;
         }
-        
+
         Ember.run(null, reject, jqXHR);
       };
 

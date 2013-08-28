@@ -2,7 +2,7 @@ require('ember-model/adapter');
 
 var get = Ember.get;
 
-Ember.FixtureAdapter = Ember.Adapter.extend({
+Ember.FixtureAdapter = Ember.Adapter.extend(Ember.WellBehavedAdapter, {
   _findData: function(klass, id) {
     var fixtures = klass.FIXTURES,
         idAsString = id.toString(),
@@ -52,12 +52,13 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
   createRecord: function(record) {
     var klass = record.constructor,
-        fixtures = klass.FIXTURES;
+        fixtures = klass.FIXTURES,
+        self = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
-        record.didCreateRecord();
+        self.didCreateRecord(record, record.toJSON());
+        fixtures.push(record);
         resolve(record);
       }, 0);
     });

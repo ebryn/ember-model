@@ -21,6 +21,23 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
     this.updateFilter();
   },
 
+  // Semantically it doesn't make much sense to push an object onto a
+  // FilteredRecordArray, but if the record is of the correct type, we can add
+  // the observers and apply the filter.
+  pushObject: function(record) {
+    if (record instanceof get(this, 'modelClass')) {
+      this.registerObserversOnRecord(record);
+      this.updateFilterForRecord(record);
+    }
+  },
+
+  removeObject: function(record) {
+    if (record instanceof get(this, 'modelClass')) {
+      this.unregisterObserversOnRecord(record);
+      this.get('content').removeObject(record);
+    }
+  },
+
   updateFilter: function() {
     var self = this,
         results = [];
@@ -34,6 +51,7 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
   updateFilterForRecord: function(record) {
     var results = get(this, 'content');
+    results.removeObject(record);
     if (this.filterFunction(record)) {
       results.pushObject(record);
     }
@@ -52,6 +70,15 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
     for (var i = 0, l = get(filterProperties, 'length'); i < l; i++) {
       record.addObserver(filterProperties[i], self, 'updateFilterForRecord');
+    }
+  },
+
+  unregisterObserversOnRecord: function(record) {
+    var self = this,
+        filterProperties = get(this, 'filterProperties');
+
+    for (var i = 0, l = get(filterProperties, 'length'); i < l; i++) {
+      record.removeObserver(filterProperties[i], self, 'updateFilterForRecord');
     }
   }
 });

@@ -16,6 +16,14 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     this.notifyLoaded();
   },
 
+  pushObject: function(record) {
+    if (get(this, 'length') === 0) {
+      set(this, 'content', []);
+    }
+
+    this._super(record);
+  },
+
   notifyLoaded: function() {
     set(this, 'isLoaded', true);
     this.trigger('didLoad');

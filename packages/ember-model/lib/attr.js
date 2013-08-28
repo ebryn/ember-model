@@ -31,17 +31,6 @@ Ember.Model.dataTypes[Number] = {
   }
 };
 
-function deserialize(value, type) {
-  if (type && type.deserialize) {
-    return type.deserialize(value);
-  } else if (type && Ember.Model.dataTypes[type]) {
-    return Ember.Model.dataTypes[type].deserialize(value);
-  } else {
-    return value;
-  }
-}
-
-
 Ember.attr = function(type, options) {
   return Ember.computed(function(key, value) {
     var data = get(this, '_data'),
@@ -78,6 +67,6 @@ Ember.attr = function(type, options) {
       return value;
     }
 
-    return this.getAttr(key, deserialize(dataValue, type));
+    return this.getAttr(key, this.constructor.deserialize(dataValue, type));
   }).property('_data').meta({isAttribute: true, type: type, options: options});
 };

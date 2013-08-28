@@ -5,6 +5,7 @@ var get = Ember.get,
     set = Ember.set,
     setProperties = Ember.setProperties,
     meta = Ember.meta,
+    camelize = Ember.String.camelize,
     underscore = Ember.String.underscore;
 
 function contains(array, element) {
@@ -80,6 +81,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       set(this, '_dirtyAttributes', []);
     }
     this._super();
+
+    this.one('didLoad', function() {
+      this.constructor.addToRecordArrays(this);
+    });
   },
 
   _createReference: function() {
@@ -111,6 +116,30 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isNew', false);
     this._createReference();
     this.trigger('didLoad');
+  },
+
+  merge: function(hash) {
+    var camelizeKeys = get(this.constructor, 'camelizeKeys'),
+        primaryKey = get(this.constructor, 'primaryKey'),
+        data = get(this, '_data'),
+        self = this,
+        deserialized = {};
+    delete hash[primaryKey];
+
+    Object.keys(hash).forEach(function(key) {
+      var value = hash[key],
+          dataKey = camelizeKeys ? camelize(key) : key,
+          type;
+      if (typeof value === 'string') {
+        type = self.constructor.metaForProperty(dataKey).type;
+        value = self.constructor.deserialize(value, type);
+      }
+      deserialized[dataKey] = value;
+    });
+    this.setProperties(deserialized);
+
+    this._copyDirtyAttributesToData();
+    set(this, 'isDirty', false);
   },
 
   didDefineProperty: function(proto, key, value) {
@@ -222,11 +251,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isNew', false);
 
-    if (!this.constructor.recordCache) this.constructor.recordCache = {};
-    this.constructor.recordCache[id] = this;
+    this.constructor.pushIntoRecordCache([this]);
 
     this._copyDirtyAttributesToData();
-    this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
   },
@@ -318,6 +345,24 @@ Ember.Model.reopenClass({
   adapter: Ember.Adapter.create(),
 
   _clientIdCounter: 1,
+
+  deserialize: function(value, type) {
+    if (type && type.deserialize) {
+      return type.deserialize(value);
+    } else if (type && Ember.Model.dataTypes[type]) {
+      return Ember.Model.dataTypes[type].deserialize(value);
+    } else {
+      return value;
+    }
+  },
+
+  filter: function(filterProperties, filterFunction) {
+    return Ember.FilteredRecordArray.create({
+      modelClass: this,
+      filterFunction: filterFunction,
+      filterProperties: filterProperties
+    });
+  },
 
   getAttributes: function() {
     this.proto(); // force class "compilation" if it hasn't been done.
@@ -600,12 +645,7 @@ Ember.Model.reopenClass({
     }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
-        if (recordArray instanceof Ember.FilteredRecordArray) {
-          recordArray.registerObserversOnRecord(record);
-          recordArray.updateFilter();
-        } else {
-          recordArray.pushObject(record);
-        }
+        recordArray.pushObject(record);
       });
     }
   },
@@ -684,6 +724,25 @@ Ember.Model.reopenClass({
       this.removeFromCache(primaryKey);
       this.sideloadedData[primaryKey] = hash;
     }
+  },
+
+  mergeOrLoad: function(hash) {
+    var primaryKey = get(this, 'primaryKey'),
+        id = hash[primaryKey],
+        record;
+
+    if (id) {
+      record = this.cachedRecordForId(id);
+      if (record && get(record, 'isLoaded')) {
+        record.merge(hash);
+      }
+    }
+
+    if (!record || !get(record, 'isLoaded')) {
+      record.load(id, hash);
+    }
+
+    return record;
   },
 
   _referenceForId: function(id) {
