@@ -201,3 +201,25 @@ test("isDirty is observable", function() {
   expectDirty = false;
   obj.set('name', 'Erik');
 });
+
+test("manipulating object presence in a hasMany should dirty the parent", function() {
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments'})
+  });
+
+  var post = Post.create({isNew: false, data: {comments: []}});
+
+  ok(!post.get('isDirty'), "Post should be clean initially");
+
+  var comments = post.get('comments'),
+      newComment = Comment.create();
+  comments.pushObject(newComment);
+
+  ok(post.get('isDirty'), "After manipulating the hasMany, post should be dirty");
+
+  comments.removeObject(newComment);
+
+  ok(!post.get('isDirty'), "After reversing the change, the post should be clean again");
+});

@@ -28,11 +28,22 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
   },
 
   reload: function() {
-    var modelClass = this.get('modelClass');
-    Ember.assert("Reload can only be called on findAll RecordArrays",
-      modelClass && modelClass._findAllRecordArray === this);
+    var modelClass = this.get('modelClass'),
+        self = this,
+        promises;
     
     set(this, 'isLoaded', false);
-    modelClass.adapter.findAll(modelClass, this);
+    if (modelClass._findAllRecordArray === this) {
+      modelClass.adapter.findAll(modelClass, this);
+    } else if (this._query) {
+      modelClass.adapter.findQuery(modelClass, this, this._query);
+    } else {
+      promises = this.map(function(record) {
+        return record.reload();
+      });
+      Ember.RSVP.all(promises).then(function(data) {
+        self.notifyLoaded();
+      });
+    }
   }
 });
