@@ -190,6 +190,8 @@ test("isDirty is observable", function() {
     obj.load(1, {name: 'Erik'});
   });
 
+  obj.get('isDirty'); // give isDirty a kick. it's not observable until it's been computed.
+
   var expectDirty;
   Ember.addObserver(obj, 'isDirty', function() {
     equal(obj.get('isDirty'), expectDirty, 'isDirty is as expected');
