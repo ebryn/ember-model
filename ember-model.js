@@ -190,6 +190,8 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
     this.registerObservers();
     this.updateFilter();
+
+    this._super();
   },
 
   updateFilter: function() {
