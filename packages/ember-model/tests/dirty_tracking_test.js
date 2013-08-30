@@ -218,6 +218,7 @@ test("manipulating object presence in a hasMany should dirty the parent", functi
   comments.pushObject(newComment);
 
   ok(post.get('isDirty'), "After manipulating the hasMany, post should be dirty");
+  deepEqual(post.get('_dirtyAttributes'), ['comments']);
 
   comments.removeObject(newComment);
 

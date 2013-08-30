@@ -67,13 +67,13 @@ Ember.ManyArray = Ember.RecordArray.extend({
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {},
 
   arrayDidChange: function(item, idx, removedCnt, addedCnt) {
-    var parent = get(this, 'parent'), relationshipName = get(this, 'name'),
+    var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey'),
         isDirty = get(this, 'isDirty');
-    
+
     if (isDirty) {
-      parent._relationshipBecameDirty(relationshipName);
+      parent._relationshipBecameDirty(relationshipKey);
     } else {
-      parent._relationshipBecameClean(relationshipName);
+      parent._relationshipBecameClean(relationshipKey);
     }
   },
 
