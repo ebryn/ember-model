@@ -129,7 +129,7 @@ test("toJSON uses the given relationship key", function() {
   deepEqual(article.toJSON(), { comment_ids: ['a'] }, "Relationship ids should be serialized only under the given key");
 });
 
-test("materializing the relationship should should not dirty the record", function() {
+test("materializing the relationship should not dirty the record", function() {
   expect(2);
 
   var Author = Ember.Model.extend({
@@ -148,4 +148,53 @@ test("materializing the relationship should should not dirty the record", functi
   ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('authors');
   ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
+});
+
+test("has many records created are available from reference cache", function() {
+
+
+  var Company = Ember.Company = Ember.Model.extend({
+     id: Ember.attr('string'),
+     title: Ember.attr('string'),
+     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+  }),
+    Project = Ember.Project = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        posts: Ember.hasMany('Ember.Post', {key: 'posts', embedded: true}),
+        company: Ember.belongsTo('Ember.Company', {key:'company'})
+    }),
+    Post = Ember.Post = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        body: Ember.attr('string'),
+        project: Ember.belongsTo('Ember.Project', {key:'project'})
+    });
+
+  var compJson = {
+    id:1,
+    title:'coolio',
+    projects:[{
+          id: 1,
+          title: 'project one title',
+          company: 1, 
+          posts: [{id: 1, title: 'title', body: 'body', project:1 }, 
+                  {id: 2, title: 'title two', body: 'body two', project:1 }]
+      }] 
+    };
+
+  Company.load([compJson]);
+  var company = Company.find(1);
+
+  var project = company.get('projects.firstObject');
+  var projectFromCacheViaFind = Project.find(project.get('id'));
+  var projectRecordFromCache = Project._referenceCache[project.get('id')].record;
+
+  equal(project, projectFromCacheViaFind);
+  equal(project, projectRecordFromCache);
+
+  var post = project.get('posts.firstObject');
+  var postFromCache = Post.find(post.get('id'));
+  equal(post, postFromCache);
+
 });

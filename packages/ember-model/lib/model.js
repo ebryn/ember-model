@@ -87,7 +87,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         id = this.getPrimaryKey();
 
     if (!reference) {
-      reference = this.constructor._referenceForId(id);
+      reference = this.constructor._getOrCreateReferenceForId(id);
       reference.record = this;
       this._reference = reference;
     }
@@ -222,9 +222,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isNew', false);
 
-    if (!this.constructor.recordCache) this.constructor.recordCache = {};
-    this.constructor.recordCache[id] = this;
-
     this._copyDirtyAttributesToData();
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
@@ -298,12 +295,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       if (embedded) {
         primaryKey = get(type, 'primaryKey');
         mapFunction = function(attrs) {
-          reference = type._referenceForId(attrs[primaryKey]);
+          reference = type._getOrCreateReferenceForId(attrs[primaryKey]);
           reference.data = attrs;
           return reference;
         };
       } else {
-        mapFunction = function(id) { return type._referenceForId(id); };
+        mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
     }
@@ -561,29 +558,20 @@ Ember.Model.reopenClass({
     });
   },
 
-  pushIntoRecordCache: function(records){
-    var primaryKey = get(this, 'primaryKey'), self = this;
-    if (!this.recordCache) this.recordCache = {};
-
-    records.forEach(function(record){
-      self.recordCache[get(record, primaryKey)] = record;
-    });
-  },
-
-  getFromRecordCache: function(id){
-    if (!this.recordCache) this.recordCache = {};
-    return this.recordCache[id];
+  getCachedReferenceRecord: function(id){
+    var ref = this._getReferenceById(id);
+    if(ref) return ref.record;
+    return undefined;
   },
 
   cachedRecordForId: function(id) {
-    var record = this.getFromRecordCache(id);
+    var record = this.getCachedReferenceRecord(id);
 
     if (!record) {
       var primaryKey = get(this, 'primaryKey'),
         attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      this.pushIntoRecordCache([record]);
       var sideloadedData = this.sideloadedData && this.sideloadedData[id];
       if (sideloadedData) {
         record.load(id, sideloadedData);
@@ -617,20 +605,16 @@ Ember.Model.reopenClass({
   },
 
   clearCache: function () {
-    this.recordCache = undefined;
     this.sideloadedData = undefined;
-    this._idToReference = undefined;
+    this._referenceCache = undefined;
   },
 
   removeFromCache: function (key) {
     if (this.sideloadedData && this.sideloadedData[key]) {
       delete this.sideloadedData[key];
     }
-    if (this.recordCache && this.recordCache[key]) {
-      delete this.recordCache[key];
-    }
-    if(this._idToReference && this._idToReference[key]) {
-      delete this._idToReference[key];
+    if(this._referenceCache && this._referenceCache[key]) {
+      delete this._referenceCache[key];
     }
   },
 
@@ -669,10 +653,9 @@ Ember.Model.reopenClass({
   },
 
   forEachCachedRecord: function(callback) {
-    if (!this.recordCache) { return Ember.A([]); }
-    var ids = Object.keys(this.recordCache);
+    var ids = Object.keys(this._referenceCache);
     ids.map(function(id) {
-      return this.recordCache[id];
+      return this._getReferenceById(id).record;
     }, this).forEach(callback);
   },
 
@@ -686,10 +669,14 @@ Ember.Model.reopenClass({
     }
   },
 
-  _referenceForId: function(id) {
-    if (!this._idToReference) { this._idToReference = {}; }
+  _getReferenceById: function(id) {
+    if (!this._referenceCache) { this._referenceCache = {}; }
+    return this._referenceCache[id];
+  },
 
-    var reference = this._idToReference[id];
+  _getOrCreateReferenceForId: function(id) {
+    var reference = this._getReferenceById(id);
+
     if (!reference) {
       reference = this._createReference(id);
     }
@@ -698,9 +685,9 @@ Ember.Model.reopenClass({
   },
 
   _createReference: function(id) {
-    if (!this._idToReference) { this._idToReference = {}; }
+    if (!this._referenceCache) { this._referenceCache = {}; }
 
-    Ember.assert('The id ' + id + ' has alread been used with another record of type ' + this.toString() + '.', !id || !this._idToReference[id]);
+    Ember.assert('The id ' + id + ' has alread been used with another record of type ' + this.toString() + '.', !id || !this._referenceCache[id]);
 
     var reference = {
       id: id,
@@ -710,7 +697,7 @@ Ember.Model.reopenClass({
     // if we're creating an item, this process will be done
     // later, once the object has been persisted.
     if (id) {
-      this._idToReference[id] = reference;
+      this._referenceCache[id] = reference;
     }
 
     return reference;
