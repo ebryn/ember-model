@@ -86,6 +86,12 @@ existingUser.save(); // PUT /users/1.json
 
 `Model.find(<object>)` - find query - object gets passed directly to your adapter
 
+`Model.fetch()` - find all records, returns a promise
+
+`Model.fetch(<String|Number>)` - find by primary key (multiple calls within a single run loop can coalesce to a findMany), returns a promise
+
+`Model.fetch(<object>)` - find query - object gets passed directly to your adapter, returns a promise
+
 `Model.load(<array>)` - load an array of model data (aka sideloading)
 
 ## Adapter API
