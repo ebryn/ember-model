@@ -211,7 +211,7 @@ test("manipulating object presence in a hasMany should dirty the parent", functi
     comments: Ember.hasMany(Comment, {key: 'comments'})
   });
 
-  var post = Post.create({isNew: false, data: {comments: []}});
+  var post = Post.create({isNew: false, _data: {comments: []}});
 
   ok(!post.get('isDirty'), "Post should be clean initially");
 
@@ -225,4 +225,36 @@ test("manipulating object presence in a hasMany should dirty the parent", functi
   comments.removeObject(newComment);
 
   ok(!post.get('isDirty'), "After reversing the change, the post should be clean again");
+});
+
+test("manipulating the order of objects in a hasMany shouldn't dirty the parent", function() {
+  var Comment = Ember.Model.extend({
+    id: Ember.attr()
+  });
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [{
+    id: 1
+  }, {
+    id: 2
+  }];
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments'})
+  });
+
+  var post = Post.create({isNew: false, _data: {comments: [1, 2]}});
+
+  ok(!post.get('isDirty'), "Post should be clean initially");
+
+  var comments = post.get('comments'),
+      comment1 = Comment.find(1),
+      comment2 = Comment.find(2);
+
+  equal(comments.get('length'), 2, "There should be two comments");
+
+  comments.removeObject(comment1);
+  comments.pushObject(comment1);
+
+  ok(!post.get('isDirty'), "After manipulating the order of the hasMany, post should not be dirty");
+  deepEqual(post.get('_dirtyAttributes'), []);
 });
