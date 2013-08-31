@@ -153,7 +153,7 @@ test("changing a property that matches the filter should update the FilteredReco
 });
 
 test("adding a new record and changing a property that matches the filter should update the FilteredRecordArray to include it", function() {
-  expect(5);
+  expect(8);
 
   Model.fetch().then(function() {
     start();
@@ -175,6 +175,12 @@ test("adding a new record and changing a property that matches the filter should
       equal(recordArray.get('length'), 2, "There are 2 records after changing the name");
       equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
       equal(recordArray.get('lastObject.name'), 'Ekris', "The record data matches");
+
+      record.set('name', 'Eskil');
+
+      equal(recordArray.get('length'), 2, "There are still 2 records after changing the name again");
+      equal(recordArray.get('firstObject.name'), 'Erik', "The record data still matches");
+      equal(recordArray.get('lastObject.name'), 'Eskil', "The record data still matches");
     });
     stop();
   });
