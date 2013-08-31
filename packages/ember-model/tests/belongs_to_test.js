@@ -474,3 +474,41 @@ test("unloaded records are removed from reference cache", function() {
   equal(project1.get('title'), 'project one title');
   equal(reloadedProject1.get('title'), 'project one new title');
 });
+
+test("belongsTo records created are available from reference cache", function() {
+
+
+  var Company = Ember.Company = Ember.Model.extend({
+     id: Ember.attr('string'),
+     title: Ember.attr('string'),
+     project: Ember.belongsTo('Ember.Project', {key:'project', embedded: true})
+  }),
+    Project = Ember.Project = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        company: Ember.belongsTo('Ember.Company', {key:'company'})
+    });
+
+  var compJson = {
+    id:1,
+    title:'coolio',
+    project:{
+          id: 1,
+          title: 'project one title',
+          company: 1 
+      }
+    };
+
+  Company.load([compJson]);
+  var company = Company.find(1);
+
+  var project = company.get('project');
+  var projectFromCacheViaFind = Project.find(project.get('id'));
+  var projectRecordFromCache = Project._referenceCache[project.get('id')].record;
+
+  equal(project, projectFromCacheViaFind);
+  equal(project, projectRecordFromCache);
+
+  // referenced company record is the same as the company returned from find
+  equal(company, project.get('company'));
+});

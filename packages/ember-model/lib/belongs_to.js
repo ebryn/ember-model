@@ -58,9 +58,10 @@ Ember.Model.reopen({
     }
 
     if (meta.options.embedded) {
-      var primaryKey = get(type, 'primaryKey');
-      record = type.create({ isLoaded: false });
-      record.load(idOrAttrs[primaryKey], idOrAttrs);
+      var primaryKey = get(type, 'primaryKey'),
+        id = idOrAttrs[primaryKey];
+      record = type.create({ isLoaded: false, id: id });
+      record.load(id, idOrAttrs);
     } else {
       record = type.find(idOrAttrs);
     }
