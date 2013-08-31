@@ -70,7 +70,7 @@ existingUser.save(); // PUT /users/1.json
 
 ## Model API
 
-`Model#create` - create a new record
+`Model.create` - create a new record
 
 `Model#save` - save or update record
 
@@ -92,7 +92,7 @@ existingUser.save(); // PUT /users/1.json
 
 `Model.fetch(<object>)` - find query - object gets passed directly to your adapter, returns a promise
 
-`Model.load(<array>)` - load an array of model data (aka sideloading)
+`Model.load(<array>)` - load an array of model data (typically used when preloading / sideloading data)
 
 ## Adapter API
 
