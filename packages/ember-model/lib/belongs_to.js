@@ -50,17 +50,25 @@ Ember.belongsTo = function(type, options) {
 
 Ember.Model.reopen({
   getBelongsTo: function(key, type, meta) {
-    var idOrAttrs = get(this, '_data.' + key),
+    var primaryKey = get(type, 'primaryKey'),
+        idOrAttrs = get(this, '_data.' + key),
+        embedded = meta.options.embedded,
+        newRecord = meta.options.newRecord,
         record;
 
     if (Ember.isNone(idOrAttrs)) {
       return null;
     }
 
-    if (meta.options.embedded) {
-      var primaryKey = get(type, 'primaryKey'),
-        id = idOrAttrs[primaryKey];
-      record = type.create({ isLoaded: false, id: id });
+    if (embedded) {
+      var id = idOrAttrs[primaryKey],
+          reference = type._getReferenceById(id);
+      // if newRecord on belongs to, or no record exists
+      if(newRecord || !reference || !reference.record){
+        record = type.create({ isLoaded: false, id: id });
+      } else {
+        record = reference.record;
+      }
       record.load(id, idOrAttrs);
     } else {
       record = type.find(idOrAttrs);

@@ -92,11 +92,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       this._reference = reference;
     }
 
-    if (!reference.id) {
-      reference.id = id;
-    }
+    this._updateReference(id);
 
     return reference;
+  },
+
+  _updateReference: function(id){
+    var reference = this._reference;
+
+    if (!reference.id) {
+      reference.id = id;
+      this.constructor._insertLateReference(reference);
+    }
   },
 
   getPrimaryKey: function() {
@@ -109,7 +116,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, '_data', Ember.merge(data, hash));
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
-    this._createReference();
+    this._updateReference(id);
     this.trigger('didLoad');
   },
 
@@ -709,5 +716,12 @@ Ember.Model.reopenClass({
     }
 
     return reference;
+  },
+
+  _insertLateReference: function(reference){
+    if(reference.id){
+      this._referenceCache[reference.id] = reference;
+    }
   }
+
 });

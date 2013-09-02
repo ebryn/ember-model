@@ -18,18 +18,22 @@ Ember.hasMany = function(type, options) {
 Ember.Model.reopen({
   getHasMany: function(key, type, meta) {
     var embedded = meta.options.embedded,
+        newRecord = meta.options.newRecord,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
     var collection = collectionClass.create({
       parent: this,
       modelClass: type,
       content: this._getHasManyContent(key, type, embedded),
-      embedded: embedded,
       key: key,
-      relationshipKey: meta.relationshipKey
+      relationshipKey: meta.relationshipKey,
+      // These two are embedded specific  
+      _newRecord: newRecord,
+      _embedLoaded: Ember.Object.create()
     });
 
     this._registerHasManyArray(collection);
+    if(embedded) collection._materializeEmbedded();
 
     return collection;
   }

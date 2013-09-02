@@ -134,17 +134,31 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
         primaryKey = get(klass, 'primaryKey'),
         content = get(this, 'content'),
         reference = content.objectAt(idx),
-        attrs = reference.data;
+        attrs = reference.data,
+        keyIdx = "key-" + idx,
+        beenLoaded = get(this, '_embedLoaded.' + keyIdx),
+        record = reference.record,
+        newRecord = get(this, '_newRecord');
 
-    if (reference.record) {
-      return reference.record;
-    } else {
-      var record = klass.create({ _reference: reference });
+    // if there is no record or
+    // if it's never been loaded and it's supposed to be a new record
+    if(!record || (newRecord && !beenLoaded)){
+      record = klass.create({ _reference: reference });
       reference.record = record;
-      if (attrs) {
-        record.load(attrs[primaryKey], attrs);
-      }
-      return record;
+    }
+
+    if (!beenLoaded && attrs) {
+      record.load(attrs[primaryKey], attrs);
+    }
+
+    set(this, '_embedLoaded.' + keyIdx, true);
+
+    return record;
+  },
+
+  _materializeEmbedded: function(){
+    for(var i = 0, len = get(this, 'length');i<len;i++){
+      this.materializeRecord(i);
     }
   },
 
