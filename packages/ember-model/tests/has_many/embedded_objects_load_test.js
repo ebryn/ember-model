@@ -267,3 +267,49 @@ test("hasManyEmbedded records newRecord creates a new record", function() {
   
 });
 
+test("hasManyEmbedded records parent from a global variable", function() {
+  var globalLand;
+
+  var Post = Ember.Post = Ember.Model.extend({
+     comments: Ember.hasMany('Ember.Comment', {key:'comments', embedded: true}),
+
+     init: function(){
+       this._super();
+       globalLand = this;
+     }
+  }),
+    Comment = Ember.Comment = Ember.Model.extend({
+      id: Ember.attr(),
+      name: Ember.attr("string")
+    });
+
+
+  var postJson = {
+    "id" : 0,
+
+    "comments" : [
+        {
+         "id": 1,
+         "name": "Comment 1"
+        },
+        {
+         "id": 2,
+         "name": "Comment 2"
+        },
+        {
+         "id": 3,
+         "name": "Comment 3"
+        }
+    ]
+  };
+
+
+  Post.load([postJson]);
+  Post.find(0);
+
+  var comments = globalLand.get('comments');
+  equal(comments.get('length'), 3);
+  equal(globalLand.get('comments.firstObject.name'), "Comment 1"); 
+  
+});
+
