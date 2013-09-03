@@ -18,7 +18,6 @@ Ember.hasMany = function(type, options) {
 Ember.Model.reopen({
   getHasMany: function(key, type, meta) {
     var embedded = meta.options.embedded,
-        newRecord = meta.options.newRecord,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
     var collection = collectionClass.create({
@@ -28,7 +27,6 @@ Ember.Model.reopen({
       key: key,
       relationshipKey: meta.relationshipKey,
       // These two are embedded specific  
-      _newRecord: newRecord,
       _embedLoaded: Ember.Object.create()
     });
 

@@ -53,7 +53,6 @@ Ember.Model.reopen({
     var primaryKey = get(type, 'primaryKey'),
         idOrAttrs = get(this, '_data.' + key),
         embedded = meta.options.embedded,
-        newRecord = meta.options.newRecord,
         record;
 
     if (Ember.isNone(idOrAttrs)) {
@@ -63,8 +62,8 @@ Ember.Model.reopen({
     if (embedded) {
       var id = idOrAttrs[primaryKey],
           reference = type._getReferenceById(id);
-      // if newRecord on belongs to, or no record exists
-      if(newRecord || !reference || !reference.record){
+
+      if(!reference){
         record = type.create({ isLoaded: false, id: id });
       } else {
         record = reference.record;

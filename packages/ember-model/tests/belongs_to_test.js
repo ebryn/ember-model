@@ -514,47 +514,6 @@ test("belongsTo records created are available from reference cache", function() 
 });
 
 
-test("belongsTo embedded newRecord creates a new instance", function() {
-
-  var Company = Ember.Company = Ember.Model.extend({
-     id: Ember.attr('string'),
-     title: Ember.attr('string'),
-     project: Ember.belongsTo('Ember.Project', {key:'project', embedded: true, newRecord: true})
-  }),
-    Project = Ember.Project = Ember.Model.extend({
-        id: Ember.attr('string'),
-        title: Ember.attr('string'),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
-    });
-
-  var compJson = {
-    id:1,
-    title:'coolio',
-    project:{
-          id: 1,
-          title: 'project one title',
-          company: 1 
-      }
-    };
-
-  var projectJson = { id:1, title:'old project one title', company:1};
-
-  Project.load([projectJson]);
-  var project = Project.find(1);
-
-  equal(project.get('title'), 'old project one title');
-
-  Company.load([compJson]);
-  var company = Company.find(1);
-  var projectNewRecord = company.get('project');
-
-  notEqual(projectNewRecord, project);
-  equal(project.get('title'), 'old project one title');
-  equal(projectNewRecord.get('title'), 'project one title');
-  
-});
-
-
 test("belongsTo embedded updates previously created records", function() {
 
   var Company = Ember.Company = Ember.Model.extend({

@@ -137,21 +137,17 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
         attrs = reference.data,
         keyIdx = "key-" + idx,
         beenLoaded = get(this, '_embedLoaded.' + keyIdx),
-        record = reference.record,
-        newRecord = get(this, '_newRecord');
+        record = reference.record;
 
-    // if there is no record or
-    // if it's never been loaded and it's supposed to be a new record
-    if(!record || (newRecord && !beenLoaded)){
+    if(!record){
       record = klass.create({ _reference: reference });
       reference.record = record;
     }
 
     if (!beenLoaded && attrs) {
       record.load(attrs[primaryKey], attrs);
+      set(this, '_embedLoaded.' + keyIdx, true);
     }
-
-    set(this, '_embedLoaded.' + keyIdx, true);
 
     return record;
   },

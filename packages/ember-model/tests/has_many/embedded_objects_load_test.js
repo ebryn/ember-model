@@ -230,43 +230,6 @@ test("hasManyEmbedded records reload previously loaded records with new informat
   
 });
 
-test("hasManyEmbedded records newRecord creates a new record", function() {
-
-
-  var Company = Ember.Company = Ember.Model.extend({
-     id: Ember.attr('string'),
-     title: Ember.attr('string'),
-     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true, newRecord: true})
-  }),
-    Project = Ember.Project = Ember.Model.extend({
-        id: Ember.attr('string'),
-        title: Ember.attr('string'),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
-    });
-
-  var compJson = {
-    id:1,
-    title:'coolio',
-    projects:[{ id: 1, title: 'project one title', company: 1 },
-              { id: 2, title: 'project two title', company: 1 }]  
-    };
-
-  var projectJson = { id:1, title:'old project one title', company:1};
-
-  Project.load([projectJson]);
-  var project1 = Project.find(1);
-
-  equal(project1.get('title'), 'old project one title');
-
-  Company.load([compJson]);
-  var company = Company.find(1);
-  var project1NewRecord = company.get('projects.firstObject');
-  notEqual(project1NewRecord, project1);
-  equal(project1.get('title'), 'old project one title');
-  equal(project1NewRecord.get('title'), 'project one title');
-  
-});
-
 test("hasManyEmbedded records parent from a global variable", function() {
   var globalLand;
 
