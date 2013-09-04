@@ -601,10 +601,6 @@ Ember.Model.reopenClass({
         attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      var sideloadedData = this.sideloadedData && this.sideloadedData[id];
-      if (sideloadedData) {
-        record.load(id, sideloadedData);
-      }
     }
 
     return record;
@@ -634,14 +630,10 @@ Ember.Model.reopenClass({
   },
 
   clearCache: function () {
-    this.sideloadedData = undefined;
     this._referenceCache = undefined;
   },
 
   removeFromCache: function (key) {
-    if (this.sideloadedData && this.sideloadedData[key]) {
-      delete this.sideloadedData[key];
-    }
     if(this._referenceCache && this._referenceCache[key]) {
       delete this._referenceCache[key];
     }
@@ -660,14 +652,15 @@ Ember.Model.reopenClass({
 
   // FIXME
   findFromCacheOrLoad: function(data) {
-    var record;
-    if (!data[get(this, 'primaryKey')]) {
+    var record, 
+        id = data[get(this, 'primaryKey')];
+    if (!id) {
       record = this.create({isLoaded: false});
     } else {
-      record = this.cachedRecordForId(data[get(this, 'primaryKey')]);
+      record = this.cachedRecordForId(id);
     }
     // set(record, 'data', data);
-    record.load(data[get(this, 'primaryKey')], data);
+    record.load(id, data);
     return record;
   },
 
@@ -691,8 +684,6 @@ Ember.Model.reopenClass({
   load: function(hashes) {
     if (Ember.typeOf(hashes) !== 'array') { hashes = [hashes]; }
 
-    if (!this.sideloadedData) { this.sideloadedData = {}; }
-
     for (var i = 0, l = hashes.length; i < l; i++) {
       var hash = hashes[i],
           primaryKey = hash[get(this, 'primaryKey')],
@@ -701,7 +692,8 @@ Ember.Model.reopenClass({
       if (record) {
         record.load(primaryKey, hash);
       } else {
-        this.sideloadedData[primaryKey] = hash;
+        // allow for embedded records to propogate into existing records
+        this.findFromCacheOrLoad(hash);
       }
     }
   },
