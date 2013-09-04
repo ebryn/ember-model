@@ -182,7 +182,7 @@ test(".clearCache destroys sideloadedData and recordCache", function() {
 
   ok(Model.recordCache === undefined);
   ok(Model.sideloadedData === undefined);
-  
+
 });
 
 test("new records are added to the identity map", function() {
@@ -607,7 +607,7 @@ test("fetchAll returns a promise", function() {
     promise.then(function(records) {
       start();
       ok(records.get('isLoaded'));
-      equal(records.get('length'), 1);  
+      equal(records.get('length'), 1);
     });
     stop();
 });
@@ -622,7 +622,7 @@ test("fetchAll returns promise if findAll RecordArray already exists", function(
       start();
       ok(true, "Second fetch returned a promise");
     });
-    stop(); 
+    stop();
   });
   stop();
 });
@@ -791,6 +791,26 @@ test("mergeOrLoad merges an existing record", function() {
 
     equal(record.get("name"), "Erik Updated", "name matches");
     ok(record.get("createdAt") instanceof Date, "date attribute should be converted to a Date");
+  });
+
+  stop();
+});
+
+test("mergeOrLoad of a dirty record results in a clean, merged record", function() {
+  expect(2);
+
+  Model.fetch("a").then(function(record) {
+    start();
+
+    record.set("name", "Dirty Name");
+
+    Model.mergeOrLoad({
+      token: "a",
+      name: "Erik Updated"
+    });
+
+    equal(record.get("name"), "Erik Updated", "name matches");
+    ok(!record.get("isDirty"), "record is no longer dirty");
   });
 
   stop();

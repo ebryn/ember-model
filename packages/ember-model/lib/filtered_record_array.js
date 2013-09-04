@@ -26,8 +26,8 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
   // the observers and apply the filter.
   pushObject: function(record) {
     if (record instanceof get(this, 'modelClass')) {
-      this.registerObserversOnRecord(record);
       this.updateFilterForRecord(record);
+      this.registerObserversOnRecord(record);
     }
   },
 
@@ -51,7 +51,7 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
   updateFilterForRecord: function(record) {
     var results = get(this, 'content');
-    results.removeObject(record);
+    this.removeObject(record);
     if (this.filterFunction(record)) {
       results.pushObject(record);
     }

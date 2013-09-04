@@ -126,7 +126,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     this.setProperties(deserialized);
 
     this._copyDirtyAttributesToData();
-    set(this, 'isDirty', false);
   },
 
   didDefineProperty: function(proto, key, value) {
