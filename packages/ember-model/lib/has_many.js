@@ -25,13 +25,10 @@ Ember.Model.reopen({
       modelClass: type,
       content: this._getHasManyContent(key, type, embedded),
       key: key,
-      relationshipKey: meta.relationshipKey,
-      // These two are embedded specific  
-      _embedLoaded: Ember.Object.create()
+      relationshipKey: meta.relationshipKey
     });
 
     this._registerHasManyArray(collection);
-    if(embedded) collection._materializeEmbedded();
 
     return collection;
   }

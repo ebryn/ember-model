@@ -106,6 +106,74 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
+  _materializeEmbedded: function(){
+    var relationships = this.constructor.getRelationships();
+
+    for(var i = 0, len = relationships.length;i<len;i++){
+      var key = relationships[i],
+          meta = this.constructor.metaForProperty(key);
+
+      if(meta.options.embedded){
+        var content = get(this, '_data.' + key);
+        
+        if(!content) continue;
+
+        // if type is string, update meta with Model
+        if(typeof meta.type === "string"){
+          meta.type = Ember.get(Ember.lookup, meta.type);
+        }
+        
+        switch(meta.kind){
+          case 'belongsTo':
+            this._updateBelongsToEmbedded(content, key, meta);
+            break;
+          case 'hasMany':
+            this._updateHasManyEmbedded(content, key, meta);
+            break;
+        }
+      }
+    }
+
+  },
+
+  _updateBelongsToEmbedded: function(content, key, meta){
+    var primaryKey = get(meta.type, 'primaryKey'),
+        id = content[primaryKey],
+        reference = meta.type._getReferenceById(id);
+
+    // update pre-existing record
+    if(reference && reference.record){
+      reference.record.load(id, content);
+    }
+
+    // load the record if it wasn't pre-existing
+    get(this, key);
+  },
+
+  _updateHasManyEmbedded: function(content, key, meta){
+    // populate already existing records with their data
+    var primaryKey = get(meta.type, 'primaryKey');
+
+    for(var i = 0, len = content.length; i < len ; i++){
+      var data = content[i],
+          id = data[primaryKey],
+          reference = meta.type._getReferenceById(id);
+
+      if(reference && reference.record){
+        reference.record.load(id, data);
+      }
+  
+    }
+
+    // materialize records that might not have existed
+    var len = get(this, key + ".length"),
+        collection = get(this, key);
+
+    for(var i = 0; i < len ;i++){
+      collection.objectAt(i);
+    }
+  },
+
   getPrimaryKey: function() {
     return get(this, get(this.constructor, 'primaryKey'));
   },
@@ -117,6 +185,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this._updateReference(id);
+    this._materializeEmbedded();
     this.trigger('didLoad');
   },
 

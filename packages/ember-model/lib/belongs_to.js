@@ -65,10 +65,10 @@ Ember.Model.reopen({
 
       if(!reference){
         record = type.create({ isLoaded: false, id: id });
+        record.load(id, idOrAttrs);
       } else {
         record = reference.record;
       }
-      record.load(id, idOrAttrs);
     } else {
       record = type.find(idOrAttrs);
     }

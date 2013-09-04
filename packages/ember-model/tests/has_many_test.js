@@ -96,18 +96,19 @@ test("when fetching an association getHasMany is called", function() {
 
   Comment.primaryKey = 'token';
 
-  var article = Article.create();
+  var article = Article.create(),
+      hasManyResult = Ember.HasManyArray.create({ foo:"bar"});
   article.getHasMany = function(key, type, meta) {
     equal(key, 'comments', "key passed to getHasMany should be the same as key in hasMany options");
     equal(type, Comment, "type of the association should be passed to getHasMany");
     equal(meta.kind, 'hasMany', "metadata should be passed to getHasMany");
 
-    return 'foobar';
+    return hasManyResult;
   };
 
   Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
 
-  equal(article.get('comments'), 'foobar', "value returned from getHasMany should be returned as an association");
+  equal(article.get('comments.foo'), 'bar', "value returned from getHasMany should be returned as an association");
 });
 
 test("toJSON uses the given relationship key", function() {
