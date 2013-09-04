@@ -134,18 +134,21 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
         primaryKey = get(klass, 'primaryKey'),
         content = get(this, 'content'),
         reference = content.objectAt(idx),
-        attrs = reference.data;
+        data = reference.data,
+        record = reference.record;
 
-    if (reference.record) {
-      return reference.record;
-    } else {
-      var record = klass.create({ _reference: reference });
+    // pre-existing records don't need to be created/loaded
+    if(!record){
+      record = klass.create({ _reference: reference });
       reference.record = record;
-      if (attrs) {
-        record.load(attrs[primaryKey], attrs);
+
+      // if data exists insert it into the record
+      if (data) {
+        record.load(data[primaryKey], data);
       }
-      return record;
     }
+
+    return record;
   },
 
   toJSON: function() {

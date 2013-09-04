@@ -172,7 +172,7 @@ Both relationships take two arguments.
 
 - `type` - Class of the related model or string representation (eg. App.Comment or 'App.Comment').
 
-- `options` - An object with two properties, `key` which is required and `embedded` which is optional and defaults to `false`.
+- `options` - An object with two properties, `key` which is required, `embedded` which is optional and defaults to `false'.
 
   - `key` - indicates what property of the JSON backing the model will be accessed to access the relationship
   - `embedded` - If `true` the related objects are expected to be present in the data backing the model. If `false` only the primaryKeys are present in the data backing the model. These keys will be used to load the correct model.

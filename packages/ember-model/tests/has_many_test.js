@@ -96,18 +96,19 @@ test("when fetching an association getHasMany is called", function() {
 
   Comment.primaryKey = 'token';
 
-  var article = Article.create();
+  var article = Article.create(),
+      hasManyResult = Ember.HasManyArray.create({ foo:"bar"});
   article.getHasMany = function(key, type, meta) {
     equal(key, 'comments', "key passed to getHasMany should be the same as key in hasMany options");
     equal(type, Comment, "type of the association should be passed to getHasMany");
     equal(meta.kind, 'hasMany', "metadata should be passed to getHasMany");
 
-    return 'foobar';
+    return hasManyResult;
   };
 
   Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
 
-  equal(article.get('comments'), 'foobar', "value returned from getHasMany should be returned as an association");
+  equal(article.get('comments.foo'), 'bar', "value returned from getHasMany should be returned as an association");
 });
 
 test("toJSON uses the given relationship key", function() {
@@ -148,53 +149,4 @@ test("materializing the relationship should not dirty the record", function() {
   ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('authors');
   ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
-});
-
-test("has many records created are available from reference cache", function() {
-
-
-  var Company = Ember.Company = Ember.Model.extend({
-     id: Ember.attr('string'),
-     title: Ember.attr('string'),
-     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
-  }),
-    Project = Ember.Project = Ember.Model.extend({
-        id: Ember.attr('string'),
-        title: Ember.attr('string'),
-        posts: Ember.hasMany('Ember.Post', {key: 'posts', embedded: true}),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
-    }),
-    Post = Ember.Post = Ember.Model.extend({
-        id: Ember.attr('string'),
-        title: Ember.attr('string'),
-        body: Ember.attr('string'),
-        project: Ember.belongsTo('Ember.Project', {key:'project'})
-    });
-
-  var compJson = {
-    id:1,
-    title:'coolio',
-    projects:[{
-          id: 1,
-          title: 'project one title',
-          company: 1, 
-          posts: [{id: 1, title: 'title', body: 'body', project:1 }, 
-                  {id: 2, title: 'title two', body: 'body two', project:1 }]
-      }] 
-    };
-
-  Company.load([compJson]);
-  var company = Company.find(1);
-
-  var project = company.get('projects.firstObject');
-  var projectFromCacheViaFind = Project.find(project.get('id'));
-  var projectRecordFromCache = Project._referenceCache[project.get('id')].record;
-
-  equal(project, projectFromCacheViaFind);
-  equal(project, projectRecordFromCache);
-
-  var post = project.get('posts.firstObject');
-  var postFromCache = Post.find(post.get('id'));
-  equal(post, postFromCache);
-
 });
