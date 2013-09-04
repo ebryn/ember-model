@@ -243,7 +243,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isNew', false);
 
-    this._copyDirtyAttributesToData();
+    set(this, '_dirtyAttributes', []);
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
