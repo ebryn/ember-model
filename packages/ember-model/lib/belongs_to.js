@@ -60,7 +60,10 @@ Ember.Model.reopen({
     if (meta.options.embedded) {
       var primaryKey = get(type, 'primaryKey'),
         id = idOrAttrs[primaryKey];
-      record = type.create({ isLoaded: false, id: id });
+      record = type.getCachedReferenceRecord(id);
+      if(!record){
+        record = type.create({ isLoaded: false, id: id });
+      }
       record.load(id, idOrAttrs);
     } else {
       record = type.find(idOrAttrs);

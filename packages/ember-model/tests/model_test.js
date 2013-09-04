@@ -167,8 +167,8 @@ test(".unload(model) removes models from caches and subsequent find(id) return n
   ok(first.get('token') !== second.get('token'));
 });
 
-test(".clearCache destroys sideloadedData and record references", function() {
-  expect(4);
+test(".clearCache destroys record references", function() {
+  expect(2);
 
   var first = Ember.run(Model, Model.find, 'a'),
       second = Ember.run(Model, Model.find, 'a');
@@ -176,12 +176,10 @@ test(".clearCache destroys sideloadedData and record references", function() {
   Model.load([{token: 2, name: 'Yehuda'}]);
 
   ok(Model._referenceCache !== undefined);
-  ok(Model.sideloadedData !== undefined);
 
   Model.clearCache();
 
   ok(Model._referenceCache === undefined);
-  ok(Model.sideloadedData === undefined);
   
 });
 
@@ -573,7 +571,8 @@ test("record is available in reference cache when load is run in cachedRecordFor
         }
       });
 
-  Post.sideloadedData = { '1': { id: '1' } };
+  // sideload data
+  Post.load({ id: '1' });
 
   Post.cachedRecordForId('1');
 
