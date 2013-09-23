@@ -583,7 +583,7 @@ test("creating a model with HasMany relationship in initial attributes", functio
   record.on('didCreateRecord', function() {
     start();
     equal(record.get('comments.length'), 2, 'Two comments are available after save');
-    equal(record.toJSON().comment_ids.length, 2, 'Two comment IDs are available in the exported JSON')
+    equal(record.toJSON().comment_ids.length, 2, 'Two comment IDs are available in the exported JSON');
   });
 });
 
