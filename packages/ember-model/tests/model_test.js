@@ -550,6 +550,43 @@ test("creating a record with camelizedKeys = true works as expected", function()
   });
 });
 
+test("creating a model with HasMany relationship in initial attributes", function() {
+  expect(3);
+
+  var Comment = Ember.Model.extend({
+    id: Ember.attr(),
+    body: Ember.attr()
+  });
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {
+      id: 1,
+      body: 'Comment 1'
+    },
+    {
+      id: 2,
+      body: 'Comment 2'
+    }
+  ];
+  var Page = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comment_ids'})
+  });
+  Page.adapter = Ember.FixtureAdapter.create();
+  Page.FIXTURES = [];
+
+  var record = Page.create({comment_ids: [1,2]});
+  equal(record.get('comments.length'), 2, 'Two comments are available before save');
+
+  record.save();
+  stop();
+
+  record.on('didCreateRecord', function() {
+    start();
+    equal(record.get('comments.length'), 2, 'Two comments are available after save');
+    equal(record.toJSON().comment_ids.length, 2, 'Two comment IDs are available in the exported JSON')
+  });
+});
+
 test("can use data as attribute name", function() {
   expect(1);
 
