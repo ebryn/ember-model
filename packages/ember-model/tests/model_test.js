@@ -3,6 +3,7 @@ var Model, ModelWithoutID;
 module("Ember.Model", {
   setup: function() {
     Model = Ember.Model.extend({
+      token: Ember.attr(),
       name: Ember.attr()
     });
     Model.primaryKey = 'token';
@@ -259,7 +260,7 @@ test("record.toJSON() is generated from Ember.attr definitions", function() {
   var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
-    deepEqual(record.toJSON(), {name: 'Erik'});
+    deepEqual(record.toJSON(), {token: 'a', name: 'Erik'});
   });
   stop();
 });
@@ -272,7 +273,7 @@ test("record.toJSON() uses rootKey if it is defined", function() {
   var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
-    deepEqual(record.toJSON(), { model: { name: 'Erik' } });
+    deepEqual(record.toJSON(), { model: { token: 'a', name: 'Erik' } });
   });
   stop();
 });
@@ -291,7 +292,7 @@ test("record.toJSON() can use computed property as rootKey", function() {
     name: 'Tom Dale'
   });
 
-  deepEqual(record.toJSON(), {computed: {name: 'Tom Dale'}});
+  deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
 });
 
 test("Model.fetch() returns a promise", function() {
