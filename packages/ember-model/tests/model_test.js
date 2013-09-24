@@ -37,6 +37,25 @@ test("creates reference when creating record", function() {
   equal(reference.record, model, "reference should keep a reference to a model");
 });
 
+test("updates reference and cache when primary key changes", function() {
+  expect(7);
+
+  var model = Model.create(),
+      reference = model._reference;
+
+  equal(reference.id, undefined, "reference should keep record's id");
+  equal(reference.record, model, "reference should keep a reference to a model");
+
+  model.load('abc123', { token: 'abc123', name: 'Joy' });
+  reference = model._reference;
+
+  equal(reference.id, 'abc123', "reference should be updated to record's id");
+  equal(reference.record, model, "reference should keep a reference to a model");
+  equal(reference.record.get('token'), 'abc123', "reference should have updated record's property");
+  equal(reference.record.get('name'), 'Joy', "reference should have updated record's property");
+  equal(Model.find('abc123'), model, 'find should get model');
+});
+
 test("can define attributes with Ember.attr, data is accessible", function() {
   var instance = Model.create({name: "Erik"});
 
