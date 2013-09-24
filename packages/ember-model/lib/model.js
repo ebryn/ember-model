@@ -90,6 +90,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       reference = this.constructor._getOrCreateReferenceForId(id);
       reference.record = this;
       this._reference = reference;
+    } else if (reference.id !== id) {
+      reference.id = id;
+      this.constructor._cacheReference(reference);
     }
 
     if (!reference.id) {
@@ -731,12 +734,16 @@ Ember.Model.reopenClass({
       clientId: this._clientIdCounter++
     };
 
-    // if we're creating an item, this process will be done
-    // later, once the object has been persisted.
-    if (id) {
-      this._referenceCache[id] = reference;
-    }
+    this._cacheReference(reference);
 
     return reference;
+  },
+
+  _cacheReference: function(reference) {
+    // if we're creating an item, this process will be done
+    // later, once the object has been persisted.
+    if (reference.id) {
+      this._referenceCache[reference.id] = reference;
+    }
   }
 });

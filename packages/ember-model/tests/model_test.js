@@ -3,6 +3,7 @@ var Model, ModelWithoutID;
 module("Ember.Model", {
   setup: function() {
     Model = Ember.Model.extend({
+      token: Ember.attr(),
       name: Ember.attr()
     });
     Model.primaryKey = 'token';
@@ -34,6 +35,25 @@ test("creates reference when creating record", function() {
   notEqual(nextModel._reference.clientId, reference.clientId, "client id shouls be unique");
   equal(reference.id, 'abc123', "reference should keep record's id");
   equal(reference.record, model, "reference should keep a reference to a model");
+});
+
+test("updates reference and cache when primary key changes", function() {
+  expect(7);
+
+  var model = Model.create(),
+      reference = model._reference;
+
+  equal(reference.id, undefined, "reference should keep record's id");
+  equal(reference.record, model, "reference should keep a reference to a model");
+
+  model.load('abc123', { token: 'abc123', name: 'Joy' });
+  reference = model._reference;
+
+  equal(reference.id, 'abc123', "reference should be updated to record's id");
+  equal(reference.record, model, "reference should keep a reference to a model");
+  equal(reference.record.get('token'), 'abc123', "reference should have updated record's property");
+  equal(reference.record.get('name'), 'Joy', "reference should have updated record's property");
+  equal(Model.find('abc123'), model, 'find should get model');
 });
 
 test("can define attributes with Ember.attr, data is accessible", function() {
@@ -259,7 +279,7 @@ test("record.toJSON() is generated from Ember.attr definitions", function() {
   var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
-    deepEqual(record.toJSON(), {name: 'Erik'});
+    deepEqual(record.toJSON(), {token: 'a', name: 'Erik'});
   });
   stop();
 });
@@ -272,7 +292,7 @@ test("record.toJSON() uses rootKey if it is defined", function() {
   var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
-    deepEqual(record.toJSON(), { model: { name: 'Erik' } });
+    deepEqual(record.toJSON(), { model: { token: 'a', name: 'Erik' } });
   });
   stop();
 });
@@ -291,7 +311,7 @@ test("record.toJSON() can use computed property as rootKey", function() {
     name: 'Tom Dale'
   });
 
-  deepEqual(record.toJSON(), {computed: {name: 'Tom Dale'}});
+  deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
 });
 
 test("Model.fetch() returns a promise", function() {
