@@ -1123,7 +1123,7 @@ Ember.hasMany = function(type, options) {
     }
 
     return this.getHasMany(key, type, meta);
-  }).property().meta(meta);
+  }).property('data.'+key).meta(meta);
 };
 
 Ember.Model.reopen({
