@@ -388,7 +388,7 @@ App.User.adapter = Ember.RESTAdapter.create({
 
 ## Building Ember Model
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
-These three libraries will need to be installed before building.
+These two libraries will need to be installed before building.
 
 To build Ember Model, clone the repository, and run `npm install` to install build dependencies
 and `grunt` to build the library.
