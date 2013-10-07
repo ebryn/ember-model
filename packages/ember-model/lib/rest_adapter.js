@@ -115,7 +115,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       return urlRoot + ".json";
     }
   },
-  
+
   ajaxSettings: function(url, method) {
     return {
       url: url,
@@ -124,8 +124,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     };
   },
 
-  _ajax: function(url, params, method) {
-    var settings = this.ajaxSettings(url, method);
+  _ajax: function(url, params, method, settings) {
+    if (!settings) {
+      settings = this.ajaxSettings(url, method);
+    }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
@@ -146,7 +148,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         if (jqXHR) {
           jqXHR.then = null;
         }
-        
+
         Ember.run(null, reject, jqXHR);
       };
 
