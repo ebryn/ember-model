@@ -101,8 +101,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     record.didDeleteRecord();
   },
 
-  ajax: function(url, params, method) {
-    return this._ajax(url, params, method || "GET");
+  ajax: function(url, params, method, settings) {
+    return this._ajax(url, params, (method || "GET"), settings);
   },
 
   buildURL: function(klass, id) {
