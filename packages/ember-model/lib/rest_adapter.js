@@ -32,7 +32,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFindAll: function(klass, records, data) {
     var collectionKey = get(klass, 'collectionKey'),
-        dataToLoad = this._getCollection(collectionKey, data);
+        dataToLoad = collectionKey ? this._getCollection(collectionKey, data) : data;
 
     records.load(klass, dataToLoad);
   },
@@ -49,7 +49,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFindQuery: function(klass, records, params, data) {
     var collectionKey = get(klass, 'collectionKey'),
-        dataToLoad = this._getCollection(collectionKey, data);
+        dataToLoad = collectionKey ? this._getCollection(collectionKey, data) : data;
 
     records.load(klass, dataToLoad);
   },
