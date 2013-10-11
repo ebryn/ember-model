@@ -32,7 +32,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFindAll: function(klass, records, data) {
     var collectionKey = get(klass, 'collectionKey'),
-        dataToLoad = collectionKey ? this._getCollection(collectionKey, data) : data;
+        dataToLoad = collectionKey ? get(data, collectionKey) : data;
 
     records.load(klass, dataToLoad);
   },
@@ -49,7 +49,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFindQuery: function(klass, records, params, data) {
     var collectionKey = get(klass, 'collectionKey'),
-        dataToLoad = collectionKey ? this._getCollection(collectionKey, data) : data;
+        dataToLoad = collectionKey ? get(data, collectionKey) : data;
 
     records.load(klass, dataToLoad);
   },
@@ -114,19 +114,6 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     } else {
       return urlRoot + ".json";
     }
-  },
-
-  _getCollection: function(key, data) {
-    data.get = function(key) {
-      var self = this;
-
-      key = key.split('.');
-      for (var i = 0, len = key.length; i < len - 1; i++) {
-        self = self[key[i]];
-      }
-      return self[key[len - 1]];
-    };
-    return data.get(key);
   },
 
   ajaxSettings: function(url, method) {
