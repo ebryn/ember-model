@@ -15,7 +15,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFind: function(record, id, data) {
     var rootKey = get(record.constructor, 'rootKey'),
-        dataToLoad = rootKey ? data[rootKey] : data;
+        dataToLoad = rootKey ? get(data, rootKey) : data;
 
     record.load(id, dataToLoad);
   },
@@ -67,7 +67,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   didCreateRecord: function(record, data) {
     var rootKey = get(record.constructor, 'rootKey'),
         primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? data[rootKey] : data;
+        dataToLoad = rootKey ? get(data, rootKey) : data;
     record.load(dataToLoad[primaryKey], dataToLoad);
     record.didCreateRecord();
   },
