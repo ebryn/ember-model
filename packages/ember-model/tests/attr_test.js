@@ -244,3 +244,31 @@ test("custom attributes should revert correctly", function () {
   // should not be dirty now
   ok(post.get('isDirty') === false, "model should no longer be dirty after reverting changes");
 });
+
+test("setting custom attributes should make model dirty", function () {
+  var Time = {
+    serialize: function (time) {
+      return time.hour + ":" + time.min;
+    },
+    deserialize: function (string) {
+      var array = string.split(":");
+      return {
+        hour: parseInt(array[0], 10),
+        min: parseInt(array[1], 10)
+      };
+    }
+  };
+
+  var Post = Ember.Model.extend({
+    time: Ember.attr(Time)
+  });
+
+  var post = Post.create({});
+  post.load(1, { time: "10:11" });
+
+  ok(post.get('isDirty') === false, "model should not be dirty before changing");
+
+  post.set('time.hour', 11);
+
+  ok(post.get('isDirty') === true, "model should be dirty after changing");
+});
