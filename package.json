@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/ebryn/ember-model.git"
+    "url": "git://github.com/asquet/ember-model.git"
   },
   "author": "no",
   "license": "BSD",
