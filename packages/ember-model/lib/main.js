@@ -1,3 +1,4 @@
+require('ember-model/version');
 require('ember-model/adapter');
 require('ember-model/fixture_adapter');
 require('ember-model/record_array');
@@ -9,3 +10,4 @@ require('ember-model/belongs_to');
 require('ember-model/attr');
 require('ember-model/rest_adapter');
 require('ember-model/load_promise');
+require('ember-model/debug_adapter');

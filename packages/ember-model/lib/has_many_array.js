@@ -4,7 +4,6 @@ Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
   originalContent: null,
 
-  // TODO: make isDirty check more robust
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
@@ -16,7 +15,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var isDirty = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
-      if (content[i] !== originalContent[i]) {
+      if (!originalContent.contains(content[i])) {
         isDirty = true;
         break;
       }
@@ -52,7 +51,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var content = get(this, 'content');
     if (content) {
       content.removeArrayObserver(this);
-      set(this, 'originalContent', content.slice());
+      this._setupOriginalContent(content);
     }
   }.observesBefore('content'),
 
@@ -67,18 +66,26 @@ Ember.ManyArray = Ember.RecordArray.extend({
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {},
 
   arrayDidChange: function(item, idx, removedCnt, addedCnt) {
-    var parent = get(this, 'parent'), relationshipName = get(this, 'name'),
+    var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey'),
         isDirty = get(this, 'isDirty');
-    
+
     if (isDirty) {
-      parent._relationshipBecameDirty(relationshipName);
+      parent._relationshipBecameDirty(relationshipKey);
     } else {
-      parent._relationshipBecameClean(relationshipName);
+      parent._relationshipBecameClean(relationshipKey);
+    }
+  },
+
+  _setupOriginalContent: function(content) {
+    content = content || get(this, 'content');
+    if (content) {
+      set(this, 'originalContent', content.slice());
     }
   },
 
   init: function() {
     this._super();
+    this._setupOriginalContent();
     this._contentDidChange();
   }
 });

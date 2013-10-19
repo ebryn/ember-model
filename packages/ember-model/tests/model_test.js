@@ -3,6 +3,7 @@ var Model, ModelWithoutID;
 module("Ember.Model", {
   setup: function() {
     Model = Ember.Model.extend({
+      token: Ember.attr(),
       name: Ember.attr()
     });
     Model.primaryKey = 'token';
@@ -34,6 +35,25 @@ test("creates reference when creating record", function() {
   notEqual(nextModel._reference.clientId, reference.clientId, "client id shouls be unique");
   equal(reference.id, 'abc123', "reference should keep record's id");
   equal(reference.record, model, "reference should keep a reference to a model");
+});
+
+test("updates reference and cache when primary key changes", function() {
+  expect(7);
+
+  var model = Model.create(),
+      reference = model._reference;
+
+  equal(reference.id, undefined, "reference should keep record's id");
+  equal(reference.record, model, "reference should keep a reference to a model");
+
+  model.load('abc123', { token: 'abc123', name: 'Joy' });
+  reference = model._reference;
+
+  equal(reference.id, 'abc123', "reference should be updated to record's id");
+  equal(reference.record, model, "reference should keep a reference to a model");
+  equal(reference.record.get('token'), 'abc123', "reference should have updated record's property");
+  equal(reference.record.get('name'), 'Joy', "reference should have updated record's property");
+  equal(Model.find('abc123'), model, 'find should get model');
 });
 
 test("can define attributes with Ember.attr, data is accessible", function() {
@@ -167,7 +187,7 @@ test(".unload(model) removes models from caches and subsequent find(id) return n
   ok(first.get('token') !== second.get('token'));
 });
 
-test(".clearCache destroys sideloadedData and recordCache", function() {
+test(".clearCache destroys sideloadedData and record references", function() {
   expect(4);
 
   var first = Ember.run(Model, Model.find, 'a'),
@@ -175,12 +195,12 @@ test(".clearCache destroys sideloadedData and recordCache", function() {
 
   Model.load([{token: 2, name: 'Yehuda'}]);
 
-  ok(Model.recordCache !== undefined);
+  ok(Model._referenceCache !== undefined);
   ok(Model.sideloadedData !== undefined);
 
   Model.clearCache();
 
-  ok(Model.recordCache === undefined);
+  ok(Model._referenceCache === undefined);
   ok(Model.sideloadedData === undefined);
   
 });
@@ -196,8 +216,8 @@ test("new records are added to the identity map", function() {
   record.on("didCreateRecord", function() {
     start();
 
-    ok(Model.recordCache);
-    equal(Model.recordCache[2], record);
+    ok(Model._referenceCache);
+    equal(Model._referenceCache[2].record, record);
   });
 });
 
@@ -259,7 +279,7 @@ test("record.toJSON() is generated from Ember.attr definitions", function() {
   var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
-    deepEqual(record.toJSON(), {name: 'Erik'});
+    deepEqual(record.toJSON(), {token: 'a', name: 'Erik'});
   });
   stop();
 });
@@ -272,7 +292,7 @@ test("record.toJSON() uses rootKey if it is defined", function() {
   var record = Ember.run(Model, Model.find, 'a');
   record.on('didLoad', function() {
     start();
-    deepEqual(record.toJSON(), { model: { name: 'Erik' } });
+    deepEqual(record.toJSON(), { model: { token: 'a', name: 'Erik' } });
   });
   stop();
 });
@@ -291,7 +311,7 @@ test("record.toJSON() can use computed property as rootKey", function() {
     name: 'Tom Dale'
   });
 
-  deepEqual(record.toJSON(), {computed: {name: 'Tom Dale'}});
+  deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
 });
 
 test("Model.fetch() returns a promise", function() {
@@ -565,11 +585,11 @@ test("can use data as attribute name", function() {
   deepEqual(record.toJSON(), {id: 1, data: 'abc'});
 });
 
-test("record is available in record cache when load is run in cachedRecordForId", function() {
+test("record is available in reference cache when load is run in cachedRecordForId", function() {
   var recordFromCache,
       Post = Ember.Model.extend({
         load: function() {
-          recordFromCache = this.constructor.recordCache['1'];
+          recordFromCache = this.constructor._referenceCache['1'].record;
         }
       });
 
@@ -577,7 +597,7 @@ test("record is available in record cache when load is run in cachedRecordForId"
 
   Post.cachedRecordForId('1');
 
-  ok(recordFromCache, 'record should be available in recordCache when running load');
+  ok(recordFromCache, 'record should be available in cache when running load');
 });
 
 test("fetchQuery returns a promise", function() {

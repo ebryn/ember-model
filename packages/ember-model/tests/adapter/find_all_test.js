@@ -27,7 +27,7 @@ test("Model.find() delegates to Adapter#findAll", function() {
   });
 });
 
-test("Model.find() always returns the same RecordArray", function() {
+test("Model.find() returns the same RecordArray for each successful call", function() {
   var Model = Ember.Model.extend();
   Model.adapter = {
     findAll: Ember.K
@@ -37,4 +37,19 @@ test("Model.find() always returns the same RecordArray", function() {
   var secondResult = Model.find();
 
   equal(firstResult, secondResult, "The same RecordArray was returned");
+});
+
+test("Model.find() returns a new RecordArray if the last call failed", function() {
+  var Model = Ember.Model.extend();
+  Model.adapter = {
+    findAll: Ember.RSVP.reject
+  };
+
+  var firstResult, secondResult;
+  Ember.run(function() {
+    firstResult = Model.find();
+  });
+  secondResult = Model.find();
+
+  notEqual(firstResult, secondResult, "A new RecordArray was returned");
 });
