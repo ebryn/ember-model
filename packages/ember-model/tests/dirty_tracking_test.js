@@ -258,3 +258,104 @@ test("manipulating the order of objects in a hasMany shouldn't dirty the parent"
   ok(!post.get('isDirty'), "After manipulating the order of the hasMany, post should not be dirty");
   deepEqual(post.get('_dirtyAttributes'), []);
 });
+
+test("modifying hasMany record should make parent dirty", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_ids: [100]});
+    author.load(100, {id: 100, name: 'bob'});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'), "Post should be clean initially");
+  author.set('name', 'billy');
+  ok(post.get('isDirty'), "After changing author name, post should become dirty");
+});
+
+test("changing back record in hasMany array should make parent clean again", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_ids: [100]});
+    author.load(100, {id: 100, name: 'bob'});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'), "Post should be clean initially");
+  author.set('name', 'billy');
+  ok(post.get('isDirty'), "After changing author name, post should become dirty");
+  author.set('name', 'bob');
+  ok(!post.get('isDirty'), "After changing author name to original value, post should become clean again");
+});
+
+test("manipulating object presence in hasMany array should be reflected in it's _modifiedRecords property", function() {
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments'})
+  });
+
+  var post = Post.create({isNew: false, _data: {comments: []}});
+
+  ok(!post.get('isDirty'), "Post should be clean initially");
+
+  var comments = post.get('comments'),
+      newComment1 = Comment.create(),
+      newComment2 = Comment.create();
+
+  comments.pushObjects([newComment1, newComment2]);
+
+  equal(comments.get('length'), 2);
+  equal(comments.get('_modifiedRecords.length'), post.get('comments.length'), 'Number of modified records should be equal to number of added comments');
+  comments.clear();
+  equal(post.get('comments._modifiedRecords.length'), 0);
+  ok(!post.get('isDirty'), "After removing all comments post should be clean again");
+});
+
+test("_modifiedRecords property should be clean after clearing hasMany array", function() {
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments'})
+  });
+
+  var post = Post.create({isNew: false, _data: {comments: []}});
+
+  ok(!post.get('isDirty'), "Post should be clean initially");
+
+  var comments = post.get('comments'),
+      newComment = Comment.create();
+  comments.pushObject(newComment);
+
+  equal(post.get('comments._modifiedRecords.length'), 1, 'Newly added records should be tracked in _modifiedRecords property');
+  comments.clear();
+  deepEqual(post.get('comments._modifiedRecords'), [], 'After removing added record, _modifiedRecords should reflect this change');
+  ok(!post.get('isDirty'), "After reversing the change, the post should be clean again");
+});
