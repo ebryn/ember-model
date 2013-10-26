@@ -312,7 +312,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
-  _getHasManyContent: function(key, type, embedded) {
+  _getHasManyContent: function(key, type, embedded, records) {
     var content = get(this, '_data.' + key);
 
     if (content) {
@@ -329,7 +329,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
     } else if (this.get('id') && type.adapter.loadHasMany) {
-        content = type.adapter.loadHasMany(this, key, type);
+        content = type.adapter.loadHasMany(this, key, type, records);
     }
 
     return Ember.A(content || []);

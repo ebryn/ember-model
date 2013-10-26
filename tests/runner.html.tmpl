@@ -21,10 +21,15 @@
   </script>
 
   <script src="../dist/ember-model.js"></script>
+  <script src="../dist/ember-model-plugins.js"></script>
 
   <% _.each(files, function(filepath) { %>
   <script type="text/javascript" src="../<%= filepath %>"></script>
   <% }); %>
+
+  <script type="text/javascript" src="../packages/plugins/tests/model_with_rest_attrs.js"></script>
+  <script type="text/javascript" src="../packages/plugins/tests/record_unpersistent_deletion.js"></script>
+  <script type="text/javascript" src="../packages/plugins/tests/rest_adapter_ext.js"></script>
 
   </script>
 </body>
