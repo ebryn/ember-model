@@ -36,15 +36,15 @@ Ember.RESTAdapterExt = Ember.RESTAdapter
             record.get('id') + "/" + propName;
 
         this.ajax(url).then(function(response) {
-          response.forEach(function(rec) {
+          /*response.forEach(function(rec) {
             var model = type.create(rec);
             model.load(type, rec);
             
             var reference = type._getOrCreateReferenceForId(rec['id']);
             reference.data = model;
             content.addObject(reference);
-          });
-          //records.load(type, response);
+          });*/
+          records.load(type, response);
           records.notifyLoaded();
         });
 

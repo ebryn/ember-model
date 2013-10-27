@@ -7,8 +7,10 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
   arrangedContent : function() {
     var content = this.get('content');
     var arrCnt= [];
+    var that =  this;
     content.forEach(function(item) {
-      item.record.addObserver('isDeleted', this, 'contentItemFilterPropertyDidChange');
+      item = that._materializeRecord(item);
+      item.addObserver('isDeleted', this, 'contentItemFilterPropertyDidChange');
       
       if (!item.get('isDeleted')) {
         arrCnt.push(item);
@@ -16,7 +18,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     });
     
     return arrCnt;
-  }.property('content'),
+  }.property('content').cacheable(),
 
   contentItemFilterPropertyDidChange : function (item){
     item = this.getReferenceByRecord(item);
@@ -51,6 +53,11 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
   },
   
   addObject : function(obj) {
+    if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}
+    this.get('content').addObject(obj);
+  },
+  pushObject : function(obj) {
+    if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}
     this.get('content').pushObject(obj);
   },
   
@@ -77,19 +84,24 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     return this.materializeRecord(idx);
   },
 
+  _materializeRecord : function(reference) {
+      var klass = Ember.get(this, 'modelClass');
+      var record;
+      if (reference.record) {
+          record = reference.record;
+      } else {
+          record = klass.find(reference.id);
+          reference.record = record;
+      }
+
+      return record;
+  },
+
   materializeRecord : function(idx) {
-    var klass = Ember.get(this, 'modelClass'),
-        content = Ember.get(this, 'arrangedContent'),
-        reference = content.objectAt(idx),
-        record;
+    var content = Ember.get(this, 'arrangedContent'),
+        reference = content.objectAt(idx);
 
-    if (reference.record) {
-      record = reference.record;
-    } else {
-      record = klass.find(reference.id);
-    }
-
-    return record;
+    return this._materializeRecord(reference);
   }
 });
 
@@ -106,7 +118,7 @@ Ember.Model
           embedded : embedded,
           key : key
         });
-        
+
         collection.set('content', this._getHasManyContent(key, type, embedded, collection));
 
         this._registerHasManyArray(collection);
