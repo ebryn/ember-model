@@ -149,6 +149,12 @@ test("dirty checking works with date attributes", function() {
 
   deepEqual(obj.get('createdAt'), originalDate);
   ok(!obj.get('isDirty'));
+
+  obj.set('createdAt', new Date(2013, 10, 2));
+  ok(obj.get('isDirty'), "changing a Date attribute makes the record dirty");
+
+  obj.set('createdAt', originalDate);
+  ok(!obj.get('isDirty'), "changing a Date attribute back to original value makes the record clean");
 });
 
 test("getting embedded belongsTo attribute after load should not make parent dirty", function() {

@@ -41,6 +41,15 @@ function deserialize(value, type) {
   }
 }
 
+function serialize(value, type) {
+  if (type && type.serialize) {
+    return type.serialize(value);
+  } else if (type && Ember.Model.dataTypes[type]) {
+    return Ember.Model.dataTypes[type].serialize(value);
+  } else {
+    return value;
+  }
+}
 
 Ember.attr = function(type, options) {
   return Ember.computed(function(key, value) {
@@ -65,7 +74,7 @@ Ember.attr = function(type, options) {
         dataValue = data[dataKey] = value;
       }
 
-      if (dataValue !== value) {
+      if (dataValue !== serialize(value, type)) {
         dirtyAttributes.pushObject(key);
       } else {
         dirtyAttributes.removeObject(key);
