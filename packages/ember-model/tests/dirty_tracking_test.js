@@ -141,13 +141,13 @@ test("dirty checking works with date attributes", function() {
   var Model = Ember.Model.extend({
     createdAt: attr(Date)
   });
-
+  var originalDate = new Date(2013, 0, 0);
   var obj = Model.create();
   Ember.run(function() {
-    obj.load(1, {createdAt: '2013-01-01T00:00:00.000Z'});
+    obj.load(1, {createdAt: originalDate.toISOString()});
   });
 
-  ok(obj.get('createdAt'), new Date(2013, 0, 0));
+  deepEqual(obj.get('createdAt'), originalDate);
   ok(!obj.get('isDirty'));
 });
 
