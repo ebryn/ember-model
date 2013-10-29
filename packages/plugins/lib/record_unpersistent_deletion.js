@@ -9,10 +9,13 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     var arrCnt= [];
     var that =  this;
     content.forEach(function(item) {
-      item = that._materializeRecord(item);
-      item.addObserver('isDeleted', this, 'contentItemFilterPropertyDidChange');
+      //item = that._materializeRecord(item);
+	  if (!item.record) {
+		item.record = that._materializeRecord(item)
+	  }
+      item.record.addObserver('isDeleted', this, 'contentItemFilterPropertyDidChange');
       
-      if (!item.get('isDeleted')) {
+      if (!item.record.get('isDeleted')) {
         arrCnt.push(item);
       }
     });
@@ -53,15 +56,16 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
   },
   
   addObject : function(obj) {
-    if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}
+    if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}//TODO change id to "get primary key"
     this.get('content').addObject(obj);
   },
   pushObject : function(obj) {
-    if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}
+    if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}//TODO change id to "get primary key"
     this.get('content').pushObject(obj);
   },
   
   removeObject : function(obj) {
+	if (!obj.record) {obj = obj._reference || obj._getOrCreateReferenceForId(obj.get('id'))}//TODO change id to "get primary key"
     this.get('content').removeObject(obj);
   },
   
