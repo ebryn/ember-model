@@ -2,7 +2,7 @@ var get = Ember.get, set = Ember.set;
 
 Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
-  originalContent: null,
+  originalContent: [],
 
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
