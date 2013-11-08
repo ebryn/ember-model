@@ -1,3 +1,4 @@
+require('ember-model/version');
 require('ember-model/adapter');
 require('ember-model/fixture_adapter');
 require('ember-model/record_array');

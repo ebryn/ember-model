@@ -21,8 +21,8 @@ Ember.Model.reopenClass({
 		
 		return f;
 	},
-	
-	makeLoadableArrayProp : function(propName, restFunc, transformFunc) {
+
+    makeLoadableArrayProp : function(propName, restFunc, transformFunc) {
 		var fakePropname = '_'+propName;
 		return function(key, value) {
 			if (arguments.length === 2) {

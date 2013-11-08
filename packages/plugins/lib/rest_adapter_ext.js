@@ -1,16 +1,11 @@
-var get = Ember.get, set = Ember.set;
-var Ext = window.Ext || {};
 
-Ext.RESTAdapter = Ember.RESTAdapter
+
+var get = Ember.get, set = Ember.set;
+
+Ember.RESTAdapterExt = Ember.RESTAdapter
     .extend({
       namespace : "rest",
 
-      findQuery : function(klass, records, params) {
-        var urlRoot = this.namespace + "/" + klass.getDefaultRestUrl();
-        return this.ajax( urlRoot,  params);
-      },
-
-      
       findMany : function(klass, records, ids) {
         var urlRoot = this.namespace + "/" + klass.getDefaultRestUrl();
         return this.ajax(urlRoot, {
@@ -34,7 +29,7 @@ Ext.RESTAdapter = Ember.RESTAdapter
         }
       },
 
-      loadHasMany : function(record, propName, type, records) {
+      loadHasMany : function(record, propName, type) {
         var content = [];
         var url = this.namespace + "/" + 
             record.constructor.getDefaultRestUrl() + "/" + 
@@ -45,25 +40,15 @@ Ext.RESTAdapter = Ember.RESTAdapter
             var model = type.create(rec);
             model.load(type, rec);
             
-            var reference = type._referenceForId(rec['id']);
+            var reference = type._getOrCreateReferenceForId(rec['id']);
             reference.data = model;
             content.addObject(reference);
           });
-          //records.load(type, response);
-          //records.notifyLoaded();
+          //record.get('propName').load(type, response);
+          record.get('propName').notifyLoaded();
         });
 
         return content;
-      },
-
-      didCreateRecord : function(record, data) {
-        var rootKey = get(record.constructor, 'rootKey'), primaryKey = get(
-            record.constructor, 'primaryKey'), dataToLoad = rootKey ? data[rootKey]
-            : data;
-        record.load(dataToLoad[primaryKey], dataToLoad);
-        record[primaryKey] = dataToLoad[primaryKey];
-        
-        record.didCreateRecord();
       },
       
       deleteRecord : function(record) {
@@ -96,7 +81,7 @@ Ext.RESTAdapter = Ember.RESTAdapter
     });
 
 Ember.Model.reopenClass({
-  adapter : Ext.RESTAdapter.create(),
+  adapter : Ember.RESTAdapterExt.create(),
 
   getDefaultRestUrl : function() {
     return this.toString().substring(this.toString().lastIndexOf('.') + 1)
@@ -104,32 +89,6 @@ Ember.Model.reopenClass({
   }
 });
 
-Ember.Model.reopenClass({
-  _getHasManyContent : function(key, type, embedded) {
-    var content = get(this, 'data.' + key);
-
-    if (content) {
-      var mapFunction, primaryKey, reference;
-      if (embedded) {
-        primaryKey = get(type, 'primaryKey');
-        mapFunction = function(attrs) {
-          reference = type._referenceForId(attrs[primaryKey]);
-          reference.data = attrs;
-          return reference;
-        };
-      } else {
-        mapFunction = function(id) {
-          return type._referenceForId(id);
-        };
-      }
-      content = Ember.EnumerableUtils.map(content, mapFunction);
-    } else {
-      content = this.adapter.loadHasMany(this, key, type);
-    }
-
-    return Ember.A(content || []);
-  }
-});
 Ember.Model.reopen({
   callRestOnObject : function(action, method) {
     return this.constructor.adapter.callRestOnObject(this, action, method);
