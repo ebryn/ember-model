@@ -302,7 +302,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var i, j;
     for (i = 0; i < this._hasManyArrays.length; i++) {
       var array = this._hasManyArrays[i],
-          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
+          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'), array);
         for (j = 0; j < array.get('length'); j++) {
           if (array.objectAt(j).get('isNew')) {
             hasManyContent.addObject(array.objectAt(j)._reference);
@@ -312,13 +312,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
-  _getHasManyContent: function(key, type, embedded, records) {
-    var content = get(this, '_data.' + key);
+  _getHasManyContent: function(key, type, embedded, collection) {
+    var content = get(this, '_data.' + key), primaryKey = get(type, 'primaryKey');
 
     if (content) {
-      var mapFunction, primaryKey, reference;
+      var mapFunction, reference;
       if (embedded) {
-        primaryKey = get(type, 'primaryKey');
         mapFunction = function(attrs) {
           reference = type._getOrCreateReferenceForId(attrs[primaryKey]);
           reference.data = attrs;
@@ -328,8 +327,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
-    } else if (this.get('id') && type.adapter.loadHasMany) {
-        content = type.adapter.loadHasMany(this, key, type, records);
+    } else if (this.get(primaryKey) && type.adapter.loadHasMany) {		
+        content = type.adapter.loadHasMany(this, key, type, collection);
     }
 
     return Ember.A(content || []);

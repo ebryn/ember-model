@@ -29,23 +29,23 @@ Ember.RESTAdapterExt = Ember.RESTAdapter
         }
       },
 
-      loadHasMany : function(record, propName, type, records) {
+      loadHasMany : function(record, propName, type) {
         var content = [];
         var url = this.namespace + "/" + 
             record.constructor.getDefaultRestUrl() + "/" + 
             record.get('id') + "/" + propName;
 
         this.ajax(url).then(function(response) {
-          /*response.forEach(function(rec) {
+          response.forEach(function(rec) {
             var model = type.create(rec);
             model.load(type, rec);
             
             var reference = type._getOrCreateReferenceForId(rec['id']);
             reference.data = model;
             content.addObject(reference);
-          });*/
-          records.load(type, response);
-          records.notifyLoaded();
+          });
+          //record.get('propName').load(type, response);
+          record.get('propName').notifyLoaded();
         });
 
         return content;

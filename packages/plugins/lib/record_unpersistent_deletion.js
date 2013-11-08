@@ -8,12 +8,14 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     var content = this.get('content');
     var arrCnt= [];
     var that =  this;
-    content.forEach(function(item) {
+    if (!content)return arrCnt;
+	var that = this;
+	content.forEach(function(item) {
       //item = that._materializeRecord(item);
 	  if (!item.record) {
 		item.record = that._materializeRecord(item)
 	  }
-      item.record.addObserver('isDeleted', this, 'contentItemFilterPropertyDidChange');
+      item.record.addObserver('isDeleted', that, 'contentItemFilterPropertyDidChange');
       
       if (!item.record.get('isDeleted')) {
         arrCnt.push(item);
@@ -21,7 +23,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     });
     
     return arrCnt;
-  }.property('content').cacheable(),
+  }.property('content'),
 
   contentItemFilterPropertyDidChange : function (item){
     item = this.getReferenceByRecord(item);
@@ -34,6 +36,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     } else {
       this.get('arrangedContent').removeObject(item);
     }
+	
   },
 
   contentArrayDidChange : function(array, idx, removedCount, addedCount) {
@@ -43,16 +46,20 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
       that.addOrRemoveItem(item);
       item.record.addObserver('isDeleted', that, 'contentItemFilterPropertyDidChange');
     });
-    this._super(array, idx, removedCount, addedCount);
+    this._super(array, idx, removedCount, addedCount);	
+	
+	this.arrayDidChange(this.get('arrangedContent'), 0, 0, this.get('arrangedContent.length'));
   },
 
   contentArrayWillChange : function (array, idx, removedCount, addedCount) {
-    var removedObjects = array.slice(idx, idx+removedCount);
+	var removedObjects = array.slice(idx, idx+removedCount);
+	var that = this;
     removedObjects.forEach ( function(item) {
-      this.get('arrangedContent').removeObject(item);
-      item.record.removeObserver('isDeleted', this, 'contentItemFilterPropertyDidChange');
+      that.get('arrangedContent').removeObject(item);
+      item.record.removeObserver('isDeleted', that, 'contentItemFilterPropertyDidChange');
     });
     this._super(array, idx, removedCount, addedCount);
+	
   },
   
   addObject : function(obj) {
@@ -106,7 +113,36 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
         reference = content.objectAt(idx);
 
     return this._materializeRecord(reference);
-  }
+  },
+  
+  /* dirtying */
+  
+  loadData : function(data) {
+	this.set('content', data);
+	this._setupOriginalContent(this.get('arrangedContent'));
+  },
+  
+  isDirty: function() {
+    var originalContent = Em.get(this, 'originalContent'),
+        originalContentLength = Em.get(originalContent, 'length'),
+        content = Em.get(this, 'arrangedContent'),
+        contentLength = Em.get(content, 'length');
+
+    if (originalContentLength !== contentLength) { return true; }
+
+    var isDirty = false;
+
+    for (var i = 0, l = contentLength; i < l; i++) {
+      if (!originalContent.contains(content[i])) {
+        isDirty = true;
+        break;
+      }
+    }
+
+    return isDirty;
+  }.property('arrangedContent.[]', 'originalContent')
+
+  
 });
 
 Ember.Model
@@ -118,13 +154,14 @@ Ember.Model
         var collection = collectionClass.create({
           parent : this,
           modelClass : type,
-          content : [],
+          content : null,
           embedded : embedded,
-          key : key
+          key : key,
+		  relationshipKey: meta.relationshipKey
         });
 
-        collection.set('content', this._getHasManyContent(key, type, embedded, collection));
-
+		collection.set('content', this._getHasManyContent(key, type, embedded, collection));
+		
         this._registerHasManyArray(collection);
 
         return collection;
