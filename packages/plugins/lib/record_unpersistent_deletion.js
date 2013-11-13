@@ -36,7 +36,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     } else {
       this.get('arrangedContent').removeObject(item);
     }
-	
+	this.arrayDidChange(this.get('arrangedContent'), 0, 0, this.get('arrangedContent.length'));
   },
 
   contentArrayDidChange : function(array, idx, removedCount, addedCount) {
@@ -48,7 +48,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     });
     this._super(array, idx, removedCount, addedCount);	
 	
-	this.arrayDidChange(this.get('arrangedContent'), 0, 0, this.get('arrangedContent.length'));
+	//this.arrayDidChange(this.get('arrangedContent'), 0, 0, this.get('arrangedContent.length'));
   },
 
   contentArrayWillChange : function (array, idx, removedCount, addedCount) {
@@ -117,8 +117,9 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
   
   /* dirtying */
   
-  loadData : function(data) {
-	this.set('content', data);
+  loadData : function(klass,data) {
+	//this.set('content', data);
+	this.load(klass,data);
 	this._setupOriginalContent(this.get('arrangedContent'));
   },
   
@@ -128,6 +129,8 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
         content = Em.get(this, 'arrangedContent'),
         contentLength = Em.get(content, 'length');
 
+	if (!originalContent) return false;
+		
     if (originalContentLength !== contentLength) { return true; }
 
     var isDirty = false;

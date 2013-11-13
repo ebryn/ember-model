@@ -22,30 +22,32 @@ Ember.RESTAdapterExt = Ember.RESTAdapter
           urlRoot = klass.getDefaultRestUrl();
         }
         urlRoot = this.namespace + "/" + urlRoot;
-        if (id) {
+        if (Em.typeOf(id)!='undefined' && Em.typeOf(id)!='null' ) {
           return urlRoot + "/" + id;
         } else {
           return urlRoot;
         }
       },
 
-      loadHasMany : function(record, propName, type) {
+      loadHasMany : function(record, propName, type, collection) {
         var content = [];
         var url = this.namespace + "/" + 
             record.constructor.getDefaultRestUrl() + "/" + 
             record.get('id') + "/" + propName;
 
         this.ajax(url).then(function(response) {
-          response.forEach(function(rec) {
-            var model = type.create(rec);
-            model.load(type, rec);
-            
-            var reference = type._getOrCreateReferenceForId(rec['id']);
-            reference.data = model;
-            content.addObject(reference);
-          });
-          //record.get('propName').load(type, response);
-          record.get('propName').notifyLoaded();
+			/*var refs = [];
+			response.forEach(function(rec) {
+				var model = type.create(rec);
+				model.load(type, rec);
+					
+				var reference = type._getOrCreateReferenceForId(rec['id']);
+				reference.data = model;
+				refs.addObject(reference);
+			});*/
+				
+			Ember.run(collection, collection.loadData, type, response);
+			collection.notifyLoaded();
         });
 
         return content;

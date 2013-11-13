@@ -85,7 +85,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
   init: function() {
     this._super();
-    //this._setupOriginalContent();
+    this._setupOriginalContent();
     this._contentDidChange();
   }
 });

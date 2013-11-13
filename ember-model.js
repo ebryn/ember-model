@@ -283,7 +283,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     this._super(index, removed, added);
   },
 
-  _contentWillChange: function() {
+  /*_contentWillChange: function() { //this breaks my DeletableHasManyArray
     var content = get(this, 'content');
     if (content) {
       content.removeArrayObserver(this);
@@ -297,7 +297,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       content.addArrayObserver(this);
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
-  }.observes('content'),
+  }.observes('content'),*/
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {},
 
@@ -314,7 +314,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
   init: function() {
     this._super();
-    this._contentDidChange();
+    //this._contentDidChange();
   }
 });
 
@@ -560,7 +560,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
         } else {
-          data = this.serializeHasMany(key, meta);
+          continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
+          //data = this.serializeHasMany(key, meta); //its here to pass tests
         }
 
         json[relationshipKey] = data;
@@ -693,6 +694,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         mapFunction = function(id) { return type._referenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
+    } else if (this.get('id') && type.adapter.loadHasMany) {
+        content = type.adapter.loadHasMany(this, key, type);
     }
 
     return Ember.A(content || []);

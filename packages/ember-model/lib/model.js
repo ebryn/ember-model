@@ -197,8 +197,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
         } else {
-          //continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
-          data = this.serializeHasMany(key, meta); //its here to pass tests
+          continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
+          //data = this.serializeHasMany(key, meta); //its here to pass tests
         }
 
         json[relationshipKey] = data;
@@ -288,7 +288,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   dataDidChange: Ember.observer(function() {
-    this._reloadHasManys();
+    //this._reloadHasManys();
   }, '_data'),
 
   _registerHasManyArray: function(array) {

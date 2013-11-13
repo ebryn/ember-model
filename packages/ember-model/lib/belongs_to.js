@@ -31,7 +31,12 @@ Ember.belongsTo = function(type, options) {
                      [value.constructor, type]),
                      value instanceof type);
 
-        if (oldValue !== value) {
+        /*if (oldValue !== value) { //ugly(breaks embeded belongs-to) fix for https://github.com/ebryn/ember-model/pull/226 
+          dirtyAttributes.pushObject(key);
+        } else {
+          dirtyAttributes.removeObject(key);
+        }*/
+		if (get(this, '_data.'+meta.options.key) !== get(value, type['primaryKey']) ) {
           dirtyAttributes.pushObject(key);
         } else {
           dirtyAttributes.removeObject(key);
