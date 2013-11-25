@@ -307,7 +307,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
             hasManyContent.addObject(array.objectAt(j)._reference);
           }
         }
-      set(array, 'content', hasManyContent);
+      array.load(hasManyContent);
     }
   },
 
