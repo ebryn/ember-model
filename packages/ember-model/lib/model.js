@@ -232,6 +232,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   reload: function() {
+    this.getWithDefault('_dirtyAttributes', []).clear();
     return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
   },
 
