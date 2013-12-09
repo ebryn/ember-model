@@ -11,7 +11,7 @@ var emberize = function(object) {
 	
 Ember.Model.reopenClass({
 	
-	makeLoadableProp : function(propName, restFunc) {
+	makeLoadableProp : function(propName, restFunc, transformFunc) {
 		var fakePropname = '_'+propName;
 		
 		var f = function(key, value) {
@@ -22,7 +22,9 @@ Ember.Model.reopenClass({
 				if (typeof(this.get(fakePropname))=='undefined') {
 					var that = this;
 					this.callRestOnObject(restFunc).then(function(res) {
-						if (res && typeof res == 'object') {
+						if (transformFunc) {
+							res = transformFunc(res);
+						} else if (res && typeof res == 'object') {
 							res = emberize(res);
 						}
 						that.set(fakePropname, res);

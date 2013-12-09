@@ -510,7 +510,12 @@ Ember.Model.reopenClass({
   reload: function(id) {
     var record = this.cachedRecordForId(id);
     record.set('isLoaded', false);
-    return this._fetchById(record, id);
+    return this._fetchById(record, id).then(function() {
+		if (record._hasManyArrays) {
+			record._hasManyArrays.forEach(function(item){item.set('content',null);});//clear hasManys, so that they would reload
+			record._reloadHasManys();
+		}
+	});
   },
 
   _fetchById: function(record, id) {
