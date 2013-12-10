@@ -20,7 +20,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
   columnsForType: function(type) {
     var columns = [], count = 0, self = this;
-    Ember.A(get(type.proto(), 'attributes')).forEach(function(name, meta) {
+    type.getAttributes().forEach(function(name, meta) {
         if (count++ > self.attributeLimit) { return false; }
         var desc = capitalize(underscore(name).replace('_', ' '));
         columns.push({ name: name, desc: desc });
@@ -38,7 +38,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
     var self = this, count = 0,
         columnValues = { id: get(record, 'id') };
 
-    record.get('attributes').forEach(function(key) {
+    record.constructor.getAttributes().forEach(function(key) {
       if (count++ > self.attributeLimit) {
         return false;
       }
@@ -50,7 +50,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
   getRecordKeywords: function(record) {
     var keywords = [], keys = Ember.A(['id']);
-    record.get('attributes').forEach(function(key) {
+    record.constructor.getAttributes().forEach(function(key) {
       keys.push(key);
     });
     keys.forEach(function(key) {
@@ -81,7 +81,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
     var releaseMethods = Ember.A(), self = this,
         keysToObserve = Ember.A(['id', 'isNew', 'isDirty']);
 
-    record.get('attributes').forEach(function(key) {
+    record.constructor.getAttributes().forEach(function(key) {
       keysToObserve.push(key);
     });
 
