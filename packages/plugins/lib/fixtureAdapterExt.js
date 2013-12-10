@@ -26,7 +26,7 @@ Ember.FixtureAdapterExt = Ember.FixtureAdapter.extend({
 					refs.addObject(reference);
 				});
 				
-				Ember.run(collection, collection.loadData, refs);
+				Ember.run(collection, collection.loadData, type, refs);
 				collection.notifyLoaded();
 			}, 0);
 		
