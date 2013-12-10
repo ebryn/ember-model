@@ -122,6 +122,29 @@ test("after saving, the model shouldn't be dirty", function() {
   });
 });
 
+test("after reloading, the model shouldn't be dirty", function() {
+  expect(2);
+
+  var Model = Ember.Model.extend({
+    id: attr(),
+    name: attr()
+  });
+  Model.adapter = Ember.FixtureAdapter.create();
+
+  Model.load([{ id: '123', name: 'Version 1' }]);
+  var record = Ember.run(Model, Model.find, '123');
+  record.set('name', 'Version 2');
+  ok(record.get('isDirty'));
+
+  stop();
+  Ember.run(function() {
+    record.reload().then(function() {
+      start();
+      ok(!record.get('isDirty'), "The record is no longer dirty");
+    });
+  });
+});
+
 test("dirty checking works with boolean attributes", function() {
   var Model = Ember.Model.extend({
     canSwim: attr(Boolean)
