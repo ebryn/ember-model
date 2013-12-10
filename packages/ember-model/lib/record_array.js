@@ -34,14 +34,14 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
-      modelClass.adapter.findAll(modelClass, this);
+      return modelClass.adapter.findAll(modelClass, this);
     } else if (this._query) {
-      modelClass.adapter.findQuery(modelClass, this, this._query);
+      return modelClass.adapter.findQuery(modelClass, this, this._query);
     } else {
       promises = this.map(function(record) {
         return record.reload();
       });
-      Ember.RSVP.all(promises).then(function(data) {
+      return Ember.RSVP.all(promises).then(function(data) {
         self.notifyLoaded();
       });
     }

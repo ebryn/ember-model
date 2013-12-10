@@ -233,6 +233,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   reload: function() {
+	this.getWithDefault('_dirtyAttributes', []).clear();
 	if (get(this, 'isRequested')) {
 		this._registerHasManyArray(); //TODO refactor to return RSVP.all for all hasManys and object itself
 		return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
@@ -702,6 +703,7 @@ Ember.Model.reopenClass({
   },
 
   forEachCachedRecord: function(callback) {
+    if (!this._referenceCache) { return; }
     var ids = Object.keys(this._referenceCache);
     ids.map(function(id) {
       return this._getReferenceById(id).record;
@@ -757,6 +759,8 @@ Ember.Model.reopenClass({
   },
 
   _cacheReference: function(reference) {
+    if (!this._referenceCache) { this._referenceCache = {}; }
+
     // if we're creating an item, this process will be done
     // later, once the object has been persisted.
     if (reference.id) {
