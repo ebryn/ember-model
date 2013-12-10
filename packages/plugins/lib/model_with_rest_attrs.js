@@ -1,16 +1,32 @@
+var emberize = function(object) {
+    for (var i in object) {
+        if (object.hasOwnProperty(i)) {
+            if (Ember.typeOf(object[i]) == 'object') {
+                object[i] = emberize(object[i]);
+            }
+        }
+    }
+    return Em.Object.create(object);
+};
+	
 Ember.Model.reopenClass({
 	
-	makeLoadableProp : function(propName, restFunc) {
+	makeLoadableProp : function(propName, restFunc, transformFunc) {
 		var fakePropname = '_'+propName;
 		
 		var f = function(key, value) {
-			if (arguments.length === 2) {
+			if (arguments.length == 2) {
 				this.set(fakePropname, value);
 				return value;
 			} else {
-				if (typeof(this.get(fakePropname))==='undefined') {
-					var that = this;				
+				if (typeof(this.get(fakePropname))=='undefined') {
+					var that = this;
 					this.callRestOnObject(restFunc).then(function(res) {
+						if (transformFunc) {
+							res = transformFunc(res);
+						} else if (res && typeof res == 'object') {
+							res = emberize(res);
+						}
 						that.set(fakePropname, res);
 						that.notifyPropertyChange(propName);
 					});
@@ -21,15 +37,12 @@ Ember.Model.reopenClass({
 		
 		return f;
 	},
-
-    makeLoadableArrayProp : function(propName, restFunc, transformFunc) {
+	
+	makeLoadableArrayProp : function(propName, restFunc, transformFunc) {
 		var fakePropname = '_'+propName;
 		return function(key, value) {
-			if (arguments.length === 2) {
-				this.set(fakePropname, value);
-				return value;
-			} else {
-				if (!this.get(fakePropname)) {
+			if (arguments.length == 1 || arguments[1] == ({}[1])) {
+				if (typeof(this.get(fakePropname))=='undefined' || (arguments.length == 2 && arguments[1] == ({}[1])) ) {
 					this.set(fakePropname, []);
 					var that = this;
 					this.callRestOnObject(restFunc).then(function(data) {
@@ -51,7 +64,11 @@ Ember.Model.reopenClass({
 					});
 				}
 				return this.get(fakePropname);
+			} else {
+				this.set(fakePropname, value);
+				return value;
 			}
+			
 		}.property(fakePropname+'.@each');
 	}
 

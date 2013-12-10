@@ -68,7 +68,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var rootKey = get(record.constructor, 'rootKey'),
         primaryKey = get(record.constructor, 'primaryKey'),
         dataToLoad = rootKey ? data[rootKey] : data;
-    record.load(dataToLoad[primaryKey], dataToLoad);
+		
+    record.set(primaryKey, dataToLoad[primaryKey]);
+	record.load(dataToLoad[primaryKey], dataToLoad);
     record.didCreateRecord();
   },
 

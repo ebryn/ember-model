@@ -197,8 +197,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
         } else {
-          //continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
-          data = this.serializeHasMany(key, meta); //its here to pass tests
+          continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
+          //data = this.serializeHasMany(key, meta); //its here to pass tests
         }
 
         json[relationshipKey] = data;
@@ -293,9 +293,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   dataDidChange: Ember.observer(function() {
+
     if (!get(this, 'isRequested')) {
 		this._reloadHasManys();
 	}
+
   }, '_data'),
 
   _registerHasManyArray: function(array) {
@@ -517,7 +519,12 @@ Ember.Model.reopenClass({
   reload: function(id) {
     var record = this.cachedRecordForId(id);
     record.set('isLoaded', false);
-    return this._fetchById(record, id);
+    return this._fetchById(record, id).then(function() {
+		if (record._hasManyArrays) {
+			record._hasManyArrays.forEach(function(item){item.set('content',null);});//clear hasManys, so that they would reload
+			record._reloadHasManys();
+		}
+	});
   },
 
   _fetchById: function(record, id) {
