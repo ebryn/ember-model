@@ -88,7 +88,7 @@ Ember.Model.reopenClass({
         .decamelize() + 's';
   }
 });
-
+  
 Ember.Model.reopen({
   callRestOnObject : function(action, method) {
     return this.constructor.adapter.callRestOnObject(this, action, method);
@@ -101,4 +101,3 @@ Ember.Model.reopenClass({
   }
 
 });
-  

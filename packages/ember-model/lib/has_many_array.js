@@ -85,7 +85,10 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
   init: function() {
     this._super();
-    //this._setupOriginalContent();
+	var klass = get(this, 'modelClass');
+    if (!get(klass, 'isRequested')) {
+		this._setupOriginalContent();
+	}
     this._contentDidChange();
   }
 });

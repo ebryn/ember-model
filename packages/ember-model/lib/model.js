@@ -233,7 +233,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   reload: function() {
-    return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
+	if (get(this, 'isRequested')) {
+		this._registerHasManyArray(); //TODO refactor to return RSVP.all for all hasManys and object itself
+		return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
+	} else {
+		return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
+	}
   },
 
   revert: function() {
@@ -288,7 +293,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   dataDidChange: Ember.observer(function() {
-    this._reloadHasManys();
+    if (!get(this, 'isRequested')) {
+		this._reloadHasManys();
+	}
   }, '_data'),
 
   _registerHasManyArray: function(array) {
