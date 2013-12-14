@@ -155,6 +155,14 @@ var Post = Ember.Model.extend({
   time: attr(Time)
 });
 ```
+### Default values
+
+Attributes can have a default value.
+```javascript
+App.Post = Ember.Model.extend({
+  tags: attr(Array,{defaultValue:[]})
+});
+```
 
 ## Relationships
 
