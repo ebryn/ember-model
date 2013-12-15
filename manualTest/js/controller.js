@@ -1,9 +1,4 @@
 
-App.set('roles',function() {
-					return App.Role.find();
-				}.property()
-		);
-
 App.UsersIndexRoute = Em.Route.extend({
 	redirect: function() {
 		this.transitionTo('users.list')

@@ -23,3 +23,10 @@ App.Router.map(function() {
 });
 
 		
+
+App.roles=function() {
+					return App.Role.find();
+				}.property();
+App.positions=function() {
+					return App.Position.find();
+				}.property();
