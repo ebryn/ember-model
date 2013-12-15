@@ -22,11 +22,17 @@ App.Router.map(function() {
   });
 });
 
-		
-
-App.roles=function() {
+App.Stores = Em.Object.extend({
+	roles : function() {
 					return App.Role.find();
-				}.property();
-App.positions=function() {
+				}.property(),
+	positions : function() {
 					return App.Position.find();
-				}.property();
+				}.property(),
+	users : function() {
+					return App.User.find();
+				}.property(),
+							
+});
+
+App.stores = App.Stores.create();

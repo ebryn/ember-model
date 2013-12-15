@@ -80,12 +80,30 @@
 		{{view Em.TextField valueBinding="salary" classNames="form-control" }}
 	  </div>
 	  
+	  <div class="form-group">
+		<label >Position</label>
+		{{view Ember.Select
+					   contentBinding="App.stores.positions"
+					   optionValuePath="content.id"
+					   optionLabelPath="content.name"
+					   prompt="select position"
+					   selectionBinding=position}}
+	  </div>
+	  <div class="form-group">
+		<label >manager</label>
+		{{view Ember.Select
+					   contentBinding="App.stores.users"
+					   optionValuePath="content.id"
+					   optionLabelPath="content.name"
+					   prompt="select user"
+					   selectionBinding=manager}}
+	  </div>
 	  
 	  <ul>
 		
 		{{#each userRole in model.roles}}
 		  <li>	{{view Ember.Select
-					   contentBinding="App.roles"
+					   contentBinding="App.stores.roles"
 					   optionValuePath="content.id"
 					   optionLabelPath="content.name"
 					   prompt="select role"
