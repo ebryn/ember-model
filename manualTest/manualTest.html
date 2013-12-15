@@ -80,6 +80,7 @@
 		{{view Em.TextField valueBinding="salary" classNames="form-control" }}
 	  </div>
 	  
+	  
 	  <ul>
 		
 		{{#each userRole in model.roles}}
@@ -107,7 +108,7 @@
 	{{partial p_user_edit}}
 </script>
 
-<script type="text/x-handlebars" id="roles">
+<script type="text/x-handlebars" id="roles/list">
 <div class="col-md-3">
 <ul class="nav nav-pills nav-stacked">
 	{{#each}}
@@ -122,7 +123,24 @@
 </script>
 
 
-<script type="text/x-handlebars" id="positions">
+<script type="text/x-handlebars" id="_p_name_edit">
+	<form role="form">
+	  <div class="form-group">
+		<label >Name</label>
+		{{view Em.TextField valueBinding="name" classNames="form-control" }}
+	  </div>
+	  <button {{action save}} class="btn btn-default">Submit</button>
+	</form>
+</script>
+
+<script type="text/x-handlebars" id="roles/edit">
+{{partial p_name_edit}}
+</script>
+<script type="text/x-handlebars" id="roles/new">
+{{partial p_name_edit}}
+</script>
+
+<script type="text/x-handlebars" id="positions/list">
 <div class="scol-md-3">
 <ul class="nav nav-pills nav-stacked">
 	{{#each}}
@@ -136,7 +154,12 @@
 </div>
 </script>
 
-
+<script type="text/x-handlebars" id="positions/edit">
+{{partial p_name_edit}}
+</script>
+<script type="text/x-handlebars" id="positions/new">
+{{partial p_name_edit}}
+</script>
 <script>
 	
 
@@ -178,6 +201,7 @@
 
 <script src="js/app.js"></script>
 <script src="js/model.js"></script>
+<script src="js/controller.js"></script>
 
 </body>
 </html>

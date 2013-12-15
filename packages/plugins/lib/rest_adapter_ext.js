@@ -35,17 +35,7 @@ Ember.RESTAdapterExt = Ember.RESTAdapter
             record.constructor.getDefaultRestUrl() + "/" + 
             record.get('id') + "/" + propName;
 
-        this.ajax(url).then(function(response) {
-			/*var refs = [];
-			response.forEach(function(rec) {
-				var model = type.create(rec);
-				model.load(type, rec);
-					
-				var reference = type._getOrCreateReferenceForId(rec['id']);
-				reference.data = model;
-				refs.addObject(reference);
-			});*/
-				
+        this.ajax(url).then(function(response) {			
 			Ember.run(collection, collection.loadData, type, response);
 			collection.notifyLoaded();
         });
@@ -84,7 +74,7 @@ Ember.RESTAdapterExt = Ember.RESTAdapter
 
 Ember.Model.reopenClass({
   adapter : Ember.RESTAdapterExt.create(),
-
+  isRequested : true,
   getDefaultRestUrl : function() {
     return this.toString().substring(this.toString().lastIndexOf('.') + 1)
         .decamelize() + 's';
