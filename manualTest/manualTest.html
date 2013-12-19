@@ -66,6 +66,7 @@
 </script>
 
 <script type="text/x-handlebars" id="_p_user_edit">
+	isDirty: {{isDirty}}
 	<form role="form">
 	  <div class="form-group">
 		<label >Name</label>
@@ -108,7 +109,7 @@
 					   optionLabelPath="content.name"
 					   prompt="select role"
 					   selectionBinding=userRole.role}}
-				<a {{action removeRole userRole}} class="btn"> X </a>
+				<a {{action removeRole userRole}} class="btn"> X </a> isDirty: {{userRole.isDirty}}
 		  </li>
 		{{/each}}
 	  </ul>

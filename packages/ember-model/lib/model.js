@@ -295,7 +295,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   dataDidChange: Ember.observer(function() {
 
-    if (!get(this, 'isRequested')) {
+    if (!get(this, 'constructor.isRequested')) {
 		this._reloadHasManys();
 	}
 
