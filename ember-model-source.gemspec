@@ -6,8 +6,8 @@ require 'ember/model/source/version'
 Gem::Specification.new do |spec|
   spec.name          = "ember-model-source"
   spec.version       = Ember::Model::Source::VERSION
-  spec.authors       = ["Stas SUȘCOV"]
-  spec.email         = ["stas@net.utcluj.ro"]
+  spec.authors       = ["Erik Bryn"]
+  spec.email         = ["erik.bryn@gmail.com"]
   spec.summary       = %q{Ember.js Model source code wrapper.}
   spec.description   = %q{Ember.js Model source code wrapper for use with Ruby libs.}
   spec.homepage      = "https://github.com/ebryn/ember-model"
