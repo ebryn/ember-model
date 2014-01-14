@@ -5,3 +5,9 @@ node_modules/
 .DS_Store
 tests/index.html
 dist/
+*.gem
+*.rbc
+.bundle
+.config
+Gemfile.lock
+pkg

@@ -168,7 +168,7 @@ Relationships are defined by using relationship computed property macros in plac
 
 `Ember.hasMany(type, options)` - Provides access to an array of related objects.
 
-Both relationships take two arguments. 
+Both relationships take two arguments.
 
 - `type` - Class of the related model or string representation (eg. App.Comment or 'App.Comment').
 
@@ -411,6 +411,17 @@ runtime dependencies and `grunt test` to execute the test suite headlessly via p
 
 If you prefer to run tests in a browser, you may start a development server using
 `grunt develop`. Tests are available at http://localhost:8000/tests
+
+#### Using Rails?
+
+Ember Model is available as a Ruby gem to use with the asset pipeline.
+
+Just add `ember-model` gem to your Gemfile and require it:
+
+```
+#= require ember
+#= require ember-model
+```
 
 ## Who's using Ember Model?
 
