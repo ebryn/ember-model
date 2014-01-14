@@ -95,6 +95,22 @@ test(".find(id) delegates to the adapter's find method", function() {
   });
 });
 
+test(".find([]) called with a single record returns cache before delgating to adapter's find method", function() {
+  expect(1);
+
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      ok(false, "record should have been loaded via cache");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  var record = Ember.run(Model, Model.find, ['a']);
+  Ember.run(Model, Model.find, 'a');
+  ok(record, "Record was returned by find");
+});
+
 test(".reload() loads the record via the adapter after it was loaded", function() {
   expect(1);
 
@@ -202,7 +218,7 @@ test(".clearCache destroys sideloadedData and record references", function() {
 
   ok(Model._referenceCache === undefined);
   ok(Model.sideloadedData === undefined);
-  
+
 });
 
 test("new records are added to the identity map", function() {
@@ -627,7 +643,7 @@ test("fetchAll returns a promise", function() {
     promise.then(function(records) {
       start();
       ok(records.get('isLoaded'));
-      equal(records.get('length'), 1);  
+      equal(records.get('length'), 1);
     });
     stop();
 });
@@ -642,7 +658,7 @@ test("fetchAll returns promise if findAll RecordArray already exists", function(
       start();
       ok(true, "Second fetch returned a promise");
     });
-    stop(); 
+    stop();
   });
   stop();
 });
