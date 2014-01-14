@@ -559,8 +559,8 @@ Ember.Model.reopenClass({
       }
     }
 
-    if (batchIds.length === 1) {
-      promise = get(this, 'adapter').find(this.cachedRecordForId(batchIds[0]), batchIds[0]);
+    if (requestIds.length === 1) {
+      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0]), requestIds[0]);
     } else {
       var recordArray = Ember.RecordArray.create({_ids: batchIds});
       if (requestIds.length === 0) {
