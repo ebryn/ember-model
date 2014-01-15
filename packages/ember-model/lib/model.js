@@ -136,26 +136,26 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var reference = this._createReference();
 
     // associate cached parent records. first, re-loop through relationships, after _createReference
-    for (var i = 0, l = relationships.length; i < l; i++) {
-      relationshipKey = relationships[i];
+    for (var i1 = 0, l1 = relationships.length; i1 < l1; i1++) {
+      relationshipKey = relationships[i1];
       relationship = meta.descs[relationshipKey];
       relationshipMeta = relationship.meta();
       // find all parent records, and associate the new children
       if (relationshipMeta.kind === 'belongsTo') {
-        var id = this.get('_data')[relationshipMeta.options.key], type = relationshipMeta.getType();
-        if (!!type._referenceCache && type._referenceCache[id]) {
+        var relationshipId = this.get('_data')[relationshipMeta.options.key], type = relationshipMeta.getType();
+        if (!!type._referenceCache && type._referenceCache[relationshipId]) {
           var parent = this.get(relationshipKey);
           if (!!parent) {
-            var reference = this.get('_reference'), parentRelationships = parent.constructor._relationships || [], parentMeta = Ember.meta(parent), parentRelationshipKey, parentRelationship, parentRelationshipMeta;
-            for (var x = 0, y = parentRelationships.length; x < y; x++) {
-              parentRelationshipKey = parentRelationships[x];
+            var parentRelationships = parent.constructor._relationships || [], parentMeta = Ember.meta(parent), parentRelationshipKey, parentRelationship, parentRelationshipMeta;
+            for (var i2 = 0, l2 = parentRelationships.length; i2 < l2; i2++) {
+              parentRelationshipKey = parentRelationships[i2];
               parentRelationship = parentMeta.descs[parentRelationshipKey];
               parentRelationshipMeta = parentRelationship.meta();
               if (parentRelationshipMeta.kind === 'hasMany') {
                 // then has_many_array observers take over, relationships are associated
                 var content = parent.get(parentRelationshipKey).get('content'), alreadyAssociated = false;
-                for (var z = 0; i < content.length; z++) {
-                  if (content[z].id === reference.id) {
+                for (var i3 = 0, l3 = content.length; i3 < l3; i3++) {
+                  if (content[i3].id === reference.id) {
                     alreadyAssociated = true;
                     break;
                   }
