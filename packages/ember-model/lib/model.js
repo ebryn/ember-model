@@ -141,9 +141,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       relationship = meta.descs[relationshipKey];
       relationshipMeta = relationship.meta();
       // find all parent records, and associate the new children
-      if (relationshipMeta.kind === 'belongsTo') {
+      if (!relationshipMeta.options.embedded && relationshipMeta.kind === 'belongsTo') {
         var relationshipId = this.get('_data')[relationshipMeta.options.key], type = relationshipMeta.getType();
-        if (!!type._referenceCache && type._referenceCache[relationshipId]) {
+        if (!!type._referenceCache && !!type._referenceCache[relationshipId]) {
           var parent = this.get(relationshipKey);
           if (!!parent) {
             var parentRelationships = parent.constructor._relationships || [], parentMeta = Ember.meta(parent), parentRelationshipKey, parentRelationship, parentRelationshipMeta;
@@ -151,7 +151,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
               parentRelationshipKey = parentRelationships[i2];
               parentRelationship = parentMeta.descs[parentRelationshipKey];
               parentRelationshipMeta = parentRelationship.meta();
-              if (parentRelationshipMeta.kind === 'hasMany') {
+              if (!parentRelationshipMeta.options.embedded && parentRelationshipMeta.kind === 'hasMany') {
                 // then has_many_array observers take over, relationships are associated
                 var content = parent.get(parentRelationshipKey).get('content'), alreadyAssociated = false;
                 for (var i3 = 0, l3 = content.length; i3 < l3; i3++) {
