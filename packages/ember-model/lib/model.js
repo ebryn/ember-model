@@ -133,7 +133,46 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
-    this._createReference();
+    var reference = this._createReference();
+
+    // associate cached parent records. first, re-loop through relationships, after _createReference
+    for (var i = 0, l = relationships.length; i < l; i++) {
+      relationshipKey = relationships[i];
+      relationship = meta.descs[relationshipKey];
+      relationshipMeta = relationship.meta();
+      // find all parent records, and associate the new children
+      if (relationshipMeta.kind === 'belongsTo') {
+        var id = this.get('_data')[relationshipMeta.options.key], type = relationshipMeta.getType();
+        if (!!type._referenceCache && type._referenceCache[id]) {
+          var parent = this.get(relationshipKey);
+          if (!!parent) {
+            var reference = this.get('_reference'), parentRelationships = parent.constructor._relationships || [], parentMeta = Ember.meta(parent), parentRelationshipKey, parentRelationship, parentRelationshipMeta;
+            for (var x = 0, y = parentRelationships.length; x < y; x++) {
+              parentRelationshipKey = parentRelationships[x];
+              parentRelationship = parentMeta.descs[parentRelationshipKey];
+              parentRelationshipMeta = parentRelationship.meta();
+              if (parentRelationshipMeta.kind === 'hasMany') {
+                // then has_many_array observers take over, relationships are associated
+                var content = parent.get(parentRelationshipKey).get('content'), alreadyAssociated = false;
+                for (var z = 0; i < content.length; z++) {
+                  if (content[z].id === reference.id) {
+                    alreadyAssociated = true;
+                    break;
+                  }
+                }
+                if (!alreadyAssociated) {
+                  // order here is important to avoid dirtying record
+                  parent.get('_data')[parentRelationshipMeta.options.key].pushObject(reference.id);
+                  content.pushObject(reference);
+                  parent.set('_dirtyAttributes', parent.get('_dirtyAttributes').without(parentRelationshipKey));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     this.trigger('didLoad');
   },
 
