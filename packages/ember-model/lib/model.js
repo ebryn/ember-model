@@ -133,7 +133,46 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
-    this._createReference();
+    var reference = this._createReference();
+
+    // associate cached parent records. first, re-loop through relationships, after _createReference
+    for (var i1 = 0, l1 = relationships.length; i1 < l1; i1++) {
+      relationshipKey = relationships[i1];
+      relationship = meta.descs[relationshipKey];
+      relationshipMeta = relationship.meta();
+      // find all parent records, and associate the new children
+      if (!relationshipMeta.options.embedded && relationshipMeta.kind === 'belongsTo') {
+        var relationshipId = this.get('_data')[relationshipMeta.options.key], type = relationshipMeta.getType();
+        if (!!type._referenceCache && !!type._referenceCache[relationshipId]) {
+          var parent = this.get(relationshipKey);
+          if (!!parent) {
+            var parentRelationships = parent.constructor._relationships || [], parentMeta = Ember.meta(parent), parentRelationshipKey, parentRelationship, parentRelationshipMeta;
+            for (var i2 = 0, l2 = parentRelationships.length; i2 < l2; i2++) {
+              parentRelationshipKey = parentRelationships[i2];
+              parentRelationship = parentMeta.descs[parentRelationshipKey];
+              parentRelationshipMeta = parentRelationship.meta();
+              if (!parentRelationshipMeta.options.embedded && parentRelationshipMeta.kind === 'hasMany') {
+                // then has_many_array observers take over, relationships are associated
+                var content = parent.get(parentRelationshipKey).get('content'), alreadyAssociated = false;
+                for (var i3 = 0, l3 = content.length; i3 < l3; i3++) {
+                  if (content[i3].id === reference.id) {
+                    alreadyAssociated = true;
+                    break;
+                  }
+                }
+                if (!alreadyAssociated) {
+                  // order here is important to avoid dirtying record
+                  parent.get('_data')[parentRelationshipMeta.options.key].pushObject(reference.id);
+                  content.pushObject(reference);
+                  parent.set('_dirtyAttributes', parent.get('_dirtyAttributes').without(parentRelationshipKey));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     this.trigger('didLoad');
   },
 
