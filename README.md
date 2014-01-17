@@ -168,7 +168,7 @@ Relationships are defined by using relationship computed property macros in plac
 
 `Ember.hasMany(type, options)` - Provides access to an array of related objects.
 
-Both relationships take two arguments. 
+Both relationships take two arguments.
 
 - `type` - Class of the related model or string representation (eg. App.Comment or 'App.Comment').
 
@@ -237,7 +237,7 @@ commentsJson = [
 App.Post = Ember.Model.extend({
   id: Ember.attr(),
   title: Ember.attr(),
-  body: Ember.attr()
+  body: Ember.attr(),
   comments: Ember.hasMany('App.Comment', {key: 'comment_ids'})
 });
 
