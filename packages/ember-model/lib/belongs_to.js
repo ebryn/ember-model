@@ -3,7 +3,8 @@ var get = Ember.get,
 
 function getType() {
   if (typeof this.type === "string") {
-    this.type =  Ember.get(Ember.lookup, this.type);
+    var store = get(this, 'store');
+    this.type =  Ember.get(Ember.lookup, this.type) || store.modelFor(this.type);
   }
   return this.type;
 }
