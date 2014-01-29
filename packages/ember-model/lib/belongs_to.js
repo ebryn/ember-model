@@ -1,9 +1,9 @@
 var get = Ember.get,
     set = Ember.set;
 
-function getType() {
+function getType(record) {
   if (typeof this.type === "string") {
-    this.type =  Ember.get(Ember.lookup, this.type);
+    this.type =  Ember.get(Ember.lookup, this.type) || record.container.lookupFactory('model:' + this.type);
   }
   return this.type;
 }
@@ -15,7 +15,7 @@ Ember.belongsTo = function(type, options) {
       relationshipKey = options.key;
 
   return Ember.computed(function(key, value, oldValue) {
-    type = meta.getType();
+    type = meta.getType(this);
     Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
     var dirtyAttributes = get(this, '_dirtyAttributes'),

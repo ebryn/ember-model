@@ -52,6 +52,24 @@ test("model can be specified with a string instead of a class", function() {
   ok(article instanceof Article);
 });
 
+test("model can be specified with a string to a resolved path", function() {
+  var App = Ember.Application.create({rootElement: "#qunit-fixture"});
+  App.Article  = Ember.Model.extend({
+      id: Ember.attr(String)
+    });
+  App.Comment = Ember.Model.extend({
+      article: Ember.belongsTo('article', { key: 'article', embedded: true })
+    });
+
+  var comment = App.Comment.create({container: App.__container__});
+  Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
+  var article = Ember.run(comment, comment.get, 'article');
+
+  equal(article.get('id'), 'a');
+  ok(article instanceof App.Article);
+  App.reset();
+});
+
 test("non embedded belongsTo should get a record by its id", function() {
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
