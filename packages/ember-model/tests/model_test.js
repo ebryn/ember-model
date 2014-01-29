@@ -111,6 +111,23 @@ test(".find([]) called with a single record returns cache before delgating to ad
   ok(record, "Record was returned by find");
 });
 
+test(".find([]) called when Model.transient true always delegates to adapter's find", function() {
+  expect(3);
+
+  Model.transient = true;
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      ok(true, "record should not get loaded from cache");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  var record = Ember.run(Model, Model.find, ['a']);
+  Ember.run(Model, Model.find, 'a');
+  ok(record, "Record was returned by find");
+});
+
 test(".reload() loads the record via the adapter after it was loaded", function() {
   expect(1);
 
