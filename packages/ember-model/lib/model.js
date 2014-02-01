@@ -640,6 +640,7 @@ Ember.Model.reopenClass({
   clearCache: function () {
     this.sideloadedData = undefined;
     this._referenceCache = undefined;
+    this._findAllRecordArray = undefined;
   },
 
   removeFromCache: function (key) {
