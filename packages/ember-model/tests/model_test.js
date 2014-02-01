@@ -787,6 +787,19 @@ test("fetchMany resolves with error object", function() {
   stop();
 });
 
+test(".clearCache destroys _findAllRecordArray reference", function() {
+  expect(1);
+
+  var records = Model.find();
+  records.on('didLoad', function() {
+    start();
+
+    Model.clearCache();
+    var newRecords = Model.find();
+    equal( newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray" );
+  });
+  stop();
+});
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){
