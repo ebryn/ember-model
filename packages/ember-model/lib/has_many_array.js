@@ -76,6 +76,13 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
   },
 
+  load: function(content) {
+    Ember.setProperties(this, {
+      content: content,
+      originalContent: content.slice()
+    });
+  },
+
   _setupOriginalContent: function(content) {
     content = content || get(this, 'content');
     if (content) {
