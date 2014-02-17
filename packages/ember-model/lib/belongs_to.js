@@ -26,21 +26,23 @@ Ember.belongsTo = function(type, options) {
     }
 
     if (arguments.length > 1) {
+
       if (value) {
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
-                     [value.constructor, type]),
-                     value instanceof type);
-
-        if (oldValue !== value) {
-          dirtyAttributes.pushObject(key);
-        } else {
-          dirtyAttributes.removeObject(key);
-        }
-
-        if (createdDirtyAttributes) {
-          set(this, '_dirtyAttributes', dirtyAttributes);
-        }
+                    [value.constructor, type]),
+                    value instanceof type);
       }
+
+      if (oldValue !== value) {
+        dirtyAttributes.pushObject(key);
+      } else {
+        dirtyAttributes.removeObject(key);
+      }
+
+      if (createdDirtyAttributes) {
+        set(this, '_dirtyAttributes', dirtyAttributes);
+      }
+
       return value === undefined ? null : value;  
     } else {
       return this.getBelongsTo(relationshipKey, type, meta);
