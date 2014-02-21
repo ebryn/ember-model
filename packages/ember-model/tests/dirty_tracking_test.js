@@ -207,6 +207,28 @@ test("getting embedded belongsTo attribute after load should not make parent dir
   equal(post.get('isDirty'), false, 'get belongsTo relationship does not dirty post record');
 });
 
+test("loading record with embedded hasMany attribute should not make it dirty", function() {
+  expect(3);
+
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  var post = Post.create();
+
+  ok(!post.get('comments.isDirty'), "Post comments should be clean initially");
+
+  Ember.run(function() {
+    post.load(1, {comments: [Comment.create()]});
+  });
+
+  ok(!post.get('isDirty'), "Post should be clean after load");
+  ok(!post.get('comments.isDirty'), "Post comments should be clean after load");
+});
+
 test("isDirty is observable", function() {
   expect(2);
 
