@@ -544,3 +544,32 @@ test("belongsTo records created are available from reference cache", function() 
   // referenced company record is the same as the company returned from find
   equal(company, project.get('company'));
 });
+
+
+test("belongsTo of existing record doesn't create a new record", function() {
+  var childById = {id:1, age:0},
+      modelByIdResponse = {id:1, age:1, child:{id:1, age:1}};
+
+  var ChildModel = Ember.Model.extend({
+    age: Ember.attr()
+  });
+
+  var Model = Ember.Model.extend({
+    age: Ember.attr(),
+    child: Ember.belongsTo(ChildModel, { key: 'child', embedded: true})
+  });
+
+  ChildModel.load(childById);
+  var child = ChildModel.find(1);
+
+  equal(child.get('age'), 0, "original age is correct");
+
+  Model.load(modelByIdResponse);
+
+  equal(child.get('age'), 1, "The age is updated to reflect the new information from an embedded source after sideload");
+
+  var model1 = Model.find(1);
+  equal(model1.get('child'), child, "The record is the same");
+  equal(model1.get('child.age'), 1, "The correct age is returned");
+});
+
