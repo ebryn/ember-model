@@ -353,6 +353,38 @@ test("setting existing nonembedded relationship should make parent dirty", funct
   ok(post.get('isDirty'));
 });
 
+test("setting existing nonembedded relationship to NULL should make parent dirty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create(),
+      secondAuthor = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100, name: 'bob'});
+    secondAuthor.load(101, {id: 101, name: 'ray'});
+    post.load(1, {id: 1, author_id: 100});
+  });
+
+  Ember.run(function() {
+    post.set('author', null);
+  });
+
+  ok(post.get('isDirty'));
+});
+
 test("relationships should be seralized when specified with string", function() {
   expect(1);
 

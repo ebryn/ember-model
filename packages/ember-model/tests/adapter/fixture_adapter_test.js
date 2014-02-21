@@ -63,3 +63,29 @@ test("fetch loads the desired FIXTURE payload when the id (string) is specified"
 
   stop();
 });
+
+test("createRecord", function() {
+  expect(3);
+
+  FixtureModel.FIXTURES = [];
+
+  var record = FixtureModel.create({name: "Erik"});
+
+  ok(record.get('isNew'), "Record should be new");
+  ok(!record.get('id'), "Record #id should be undefined");
+
+  // Ember.run(record, record.save);
+  Ember.run(record, record.save).then(function(record) {
+    start();
+    equal(record.get('id'), "fixture-0", "Value to Record #id should be assigned");
+  });
+  stop();
+});
+
+test("_generatePrimaryKey", function() {
+  expect(3);
+
+  equal(adapter._generatePrimaryKey(), "fixture-0", "Retrun next primary key");
+  equal(adapter._generatePrimaryKey(), "fixture-1", "Retrun next primary key");
+  equal(adapter._generatePrimaryKey(), "fixture-2", "Retrun next primary key");
+});

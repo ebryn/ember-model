@@ -13,7 +13,7 @@
     "url": "git://github.com/ebryn/ember-model.git"
   },
   "author": "no",
-  "license": "BSD",
+  "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-neuter": "~0.5.0",

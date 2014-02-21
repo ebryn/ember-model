@@ -1,8 +1,10 @@
 require('ember-model/adapter');
 
-var get = Ember.get;
+var get = Ember.get,
+    set = Ember.set;
 
 Ember.FixtureAdapter = Ember.Adapter.extend({
+  _counter: 0,
   _findData: function(klass, id) {
     var fixtures = klass.FIXTURES,
         idAsString = id.toString(),
@@ -10,6 +12,27 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
         data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; });
 
     return data;
+  },
+
+  _setPrimaryKey: function(record) {
+    var klass = record.constructor,
+        fixtures = klass.FIXTURES,
+        primaryKey = get(klass, 'primaryKey');
+
+
+    if(record.get(primaryKey)) {
+      return;
+    }
+
+    set(record, primaryKey, this._generatePrimaryKey());
+  },
+
+  _generatePrimaryKey: function() {
+    var counter = this.get("_counter");
+
+    this.set("_counter", counter + 1);
+
+    return "fixture-" + counter;
   },
 
   find: function(record, id) {
@@ -52,10 +75,12 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
   createRecord: function(record) {
     var klass = record.constructor,
-        fixtures = klass.FIXTURES;
+        fixtures = klass.FIXTURES,
+        self = this;
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
+        self._setPrimaryKey(record);
         fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
         record.didCreateRecord();
         resolve(record);
