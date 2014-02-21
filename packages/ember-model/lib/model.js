@@ -613,16 +613,21 @@ Ember.Model.reopenClass({
   },
 
   cachedRecordForId: function(id) {
-    var record = this.getCachedReferenceRecord(id);
+    var record;
+    if (!this.transient) {
+      record = this.getCachedReferenceRecord(id);
+    }
 
     if (!record) {
       var primaryKey = get(this, 'primaryKey'),
         attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      var sideloadedData = this.sideloadedData && this.sideloadedData[id];
-      if (sideloadedData) {
-        record.load(id, sideloadedData);
+      if (!this.transient) {
+        var sideloadedData = this.sideloadedData && this.sideloadedData[id];
+        if (sideloadedData) {
+          record.load(id, sideloadedData);
+        }
       }
     }
 
