@@ -77,4 +77,8 @@ test("removing a record from the many array", function() {
   equal(comments.get('length'), 2, "There are now only two items in the array");
   equal(comments.objectAt(0).get('id'), 1, "The first element is correct");
   equal(comments.objectAt(1).get('id'), 3, "The second element is correct");
+
+  article.revert();
+
+  equal(article.get('isDirty'), false, "article should not be dirty after revert");
 });

@@ -122,6 +122,29 @@ test("after saving, the model shouldn't be dirty", function() {
   });
 });
 
+test("after reloading, the model shouldn't be dirty", function() {
+  expect(2);
+
+  var Model = Ember.Model.extend({
+    id: attr(),
+    name: attr()
+  });
+  Model.adapter = Ember.FixtureAdapter.create();
+
+  Model.load([{ id: '123', name: 'Version 1' }]);
+  var record = Ember.run(Model, Model.find, '123');
+  record.set('name', 'Version 2');
+  ok(record.get('isDirty'));
+
+  stop();
+  Ember.run(function() {
+    record.reload().then(function() {
+      start();
+      ok(!record.get('isDirty'), "The record is no longer dirty");
+    });
+  });
+});
+
 test("dirty checking works with boolean attributes", function() {
   var Model = Ember.Model.extend({
     canSwim: attr(Boolean)
@@ -141,14 +164,20 @@ test("dirty checking works with date attributes", function() {
   var Model = Ember.Model.extend({
     createdAt: attr(Date)
   });
-
+  var originalDate = new Date(2013, 0, 0);
   var obj = Model.create();
   Ember.run(function() {
-    obj.load(1, {createdAt: '2013-01-01T00:00:00.000Z'});
+    obj.load(1, {createdAt: originalDate.toISOString()});
   });
 
-  ok(obj.get('createdAt'), new Date(2013, 0, 0));
+  deepEqual(obj.get('createdAt'), originalDate);
   ok(!obj.get('isDirty'));
+
+  obj.set('createdAt', new Date(2013, 10, 2));
+  ok(obj.get('isDirty'), "changing a Date attribute makes the record dirty");
+
+  obj.set('createdAt', originalDate);
+  ok(!obj.get('isDirty'), "changing a Date attribute back to original value makes the record clean");
 });
 
 test("getting embedded belongsTo attribute after load should not make parent dirty", function() {

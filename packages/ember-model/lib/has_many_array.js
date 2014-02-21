@@ -2,7 +2,7 @@ var get = Ember.get, set = Ember.set;
 
 Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
-  originalContent: null,
+  originalContent: [],
 
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
@@ -74,6 +74,13 @@ Ember.ManyArray = Ember.RecordArray.extend({
     } else {
       parent._relationshipBecameClean(relationshipKey);
     }
+  },
+
+  load: function(content) {
+    Ember.setProperties(this, {
+      content: content,
+      originalContent: content.slice()
+    });
   },
 
   _setupOriginalContent: function(content) {
