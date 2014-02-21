@@ -285,6 +285,21 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     set(this, '_dirtyAttributes', []);
+    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded HasMany arrays
+  },
+
+  _resetDirtyStateInNestedObjects: function(object) {
+    if (!object._hasManyArrays) { return; }
+    for (var i = 0; i < object._hasManyArrays.length; i++) {
+      var array = object._hasManyArrays[i];
+      if (array.embedded) {
+        array._setupOriginalContent();
+        for (var j = 0; j < array.get('length'); j++) {
+          set(array.objectAt(j),'_dirtyAttributes', []);
+          this._resetDirtyStateInNestedObjects(array.objectAt(j));
+        }
+      }
+    }
   },
 
   dataDidChange: Ember.observer(function() {
