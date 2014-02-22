@@ -16,6 +16,7 @@ Ember.belongsTo = function(type, options) {
 
   return Ember.computed(function(key, value, oldValue) {
     type = meta.getType();
+    Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
     var dirtyAttributes = get(this, '_dirtyAttributes'),
         createdDirtyAttributes = false;

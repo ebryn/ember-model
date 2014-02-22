@@ -7,6 +7,7 @@ Ember.hasMany = function(type, options) {
       key = options.key;
 
   return Ember.computed(function() {
+    Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
     if (typeof type === "string") {
       type = Ember.get(Ember.lookup, type);
     }
