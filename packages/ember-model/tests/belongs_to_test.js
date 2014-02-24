@@ -240,6 +240,32 @@ test("must be set with value of same type", function() {
     /Attempted to set property of type/);
 });
 
+test("relationship type cannot be empty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+      id: Ember.attr()
+    }),
+    Post = Ember.Model.extend({
+      id: Ember.attr(),
+      author: Ember.belongsTo('', {key: 'author_id'})
+    });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+    author = Author.create();
+  Ember.run(function() {
+    post.load(1, {id: 1, author_id: author});
+  });
+
+  expectAssertion(function() {
+      post.set('author', null);
+    },
+    /Type cannot be empty/);
+});
+
 test("should be able to set relationship to null", function() {
   expect(2);
 

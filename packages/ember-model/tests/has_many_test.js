@@ -198,3 +198,28 @@ test("has many records created are available from reference cache", function() {
   equal(post, postFromCache);
 
 });
+
+test("relationship type cannot be empty", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+      comments: Ember.hasMany('', { key: 'comments' })
+    }),
+    Comment = Ember.CommentModel = Ember.Model.extend({
+      token: Ember.attr(String)
+    });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create(),
+     comment = Comment.create();
+
+  var comments = [comment];
+  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
+
+  expectAssertion(function() {
+      article.get('comments');
+  },
+  /Type cannot be empty/);
+
+});
