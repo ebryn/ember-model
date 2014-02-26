@@ -110,6 +110,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
+    this._reloadHasManys();
 
     // eagerly load embedded data
     var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
@@ -239,6 +240,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   revert: function() {
     this.getWithDefault('_dirtyAttributes', []).clear();
     this.notifyPropertyChange('_data');
+    this._reloadHasManys(true);
   },
 
   didCreateRecord: function() {
@@ -302,27 +304,25 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
-  dataDidChange: Ember.observer(function() {
-    this._reloadHasManys();
-  }, '_data'),
-
   _registerHasManyArray: function(array) {
     if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
 
     this._hasManyArrays.pushObject(array);
   },
 
-  _reloadHasManys: function() {
+  _reloadHasManys: function(reverting) {
     if (!this._hasManyArrays) { return; }
     var i, j;
     for (i = 0; i < this._hasManyArrays.length; i++) {
       var array = this._hasManyArrays[i],
           hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
+      if (!reverting) {
         for (j = 0; j < array.get('length'); j++) {
           if (array.objectAt(j).get('isNew') && !array.objectAt(j).get('isDeleted')) {
             hasManyContent.addObject(array.objectAt(j)._reference);
           }
         }
+      }
       array.load(hasManyContent);
     }
   },

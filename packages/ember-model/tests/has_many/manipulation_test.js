@@ -35,11 +35,96 @@ test("pushing record without an id adds a reference to the content", function() 
 
   Ember.run(comments, comments.pushObject, comment);
 
-
   var content = comments.get('content');
   equal(comments.get('length'), 4);
   equal(content[3].record, comment, "content should contain reference with added object");
   ok(!content[3].id, "id should in the reference should be empty");
+});
+
+test('adding and reverting an existing record to a many array', function () {
+  var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 1, 'should have 1 comment');
+  equal(article.get('isDirty'), false, 'should not be dirty');
+
+  var c = Comment.find(1);
+  // Why is this new by default?
+  c.set('isNew', false);
+  article.get('comments').pushObject(c);
+
+  equal(article.get('comments.length'), 2, 'should included added comment');
+  equal(article.get('isDirty'), true, 'should now be dirty');
+
+  article.revert();
+
+  equal(article.get('comments.length'), 1, 'show now go back to 1 comment');
+  equal(article.get('isDirty'), false, 'should no longer be dirty');
+});
+
+test('adding and reverting a new record to a many array', function () {
+  var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 1, 'should have 1 comment');
+  equal(article.get('isDirty'), false, 'should not be dirty');
+
+  var newComment = Comment.create({id: 4, text: 'quatro', isNew: true});
+  article.get('comments').pushObject(newComment);
+
+  equal(article.get('comments.length'), 2, 'should included added comment');
+  equal(article.get('isDirty'), true, 'should now be dirty');
+
+  article.revert();
+
+  equal(article.get('comments.length'), 1, 'show now go back to 1 comment');
+  equal(article.get('isDirty'), false, 'should no longer be dirty');
 });
 
 test("removing a record from the many array", function() {
