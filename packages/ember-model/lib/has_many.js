@@ -6,13 +6,17 @@ Ember.hasMany = function(type, options) {
   var meta = { type: type, isRelationship: true, options: options, kind: 'hasMany' },
       key = options.key;
 
-  return Ember.computed(function() {
+  return Ember.computed(function(propertyKey, newContentArray, existingArray) {
     Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
     if (typeof type === "string") {
       type = Ember.get(Ember.lookup, type);
     }
 
-    return this.getHasMany(key, type, meta);
+    if (arguments.length > 1) {
+      return existingArray.setObjects(newContentArray);
+    } else {
+      return this.getHasMany(key, type, meta);
+    }
   }).property().meta(meta);
 };
 

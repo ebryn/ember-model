@@ -167,3 +167,81 @@ test("removing a record from the many array", function() {
 
   equal(article.get('isDirty'), false, "article should not be dirty after revert");
 });
+
+test("setting a has many array with empty array", function() {
+  var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 3, "should be 3 comments");
+
+  article.set('comments', []);
+  equal(article.get('comments.length'), 0, "should be 0 comments after set");
+  equal(article.get('comments.isDirty'), true, "comments should be dirty after set");
+
+  article.revert();
+
+  equal(article.get('comments.length'), 3, "should be 3 comments after revert");
+  equal(article.get('comments.isDirty'), false, "should not be dirty after revert");
+});
+
+test("setting a has many array with item array", function() {
+  var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 3, "should be 3 comments");
+
+  article.set('comments', [Comment.find(3)]);
+  equal(article.get('comments.length'), 1, "should be 1 comment after set");
+  equal(article.get('comments.isDirty'), true, "comments should be dirty after set");
+
+  article.revert();
+
+  equal(article.get('comments.length'), 3, "should be 3 comments after revert");
+  equal(article.get('comments.isDirty'), false, "should not be dirty after revert");
+});
