@@ -116,6 +116,11 @@ Ember.ManyArray = Ember.RecordArray.extend({
       content: content,
       originalContent: content.slice()
     });
+    set(this, '_modifiedRecords', []);
+  },
+
+  revert: function() {
+    this._setupOriginalContent();
   },
 
   _setupOriginalContent: function(content) {
@@ -140,10 +145,11 @@ Ember.ManyArray = Ember.RecordArray.extend({
       parent._relationshipBecameDirty(relationshipKey);
     } else {
       if (this._modifiedRecords.indexOf(obj) > -1) { this._modifiedRecords.removeObject(obj); }
-      if (!this.get('isDirty'))
+      if (!this.get('isDirty')) {
         parent._relationshipBecameClean(relationshipKey); 
+      }
     }
-  }  
+  }
 });
 
 Ember.HasManyArray = Ember.ManyArray.extend({

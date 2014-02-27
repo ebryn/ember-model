@@ -410,3 +410,48 @@ test("_modifiedRecords property should be clean after clearing hasMany array", f
   deepEqual(post.get('comments._modifiedRecords'), [], 'After removing added record, _modifiedRecords should reflect this change');
   ok(!post.get('isDirty'), "After reversing the change, the post should be clean again");
 });
+
+test("isDirty on embedded hasMany records should be false after parent is saved", function() {
+  expect(7);
+
+  var Comment = Ember.Model.extend({
+    body: attr()
+  });
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  var post = Post.create({
+    isNew: false,
+    _data: {
+      comments: [{body: "The body"}]
+    }
+  });
+  Post.adapter = {
+    saveRecord: function(record) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        Ember.run.later(function() {
+          record.didSaveRecord();
+          resolve(record);
+        }, 1);
+      });
+    }
+  };
+
+  equal(post.get('isDirty'), false, "parent should not be dirty");
+  equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
+
+  post.set('comments.firstObject.body', 'New body');
+
+  equal(post.get('isDirty'), true, 'parent should be dirty');
+  equal(post.get('comments.firstObject.isDirty'), true, 'child should be dirty');
+
+  stop();
+  post.save().then(function() {
+    start();
+    equal(post.get('isDirty'), false, "parent should not be dirty");
+    equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
+    equal(post.get('comments.firstObject.body'), 'New body', 'updated child property is saved');
+  });
+});
