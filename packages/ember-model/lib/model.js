@@ -295,7 +295,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     for (var i = 0; i < object._hasManyArrays.length; i++) {
       var array = object._hasManyArrays[i];
       if (array.embedded) {
-        array._setupOriginalContent();
+        array.revert();
         for (var j = 0; j < array.get('length'); j++) {
           set(array.objectAt(j),'_dirtyAttributes', []);
           this._resetDirtyStateInNestedObjects(array.objectAt(j));
