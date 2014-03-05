@@ -453,12 +453,12 @@ Ember.Model.reopenClass({
   },
 
   loadAll: function(arr) {
-      var clasz = this;
+      var self = this;
       var records = this._findAllRecordArray = Ember.RecordArray.create({
-          modelClass: clasz
+          modelClass: self
       });
       return new Ember.RSVP.Promise(function(resolve) {
-          records.load(clasz, arr);
+          records.load(self, arr);
           resolve(records);
       });
   },
