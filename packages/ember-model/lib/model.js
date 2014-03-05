@@ -452,6 +452,17 @@ Ember.Model.reopenClass({
     return isFetch ? deferred : records;
   },
 
+  loadAll: function(arr) {
+      var clasz = this;
+      var records = this._findAllRecordArray = Ember.RecordArray.create({
+          modelClass: clasz
+      });
+      return new Ember.RSVP.Promise(function(resolve) {
+          records.load(clasz, arr);
+          resolve(records);
+      });
+  },
+
   findAll: function() {
     return this._findFetchAll(false);
   },
