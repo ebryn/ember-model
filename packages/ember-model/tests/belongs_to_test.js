@@ -570,3 +570,27 @@ test("belongsTo records created are available from reference cache", function() 
   // referenced company record is the same as the company returned from find
   equal(company, project.get('company'));
 });
+
+test("embedded belongsTo with undefined value", function() {
+  expect(1);
+  var json = {
+    id: 1,
+    name: 'foo'
+    // author missing
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('author'), null);
+});

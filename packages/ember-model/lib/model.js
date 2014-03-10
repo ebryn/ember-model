@@ -287,18 +287,30 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     set(this, '_dirtyAttributes', []);
-    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded HasMany arrays
+    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
   },
 
   _resetDirtyStateInNestedObjects: function(object) {
-    if (!object._hasManyArrays) { return; }
-    for (var i = 0; i < object._hasManyArrays.length; i++) {
-      var array = object._hasManyArrays[i];
-      if (array.embedded) {
-        array.revert();
-        for (var j = 0; j < array.get('length'); j++) {
-          set(array.objectAt(j),'_dirtyAttributes', []);
-          this._resetDirtyStateInNestedObjects(array.objectAt(j));
+    var i;
+    if (object._hasManyArrays) {
+      for (i = 0; i < object._hasManyArrays.length; i++) {
+        var array = object._hasManyArrays[i];
+        if (array.embedded) {
+          array.revert();
+          for (var j = 0; j < array.get('length'); j++) {
+            set(array.objectAt(j),'_dirtyAttributes', []);
+            this._resetDirtyStateInNestedObjects(array.objectAt(j));
+          }
+        }
+      }
+    }
+
+    if (object._belongsTo) {
+      for (i = 0; i < object._belongsTo.length; i++) {
+        var belongsTo = object._belongsTo[i];
+        if (belongsTo.options.embedded) {
+          var obj = this.get(belongsTo.relationshipKey);
+          obj._copyDirtyAttributesToData();
         }
       }
     }
@@ -346,6 +358,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
 
     return Ember.A(content || []);
+  },
+
+  _registerBelongsTo: function(key) {
+    if (!this._belongsTo) { this._belongsTo = Ember.A([]); }
+
+    this._belongsTo.pushObject(key);
   }
 });
 
