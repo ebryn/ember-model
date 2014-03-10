@@ -455,3 +455,195 @@ test("isDirty on embedded hasMany records should be false after parent is saved"
     equal(post.get('comments.firstObject.body'), 'New body', 'updated child property is saved');
   });
 });
+
+
+test("modifying embedded belongsTo should make parent dirty", function() {
+  expect(3);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  post.set('author.name', 'Billy Bob');
+  equal(post.get('author.isDirty'), true, 'author should be dirty after being modified');
+  equal(post.get('isDirty'), true, 'changes to embedded belongsTo should dirty the parent');
+});
+
+test("changing back embedded belongsTo should make parent clean again", function() {
+  expect(3);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'bob' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+
+  var author = post.get('author');
+  ok(!post.get('isDirty'), "Post should be clean initially");
+  author.set('name', 'billy');
+  ok(post.get('isDirty'), "After changing author name, post should become dirty");
+  author.set('name', 'bob');
+  ok(!post.get('isDirty'), "After changing author name to original value, post should become clean again");
+});
+
+test("save parent of embedded belongsTo", function() {
+  expect(9);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  post.set('author.name', 'Billy Bob');
+  equal(post.get('author.isDirty'), true, 'author should be dirty after being modified');
+  equal(post.get('isDirty'), true, 'changes to embedded belongsTo should dirty the parent');
+
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      equal(post.get('author.isDirty'), false, 'the author should be clean after being saved');
+      equal(post.get('isDirty'), false, 'the post should be clean after being saved');
+
+      post.set('author.name', 'John Doe');
+      equal(post.get('author.isDirty'), true, 'the author should be dirty again');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+
+      post.set('author.name', 'Cory Loken'); // special case: setting back to its original value
+      equal(post.get('author.isDirty'), true, 'the author should be dirty because it was saved as "Billy Bob"');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+    });
+  });
+});
+
+test("set embedded belongsTo", function() {
+  expect(9);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  var firstAuthor = post.get('author');
+  var newAuthor = Author.create({ id: 2, name: 'John Doe' });
+  post.set('author', newAuthor);
+  equal(post.get('author.isDirty'), false, 'author should be clean because it was just created');
+  equal(post.get('isDirty'), true, 'post should be dirty because its author was changed');
+
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      equal(post.get('author.isDirty'), false, 'author should be clean after being saved');
+      equal(post.get('isDirty'), false, 'parent should be clean after being saved');
+
+      post.set('author.name', 'Cory Loken');
+      equal(post.get('author.isDirty'), true, 'the author should be dirty');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author was changed');
+
+      post.set('author', firstAuthor);
+      equal(post.get('author.isDirty'), false, 'the author should be clean because it has not been changed');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author was changed');
+    });
+  });
+});
+
+test("set embedded belongsTo cleans up observers", function() {
+  expect(5);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  function observers(obj) {
+    return Ember.meta(obj).watching['isDirty'] || 0;
+  }
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+
+  var author = post.get('author');
+  equal(observers(author), 1, 'there should be one observer on the initial author');
+
+  var newAuthor = Author.create({ id: 2, name: 'John Doe' });
+  equal(observers(newAuthor), 0, 'there should be no observers on the author after creation');
+
+  post.set('author', newAuthor);
+  equal(observers(newAuthor), 1, 'there should be one observer on the new author');
+  equal(observers(author), 0, 'the observer for the old author should have been cleaned up');
+
+  post.set('author', null);
+  equal(observers(newAuthor), 0, 'the observer for the new author should have been cleaned up');
+});
+
