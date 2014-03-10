@@ -132,8 +132,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
     }
 
-    set(this, 'isLoaded', true);
     set(this, 'isNew', false);
+    set(this, 'isLoaded', true);
     this._createReference();
     this.trigger('didLoad');
   },

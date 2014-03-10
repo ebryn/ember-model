@@ -56,6 +56,29 @@ test("updates reference and cache when primary key changes", function() {
   equal(Model.find('abc123'), model, 'find should get model');
 });
 
+test("isLoaded observers have all the updated properties", function() {
+  expect(2);
+
+  var FooAdapter = Ember.RESTAdapter.extend({
+    find: function (record, id) {
+      record.load(id, { token: id, name: 'Joy' });
+    }
+  });
+
+  var Foo = Model.extend({
+    isLoadedDidChange: (function() {
+      ok(this.get('isLoaded'));
+      ok(!this.get('isNew'), "loaded model should not be new");
+    }).observes('isLoaded')
+  });
+
+  Foo.reopenClass({
+    adapter: FooAdapter.create()
+  });
+
+  var model = Foo.find('abc123');
+});
+
 test("can define attributes with Ember.attr, data is accessible", function() {
   var instance = Model.create({name: "Erik"});
 
