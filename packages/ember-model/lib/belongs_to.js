@@ -66,7 +66,7 @@ Ember.belongsTo = function(type, options) {
     } else {
       value = this.getBelongsTo(relationshipKey, type, meta);
       this._registerBelongsTo(meta);
-      if (meta.options.embedded) {
+      if (value !== null && meta.options.embedded) {
         value.get('isDirty'); // getter must be called before adding observer
         value.addObserver('isDirty', dirtyChanged);
       }
