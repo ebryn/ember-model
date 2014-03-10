@@ -291,15 +291,15 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   _resetDirtyStateInNestedObjects: function(object) {
-    var i;
+    var i, obj;
     if (object._hasManyArrays) {
       for (i = 0; i < object._hasManyArrays.length; i++) {
         var array = object._hasManyArrays[i];
         if (array.embedded) {
           array.revert();
           for (var j = 0; j < array.get('length'); j++) {
-            set(array.objectAt(j),'_dirtyAttributes', []);
-            this._resetDirtyStateInNestedObjects(array.objectAt(j));
+            obj = array.objectAt(j);
+            obj._copyDirtyAttributesToData();
           }
         }
       }
@@ -309,7 +309,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       for (i = 0; i < object._belongsTo.length; i++) {
         var belongsTo = object._belongsTo[i];
         if (belongsTo.options.embedded) {
-          var obj = this.get(belongsTo.relationshipKey);
+          obj = this.get(belongsTo.relationshipKey);
           obj._copyDirtyAttributesToData();
         }
       }
