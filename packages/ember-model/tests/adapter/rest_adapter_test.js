@@ -128,6 +128,35 @@ test("findAll uses Ember.get for a collectionKey", function() {
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
 });
 
+test("findAll can traverse through a JSON payload when collectionKey is passed as chained properties", function() {
+  expect(1);
+
+  RESTModel.reopenClass({
+    collectionKey: Ember.computed(function() {
+      return 'blog.posts';
+    })
+  });
+
+  var data = {
+    blog: {
+      posts: [
+        {id: 1, name: 'Erik'},
+        {id: 2, name: 'Aaron'}
+      ]
+    }
+  }, records;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), data.blog.posts.length, "The proper number of items should have been loaded.");
+});
+
 test("findAll calls didFindAll callback after finishing", function() {
   expect(4);
 
