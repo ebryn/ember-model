@@ -51,7 +51,7 @@ test("findAll", function() {
     equal(url, "/posts");
     equal(params, undefined);
     equal(method, "GET");
-    return ajaxSuccess();
+    return ajaxSuccess({posts: []});
   };
   Ember.run(RESTModel, RESTModel.find);
 });
@@ -297,7 +297,7 @@ test("findQuery", function() {
     equal(url, "/posts");
     deepEqual(params, {foo: 'bar'});
     equal(method, "GET");
-    return ajaxSuccess();
+    return ajaxSuccess({posts: []});
   };
   Ember.run(RESTModel, RESTModel.find, {foo: 'bar'});
 });
@@ -411,9 +411,9 @@ test("findQuery calls didFindQuery callback after finishing", function() {
 test("findQuery with params", function() {
   expect(1);
 
-  Ember.$.ajax = function(settings) {
-    deepEqual(settings.data, {foo: 'bar', num: 42});
-    return ajaxSuccess();
+  adapter._ajax = function(url, params, method) { 
+    deepEqual(params, {foo: 'bar', num: 42});
+    return ajaxSuccess({posts: []});
   };
 
   Ember.run(RESTModel, RESTModel.find, {foo: 'bar', num: 42});
