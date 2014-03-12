@@ -9,7 +9,7 @@ Ember.hasMany = function(type, options) {
   return Ember.computed(function(propertyKey, newContentArray, existingArray) {
     Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
     if (typeof type === "string") {
-      type = Ember.get(Ember.lookup, type);
+      type = Ember.get(Ember.lookup, type) || this.container.lookupFactory('model:' + type);
     }
 
     if (arguments.length > 1) {

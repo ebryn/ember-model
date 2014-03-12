@@ -84,6 +84,24 @@ test("model can be specified with a string instead of a class", function() {
   equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
 });
 
+test("model can be specified with a string to a resolved path", function() {
+
+  var App = Ember.Application.create({rootElement:"#qunit"});
+  App.Comment = Ember.Model.extend({
+    id: Ember.attr(String)
+  });
+  App.Article = Ember.Model.extend({
+    comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
+  });
+
+  var article = App.Article.create({container: App.__container__});
+  Ember.run(article, article.load, 1, {comments: Ember.A([{id: 'a'}, {id: 'b'}])});
+
+  equal(article.get('comments.length'), 2);
+  equal(Ember.run(article, article.get, 'comments.firstObject.id'), 'a');
+  App.reset();
+});
+
 test("when fetching an association getHasMany is called", function() {
   expect(4);
 
