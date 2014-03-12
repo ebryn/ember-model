@@ -78,7 +78,7 @@ test("store.adapterFor(type) returns type adapter if no klass.adapter", function
   container.register('adapter:test', Ember.FixtureAdapter);
   container.register('adapter:application', null);
   var adapter = Ember.run(store, store.adapterFor, 'test');
-  equal(adapter.constructor, Ember.FixtureAdapter.constructor);
+  ok(adapter instanceof Ember.FixtureAdapter);
 });
 
 test("store.adapterFor(type) returns application adapter if no klass.adapter or type adapter", function() {
@@ -86,7 +86,7 @@ test("store.adapterFor(type) returns application adapter if no klass.adapter or 
   container.register('adapter:test', null);
   container.register('adapter:application', Ember.FixtureAdapter);
   var adapter = Ember.run(store, store.adapterFor, 'test');
-  equal(adapter.constructor, Ember.FixtureAdapter.constructor);
+  ok(adapter instanceof Ember.FixtureAdapter);
 });
 
 test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
@@ -96,5 +96,5 @@ test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", f
   container.register('adapter:application', null);
   container.register('adapter:REST',  Ember.RESTAdapter);
   var adapter = Ember.run(store, store.adapterFor, 'test');
-  equal(adapter.constructor, Ember.RESTAdapter.constructor);
+  ok(adapter instanceof Ember.RESTAdapter);
 });

@@ -6,13 +6,16 @@ Ember.Model.Store = Ember.Object.extend({
   },
 
   adapterFor: function(type) {
-    var adapter = this.modelFor(type).adapter;
+    var adapter = this.modelFor(type).adapter,
+        container = this.container;
+
     if (adapter && adapter !== Ember.Model.adapter) {
       return adapter;
     } else {
-      return this.container.lookupFactory('adapter:'+ type) ||
-        this.container.lookupFactory('adapter:application') ||
-        this.container.lookupFactory('adapter:REST');
+      adapter = container.lookupFactory('adapter:'+ type) ||
+        container.lookupFactory('adapter:application') ||
+        container.lookupFactory('adapter:REST');
+      return adapter.create();
     }
   },
 
