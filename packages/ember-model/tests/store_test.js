@@ -1,4 +1,4 @@
-var TestModel, store, container;
+var TestModel, EmbeddedModel, store, container;
 
 module("Ember.Model.Store", {
   setup: function() {
@@ -8,22 +8,70 @@ module("Ember.Model.Store", {
     TestModel = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr(),
-      type: 'test'
+      type: 'test',
+      embeddedBelongsTo: Ember.belongsTo('embedded', {
+        key: 'embeddedBelongsTo',
+        embedded: true
+      }),
+      embeddedHasmany: Ember.hasMany('embedded', {
+        key: 'embeddedHasmany',
+        embedded: true
+      })
     });
     TestModel.primaryKey = 'token';
     TestModel.adapter = Ember.FixtureAdapter.create({});
     TestModel.FIXTURES = [
-      {token: 'a', name: 'Erik'},
-      {token: 'b', name: 'Christina'}
+      {
+        token: 'a',
+        name: 'Erik',
+        embeddedBelongsTo: {id: 1, name: 'Record 1'},
+        embeddedHasmany: [
+          {id: 1, name: 'Record 1'},
+          {id: 2, name: 'Record 2'}
+        ]
+      },
+      {
+        token: 'b',
+        name: 'Christina',
+        embeddedBelongsTo: {id: 1, name: 'Record 1'},
+        embeddedHasmany: [
+          {id: 1, name: 'Record 1'},
+          {id: 2, name: 'Record 2'}
+        ]
+      }
     ];
 
+    EmbeddedModel = Ember.Model.extend({
+      id: Ember.attr(),
+      name: Ember.attr(),
+      type: 'test'
+    });
+
     container.register('model:test', TestModel);
+    container.register('model:embedded', EmbeddedModel);
   }
 });
 
 test("store.createRecord(type) returns a record with a container", function() {
   var record = Ember.run(store, store.createRecord, 'test');
   equal(record.container, container);
+});
+
+test("store.createRecord(type) returns a record with a container", function() {
+  var record = Ember.run(store, store.createRecord, 'test');
+  equal(record.container, container);
+});
+
+test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
+  expect(3);
+  var promise = Ember.run(store, store.find, 'test', 'a');
+  promise.then(function(record) {
+    start();
+    ok(record.get('container'));
+    ok(record.get('embeddedBelongsTo').get('container'));
+    ok(record.get('embeddedHasmany.firstObject').get('container'));
+  });
+  stop();
 });
 
 test("store.find(type, id) returns a promise and loads a container for the record", function() {
