@@ -57,11 +57,6 @@ test("store.createRecord(type) returns a record with a container", function() {
   equal(record.container, container);
 });
 
-test("store.createRecord(type) returns a record with a container", function() {
-  var record = Ember.run(store, store.createRecord, 'test');
-  equal(record.container, container);
-});
-
 test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
   expect(3);
   var promise = Ember.run(store, store.find, 'test', 'a');
