@@ -4,7 +4,7 @@
 
 Ember Model (EM) is a simple and lightweight model library for Ember. It intentionally supports a limited feature set. The main goal is to provide primitives on top of $.ajax that are required by Ember.
 
-EM is still very much a work in progress, but it's flexible enough to be used in apps today. It was extracted out of an Ember app. Please see the issues section for a list of bugs and planned features.
+EM is still a work in progress, but it's flexible and stable enough to be [used in production apps today](#whos-using-ember-model). It was extracted out of an Ember app. Please see the issues section for a list of bugs and planned features.
 
 ## Getting Started with Ember Model
 
