@@ -15,7 +15,8 @@ Ember.Model.Store = Ember.Object.extend({
       adapter = container.lookupFactory('adapter:'+ type) ||
         container.lookupFactory('adapter:application') ||
         container.lookupFactory('adapter:REST');
-      return adapter.create();
+
+      return adapter ? adapter.create() : adapter;
     }
   },
 
