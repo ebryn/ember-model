@@ -35,7 +35,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
-    var record = this.materializeRecord(idx);
+    var record = this.materializeRecord(idx, this.container);
     
     if (observerNeeded) {
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
@@ -153,7 +153,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
 });
 
 Ember.HasManyArray = Ember.ManyArray.extend({
-  materializeRecord: function(idx) {
+  materializeRecord: function(idx, container) {
     var klass = get(this, 'modelClass'),
         content = get(this, 'content'),
         reference = content.objectAt(idx),
@@ -165,6 +165,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
       record = klass.find(reference.id);
     }
 
+    record.container = container;
     return record;
   },
 
@@ -191,23 +192,26 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     return record; // FIXME: inject parent's id
   },
 
-  materializeRecord: function(idx) {
+  materializeRecord: function(idx, container) {
     var klass = get(this, 'modelClass'),
         primaryKey = get(klass, 'primaryKey'),
         content = get(this, 'content'),
         reference = content.objectAt(idx),
         attrs = reference.data;
 
+    var record;
     if (reference.record) {
-      return reference.record;
+      record = reference.record;
     } else {
-      var record = klass.create({ _reference: reference });
+      record = klass.create({ _reference: reference });
       reference.record = record;
       if (attrs) {
         record.load(attrs[primaryKey], attrs);
       }
-      return record;
     }
+
+    record.container = container;
+    return record;
   },
 
   toJSON: function() {
