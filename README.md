@@ -237,7 +237,7 @@ commentsJson = [
   },
   {
     id: 2,
-    body: 'Coment body two',
+    body: 'Comment body two',
     post_id: 99
   }
 ];
