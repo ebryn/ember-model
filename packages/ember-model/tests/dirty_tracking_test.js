@@ -647,3 +647,36 @@ test("set embedded belongsTo cleans up observers", function() {
   equal(observers(newAuthor), 0, 'the observer for the new author should have been cleaned up');
 });
 
+test("manipulating the content of objects in a hasMany should dirty the parent", function() {
+  expect(4);
+
+  var json = {
+    id: 1,
+    name: 'Comment 1'
+  };
+
+  var Comment = Ember.Model.extend({
+    id: Ember.attr(),
+    name: Ember.attr()
+  });
+
+  var Post = Ember.Model.extend({
+    id: Ember.attr(),
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  var post = Post.create({
+    isNew: false,
+    _data: { comments: [json] }
+  });
+
+  ok(post.get('isDirty') === false, "Post should not be dirty before changing");
+
+  var comment1 = post.get('comments.firstObject');
+
+  comment1.set('name', 'First Comment');
+
+  ok(comment1.get('isDirty') === true, "comment1 should be dirty after changing it's content");
+  ok(post.get('comments.isDirty') === true, "post.comments should be dirty after changing comment1's content");
+  ok(post.get('isDirty') === true, "Post should be dirty after changing comment1's content");
+});
