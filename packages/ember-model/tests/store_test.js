@@ -58,13 +58,16 @@ test("store.createRecord(type) returns a record with a container", function() {
 });
 
 test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
-  expect(3);
+  expect(4);
   var promise = Ember.run(store, store.find, 'test', 'a');
   promise.then(function(record) {
     start();
     ok(record.get('container'));
     ok(record.get('embeddedBelongsTo').get('container'));
-    ok(record.get('embeddedHasmany.firstObject').get('container'));
+
+    record.get('embeddedHasmany').forEach(function(embeddedBelongsToRecord) {
+      ok(embeddedBelongsToRecord.get('container'));
+    });
   });
   stop();
 });

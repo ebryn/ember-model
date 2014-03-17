@@ -15,13 +15,13 @@ Ember.hasMany = function(type, options) {
     if (arguments.length > 1) {
       return existingArray.setObjects(newContentArray);
     } else {
-      return this.getHasMany(key, type, meta);
+      return this.getHasMany(key, type, meta, this.container);
     }
   }).property().meta(meta);
 };
 
 Ember.Model.reopen({
-  getHasMany: function(key, type, meta) {
+  getHasMany: function(key, type, meta, container) {
     var embedded = meta.options.embedded,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
@@ -31,7 +31,8 @@ Ember.Model.reopen({
       content: this._getHasManyContent(key, type, embedded),
       embedded: embedded,
       key: key,
-      relationshipKey: meta.relationshipKey
+      relationshipKey: meta.relationshipKey,
+      container: container
     });
 
     this._registerHasManyArray(collection);
