@@ -2,9 +2,18 @@ var get = Ember.get,
     set = Ember.set;
 
 function getType(record) {
-  if (typeof this.type === "string") {
-    this.type =  Ember.get(Ember.lookup, this.type) || record.container.lookupFactory('model:' + this.type);
+  var type = this.type;
+
+  if (typeof this.type === "string" && this.type) {
+    this.type = Ember.get(Ember.lookup, this.type);
+
+    if (!this.type) {
+      var store = Ember.Model.Store.create({ container: record.container });
+      this.type = store.modelFor(type);
+      this.type.reopenClass({ adapter: store.adapterFor(type) });
+    }
   }
+
   return this.type;
 }
 

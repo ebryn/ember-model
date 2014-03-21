@@ -46,6 +46,7 @@ module("Ember.Model.Store", {
       name: Ember.attr(),
       type: 'test'
     });
+    EmbeddedModel.adapter = Ember.FixtureAdapter.create({});
 
     container.register('model:test', TestModel);
     container.register('model:embedded', EmbeddedModel);
@@ -143,4 +144,23 @@ test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", f
   container.register('adapter:REST',  Ember.RESTAdapter);
   var adapter = Ember.run(store, store.adapterFor, 'test');
   ok(adapter instanceof Ember.RESTAdapter);
+});
+
+test("store.find(type) records use application adapter if no klass.adapter or type adapter", function() {
+  expect(3);
+  TestModel.adapter = undefined;
+  EmbeddedModel.adapter = undefined;
+  container.register('adapter:test', null);
+  container.register('adapter:application', Ember.FixtureAdapter);
+  
+  var promise = Ember.run(store, store.find, 'test','a');
+
+  promise.then(function(record) {
+    start();
+    ok(record.get('constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for record is application adapter');
+    ok(record.get('embeddedBelongsTo.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for belongsTo record is application adapter');
+    ok(record.get('embeddedHasmany.firstObject.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for hasMany record is application adapter');
+  });
+
+  stop();
 });
