@@ -412,7 +412,7 @@ test("_modifiedRecords property should be clean after clearing hasMany array", f
 });
 
 test("isDirty on embedded hasMany records should be false after parent is saved", function() {
-  expect(7);
+  expect(9);
 
   var Comment = Ember.Model.extend({
     body: attr()
@@ -453,6 +453,10 @@ test("isDirty on embedded hasMany records should be false after parent is saved"
     equal(post.get('isDirty'), false, "parent should not be dirty");
     equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
     equal(post.get('comments.firstObject.body'), 'New body', 'updated child property is saved');
+
+    post.set('comments.firstObject.body', 'The body');
+    equal(post.get('isDirty'), true, 'parent should be dirty again');
+    equal(post.get('comments.firstObject.isDirty'), true, 'child should be dirty again');
   });
 });
 
