@@ -53,7 +53,10 @@ test("model can be specified with a string instead of a class", function() {
 });
 
 test("model can be specified with a string to a resolved path", function() {
-  var App = Ember.Application.create({rootElement: "#qunit-fixture"});
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
   App.Article  = Ember.Model.extend({
       id: Ember.attr(String)
     });
@@ -67,7 +70,7 @@ test("model can be specified with a string to a resolved path", function() {
 
   equal(article.get('id'), 'a');
   ok(article instanceof App.Article);
-  App.reset();
+  Ember.run(App, 'destroy');
 });
 
 test("non embedded belongsTo should get a record by its id", function() {
