@@ -1,4 +1,4 @@
-var TestModel, EmbeddedModel, store, container;
+var TestModel, EmbeddedModel, store, container, App;
 
 module("Ember.Model.Store", {
   setup: function() {
@@ -163,4 +163,22 @@ test("store.find(type) records use application adapter if no klass.adapter or ty
   });
 
   stop();
+});
+
+test("Registering a custom store on application works", function() {
+  Ember.run(function() {
+    App = Ember.Application.create({
+      TestRoute: Ember.Route.extend()
+    });
+    App.ApplicationStore = Ember.Model.Store.extend({ custom: true });
+  });
+
+  container = App.__container__;
+  ok(container.lookup('store:application'));
+  ok(container.lookup('store:main').get('custom'));
+
+  var testRoute = container.lookup('route:test');
+  ok(testRoute.get('store.custom'));
+
+  Ember.run(App, 'destroy');
 });

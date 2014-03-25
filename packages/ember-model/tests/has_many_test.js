@@ -85,8 +85,11 @@ test("model can be specified with a string instead of a class", function() {
 });
 
 test("model can be specified with a string to a resolved path", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
 
-  var App = Ember.Application.create({rootElement:"#qunit"});
   App.Comment = Ember.Model.extend({
     id: Ember.attr(String)
   });
@@ -99,7 +102,8 @@ test("model can be specified with a string to a resolved path", function() {
 
   equal(article.get('comments.length'), 2);
   equal(Ember.run(article, article.get, 'comments.firstObject.id'), 'a');
-  App.reset();
+
+  Ember.run(App, 'destroy');
 });
 
 test("when fetching an association getHasMany is called", function() {
