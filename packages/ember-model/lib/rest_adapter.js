@@ -65,11 +65,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didCreateRecord: function(record, data) {
-    var rootKey = get(record.constructor, 'rootKey'),
-        primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? get(data, rootKey) : data;
-        
-    record.load(dataToLoad[primaryKey], dataToLoad);
+    this._loadRecordFromData(record, data);
     record.didCreateRecord();
   },
 
@@ -85,6 +81,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didSaveRecord: function(record, data) {
+    var loadSaveResponse = get(record.constructor, 'loadSaveResponse');
+    if (loadSaveResponse) {
+      this._loadRecordFromData(record, data);
+    }
     record.didSaveRecord();
   },
 
@@ -157,5 +157,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
       Ember.$.ajax(settings);
    });
+  },
+
+  _loadRecordFromData: function(record, data) {
+    var rootKey = get(record.constructor, 'rootKey'),
+        primaryKey = get(record.constructor, 'primaryKey'),
+        dataToLoad = rootKey ? get(data, rootKey) : data;
+    record.load(dataToLoad[primaryKey], dataToLoad);
   }
 });
