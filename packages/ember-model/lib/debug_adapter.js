@@ -105,10 +105,10 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
 Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
-    name: "dataAdapter",
+    name: "data-adapter",
 
     initialize: function(container, application) {
-      application.register('dataAdapter:main', DebugAdapter);
+      application.register('data-adapter:main', DebugAdapter);
     }
   });
 });
