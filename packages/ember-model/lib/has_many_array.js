@@ -203,7 +203,7 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     if (reference.record) {
       record = reference.record;
     } else {
-      record = klass.create({ _reference: reference });
+      record = klass.create({ _reference: reference, container: container });
       reference.record = record;
       if (attrs) {
         record.load(attrs[primaryKey], attrs);

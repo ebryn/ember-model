@@ -90,15 +90,29 @@ test("model can be specified with a string to a resolved path", function() {
     App = Ember.Application.create({});
   });
 
-  App.Comment = Ember.Model.extend({
+  App.Subcomment = Ember.Model.extend({
     id: Ember.attr(String)
+  });
+  App.Comment = Ember.Model.extend({
+    id: Ember.attr(String),
+    subComments: Ember.hasMany('subcomment', { key: 'subcomments', embedded: true })
   });
   App.Article = Ember.Model.extend({
     comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
   });
 
   var article = App.Article.create({container: App.__container__});
-  Ember.run(article, article.load, 1, {comments: Ember.A([{id: 'a'}, {id: 'b'}])});
+  var subcomments = {
+    subcomments: Ember.A([
+      {id: 'c'},
+      {id: 'd'}
+    ])
+  };
+  var comment1 = {id: 'a'};
+  comment1.subcomments = subcomments;
+  var comment2 = {id: 'b'};
+
+  Ember.run(article, article.load, 1, {comments: Ember.A([comment1, comment2])});
 
   equal(article.get('comments.length'), 2);
   equal(Ember.run(article, article.get, 'comments.firstObject.id'), 'a');
