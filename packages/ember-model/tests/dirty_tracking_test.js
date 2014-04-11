@@ -207,6 +207,28 @@ test("getting embedded belongsTo attribute after load should not make parent dir
   equal(post.get('isDirty'), false, 'get belongsTo relationship does not dirty post record');
 });
 
+test("loading record with embedded hasMany attribute should not make it dirty", function() {
+  expect(3);
+
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  var post = Post.create();
+
+  ok(!post.get('comments.isDirty'), "Post comments should be clean initially");
+
+  Ember.run(function() {
+    post.load(1, {comments: [Comment.create()]});
+  });
+
+  ok(!post.get('isDirty'), "Post should be clean after load");
+  ok(!post.get('comments.isDirty'), "Post comments should be clean after load");
+});
+
 test("isDirty is observable", function() {
   expect(2);
 
@@ -286,4 +308,379 @@ test("manipulating the order of objects in a hasMany shouldn't dirty the parent"
 
   ok(!post.get('isDirty'), "After manipulating the order of the hasMany, post should not be dirty");
   deepEqual(post.get('_dirtyAttributes'), []);
+});
+
+test("modifying hasMany record should make parent dirty", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_ids: [100]});
+    author.load(100, {id: 100, name: 'bob'});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'), "Post should be clean initially");
+  author.set('name', 'billy');
+  ok(post.get('isDirty'), "After changing author name, post should become dirty");
+});
+
+test("changing back record in hasMany array should make parent clean again", function() {
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        authors: Ember.hasMany(Author, {key: 'author_ids'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var author = Author.create();
+  var post = Post.create();
+
+  Ember.run(function() {
+    post.load(1, {id: 1, author_ids: [100]});
+    author.load(100, {id: 100, name: 'bob'});
+  });
+
+  post.get('authors');
+  ok(!post.get('isDirty'), "Post should be clean initially");
+  author.set('name', 'billy');
+  ok(post.get('isDirty'), "After changing author name, post should become dirty");
+  author.set('name', 'bob');
+  ok(!post.get('isDirty'), "After changing author name to original value, post should become clean again");
+});
+
+test("manipulating object presence in hasMany array should be reflected in it's _modifiedRecords property", function() {
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments'})
+  });
+
+  var post = Post.create({isNew: false, _data: {comments: []}});
+
+  ok(!post.get('isDirty'), "Post should be clean initially");
+
+  var comments = post.get('comments'),
+      newComment1 = Comment.create(),
+      newComment2 = Comment.create();
+
+  comments.pushObjects([newComment1, newComment2]);
+
+  equal(comments.get('length'), 2);
+  equal(comments.get('_modifiedRecords.length'), post.get('comments.length'), 'Number of modified records should be equal to number of added comments');
+  comments.clear();
+  equal(post.get('comments._modifiedRecords.length'), 0);
+  ok(!post.get('isDirty'), "After removing all comments post should be clean again");
+});
+
+test("_modifiedRecords property should be clean after clearing hasMany array", function() {
+  var Comment = Ember.Model.extend();
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments'})
+  });
+
+  var post = Post.create({isNew: false, _data: {comments: []}});
+
+  ok(!post.get('isDirty'), "Post should be clean initially");
+
+  var comments = post.get('comments'),
+      newComment = Comment.create();
+  comments.pushObject(newComment);
+
+  equal(post.get('comments._modifiedRecords.length'), 1, 'Newly added records should be tracked in _modifiedRecords property');
+  comments.clear();
+  deepEqual(post.get('comments._modifiedRecords'), [], 'After removing added record, _modifiedRecords should reflect this change');
+  ok(!post.get('isDirty'), "After reversing the change, the post should be clean again");
+});
+
+test("isDirty on embedded hasMany records should be false after parent is saved", function() {
+  expect(9);
+
+  var Comment = Ember.Model.extend({
+    body: attr()
+  });
+
+  var Post = Ember.Model.extend({
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  var post = Post.create({
+    isNew: false,
+    _data: {
+      comments: [{body: "The body"}]
+    }
+  });
+  Post.adapter = {
+    saveRecord: function(record) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        Ember.run.later(function() {
+          record.didSaveRecord();
+          resolve(record);
+        }, 1);
+      });
+    }
+  };
+
+  equal(post.get('isDirty'), false, "parent should not be dirty");
+  equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
+
+  post.set('comments.firstObject.body', 'New body');
+
+  equal(post.get('isDirty'), true, 'parent should be dirty');
+  equal(post.get('comments.firstObject.isDirty'), true, 'child should be dirty');
+
+  stop();
+  post.save().then(function() {
+    start();
+    equal(post.get('isDirty'), false, "parent should not be dirty");
+    equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
+    equal(post.get('comments.firstObject.body'), 'New body', 'updated child property is saved');
+
+    post.set('comments.firstObject.body', 'The body');
+    equal(post.get('isDirty'), true, 'parent should be dirty again');
+    equal(post.get('comments.firstObject.isDirty'), true, 'child should be dirty again');
+  });
+});
+
+
+test("modifying embedded belongsTo should make parent dirty", function() {
+  expect(3);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  post.set('author.name', 'Billy Bob');
+  equal(post.get('author.isDirty'), true, 'author should be dirty after being modified');
+  equal(post.get('isDirty'), true, 'changes to embedded belongsTo should dirty the parent');
+});
+
+test("changing back embedded belongsTo should make parent clean again", function() {
+  expect(3);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'bob' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+
+  var author = post.get('author');
+  ok(!post.get('isDirty'), "Post should be clean initially");
+  author.set('name', 'billy');
+  ok(post.get('isDirty'), "After changing author name, post should become dirty");
+  author.set('name', 'bob');
+  ok(!post.get('isDirty'), "After changing author name to original value, post should become clean again");
+});
+
+test("save parent of embedded belongsTo", function() {
+  expect(9);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  post.set('author.name', 'Billy Bob');
+  equal(post.get('author.isDirty'), true, 'author should be dirty after being modified');
+  equal(post.get('isDirty'), true, 'changes to embedded belongsTo should dirty the parent');
+
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      equal(post.get('author.isDirty'), false, 'the author should be clean after being saved');
+      equal(post.get('isDirty'), false, 'the post should be clean after being saved');
+
+      post.set('author.name', 'John Doe');
+      equal(post.get('author.isDirty'), true, 'the author should be dirty again');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+
+      post.set('author.name', 'Cory Loken'); // special case: setting back to its original value
+      equal(post.get('author.isDirty'), true, 'the author should be dirty because it was saved as "Billy Bob"');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+    });
+  });
+});
+
+test("set embedded belongsTo", function() {
+  expect(9);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  var firstAuthor = post.get('author');
+  var newAuthor = Author.create({ id: 2, name: 'John Doe' });
+  post.set('author', newAuthor);
+  equal(post.get('author.isDirty'), false, 'author should be clean because it was just created');
+  equal(post.get('isDirty'), true, 'post should be dirty because its author was changed');
+
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      equal(post.get('author.isDirty'), false, 'author should be clean after being saved');
+      equal(post.get('isDirty'), false, 'parent should be clean after being saved');
+
+      post.set('author.name', 'Cory Loken');
+      equal(post.get('author.isDirty'), true, 'the author should be dirty');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author was changed');
+
+      post.set('author', firstAuthor);
+      equal(post.get('author.isDirty'), false, 'the author should be clean because it has not been changed');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author was changed');
+    });
+  });
+});
+
+test("set embedded belongsTo cleans up observers", function() {
+  expect(5);
+  var json = {
+    id: 1,
+    name: 'foo',
+    author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  function observers(obj) {
+    return Ember.meta(obj).watching['isDirty'] || 0;
+  }
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+
+  var author = post.get('author');
+  equal(observers(author), 1, 'there should be one observer on the initial author');
+
+  var newAuthor = Author.create({ id: 2, name: 'John Doe' });
+  equal(observers(newAuthor), 0, 'there should be no observers on the author after creation');
+
+  post.set('author', newAuthor);
+  equal(observers(newAuthor), 1, 'there should be one observer on the new author');
+  equal(observers(author), 0, 'the observer for the old author should have been cleaned up');
+
+  post.set('author', null);
+  equal(observers(newAuthor), 0, 'the observer for the new author should have been cleaned up');
+});
+
+test("manipulating the content of objects in a hasMany should dirty the parent", function() {
+  expect(4);
+
+  var json = {
+    id: 1,
+    name: 'Comment 1'
+  };
+
+  var Comment = Ember.Model.extend({
+    id: Ember.attr(),
+    name: Ember.attr()
+  });
+
+  var Post = Ember.Model.extend({
+    id: Ember.attr(),
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  var post = Post.create({
+    isNew: false,
+    _data: { comments: [json] }
+  });
+
+  ok(post.get('isDirty') === false, "Post should not be dirty before changing");
+
+  var comment1 = post.get('comments.firstObject');
+
+  comment1.set('name', 'First Comment');
+
+  ok(comment1.get('isDirty') === true, "comment1 should be dirty after changing it's content");
+  ok(post.get('comments.isDirty') === true, "post.comments should be dirty after changing comment1's content");
+  ok(post.get('isDirty') === true, "Post should be dirty after changing comment1's content");
 });

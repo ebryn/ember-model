@@ -87,6 +87,10 @@ Ember.attr = function(type, options) {
       return value;
     }
 
+    if (dataValue==null && options && options.defaultValue!=null) {
+      return Ember.copy(options.defaultValue);
+    }
+
     return this.getAttr(key, deserialize(dataValue, type));
   }).property('_data').meta({isAttribute: true, type: type, options: options});
 };

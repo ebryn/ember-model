@@ -13,7 +13,7 @@
     "url": "git://github.com/asquet/ember-model.git"
   },
   "author": "no",
-  "license": "BSD",
+  "license": "MIT",
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-neuter": "~0.5.0",
@@ -32,5 +32,5 @@
     "grunt-contrib-watch": "~0.4.4",
     "grunt-ember-s3": "~1.0.2"
   },
-  "version": "0.0.10"
+  "version": "0.0.11"
 }

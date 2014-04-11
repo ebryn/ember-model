@@ -84,6 +84,42 @@ test("model can be specified with a string instead of a class", function() {
   equal(Ember.run(article, article.get, 'comments.firstObject.token'), 'a');
 });
 
+test("model can be specified with a string to a resolved path", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+
+  App.Subcomment = Ember.Model.extend({
+    id: Ember.attr(String)
+  });
+  App.Comment = Ember.Model.extend({
+    id: Ember.attr(String),
+    subComments: Ember.hasMany('subcomment', { key: 'subcomments', embedded: true })
+  });
+  App.Article = Ember.Model.extend({
+    comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
+  });
+
+  var article = App.Article.create({container: App.__container__});
+  var subcomments = {
+    subcomments: Ember.A([
+      {id: 'c'},
+      {id: 'd'}
+    ])
+  };
+  var comment1 = {id: 'a'};
+  comment1.subcomments = subcomments;
+  var comment2 = {id: 'b'};
+
+  Ember.run(article, article.load, 1, {comments: Ember.A([comment1, comment2])});
+
+  equal(article.get('comments.length'), 2);
+  equal(Ember.run(article, article.get, 'comments.firstObject.id'), 'a');
+
+  Ember.run(App, 'destroy');
+});
+
 test("when fetching an association getHasMany is called", function() {
   expect(4);
 
@@ -196,5 +232,30 @@ test("has many records created are available from reference cache", function() {
   var post = project.get('posts.firstObject');
   var postFromCache = Post.find(post.get('id'));
   equal(post, postFromCache);
+
+});
+
+test("relationship type cannot be empty", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+      comments: Ember.hasMany('', { key: 'comments' })
+    }),
+    Comment = Ember.CommentModel = Ember.Model.extend({
+      token: Ember.attr(String)
+    });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create(),
+     comment = Comment.create();
+
+  var comments = [comment];
+  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
+
+  expectAssertion(function() {
+      article.get('comments');
+  },
+  /Type cannot be empty/);
 
 });

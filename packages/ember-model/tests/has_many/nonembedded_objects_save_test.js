@@ -49,3 +49,46 @@ test("new records should remain after parent is saved", function() {
   });
   stop();
 });
+
+test("saving child objects", function() {
+  expect(1);
+
+  var commentJSON = {
+    id: 2,
+    title: 'bar',
+  };
+
+  var Comment = Ember.Model.extend({
+    id: attr(),
+    text: attr()
+  });
+  Comment.adapter = Ember.RESTAdapter.create();
+  Comment.url = '/comments';
+  Comment.adapter._ajax = function() {
+    return new Ember.RSVP.Promise(function(resolve) {
+        resolve(commentJSON);
+    });
+  };
+
+  var Article = Ember.Model.extend({
+    id: attr(),
+    title: attr(),
+    comments: Ember.hasMany(Comment, { key: 'comment_ids' })
+  });
+  Article.adapter = Ember.RESTAdapter.create();
+  Article.url = '/articles';
+  
+  var article = Article.create();
+  var comment = Comment.create();
+
+  var comments = article.get("comments");
+  comments.addObject(comment);
+
+  var promise = Ember.run(comments, comments.save);
+  promise.then(function(records) {
+    start();
+    var comment = records.get("firstObject");
+    equal(comment.get("id"), 2, "Data from the response is loaded");
+  });
+  stop();
+});

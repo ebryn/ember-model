@@ -56,6 +56,29 @@ test("updates reference and cache when primary key changes", function() {
   equal(Model.find('abc123'), model, 'find should get model');
 });
 
+test("isLoaded observers have all the updated properties", function() {
+  expect(2);
+
+  var FooAdapter = Ember.RESTAdapter.extend({
+    find: function (record, id) {
+      record.load(id, { token: id, name: 'Joy' });
+    }
+  });
+
+  var Foo = Model.extend({
+    isLoadedDidChange: (function() {
+      ok(this.get('isLoaded'));
+      ok(!this.get('isNew'), "loaded model should not be new");
+    }).observes('isLoaded')
+  });
+
+  Foo.reopenClass({
+    adapter: FooAdapter.create()
+  });
+
+  var model = Foo.find('abc123');
+});
+
 test("can define attributes with Ember.attr, data is accessible", function() {
   var instance = Model.create({name: "Erik"});
 
@@ -93,6 +116,39 @@ test(".find(id) delegates to the adapter's find method", function() {
     ok(record.get('isLoaded'));
     ok(!record.get('isLoading'));
   });
+});
+
+test(".find([]) called with a single record returns cache before delgating to adapter's find method", function() {
+  expect(1);
+
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      ok(false, "record should have been loaded via cache");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  var record = Ember.run(Model, Model.find, ['a']);
+  Ember.run(Model, Model.find, 'a');
+  ok(record, "Record was returned by find");
+});
+
+test(".find([]) called when Model.transient true always delegates to adapter's find", function() {
+  expect(3);
+
+  Model.transient = true;
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      ok(true, "record should not get loaded from cache");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  var record = Ember.run(Model, Model.find, ['a']);
+  Ember.run(Model, Model.find, 'a');
+  ok(record, "Record was returned by find");
 });
 
 test(".reload() loads the record via the adapter after it was loaded", function() {
@@ -202,7 +258,7 @@ test(".clearCache destroys sideloadedData and record references", function() {
 
   ok(Model._referenceCache === undefined);
   ok(Model.sideloadedData === undefined);
-  
+
 });
 
 test("new records are added to the identity map", function() {
@@ -627,7 +683,7 @@ test("fetchAll returns a promise", function() {
     promise.then(function(records) {
       start();
       ok(records.get('isLoaded'));
-      equal(records.get('length'), 1);  
+      equal(records.get('length'), 1);
     });
     stop();
 });
@@ -642,7 +698,7 @@ test("fetchAll returns promise if findAll RecordArray already exists", function(
       start();
       ok(true, "Second fetch returned a promise");
     });
-    stop(); 
+    stop();
   });
   stop();
 });
@@ -771,6 +827,19 @@ test("fetchMany resolves with error object", function() {
   stop();
 });
 
+test(".clearCache destroys _findAllRecordArray reference", function() {
+  expect(1);
+
+  var records = Model.find();
+  records.on('didLoad', function() {
+    start();
+
+    Model.clearCache();
+    var newRecords = Model.find();
+    equal( newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray" );
+  });
+  stop();
+});
 // TODO: test that creating a record calls load
 
 // test('Model#registerRecordArray', function(){

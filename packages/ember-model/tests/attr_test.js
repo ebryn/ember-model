@@ -244,3 +244,27 @@ test("custom attributes should revert correctly", function () {
   // should not be dirty now
   ok(post.get('isDirty') === false, "model should no longer be dirty after reverting changes");
 });
+
+test("attr should handle default values", function() {
+  var Book = Ember.Model.extend({
+    author: attr(String, { defaultValue: 'anonymous'}),
+    chapters: attr(String, { defaultValue: []})
+  });
+  var novel = Book.create();
+  var coloringBook = Book.create();
+
+  Ember.run(function() {
+    novel.load(1, { author: "Jane" });
+    coloringBook.load(1, { });
+  });
+  novel.get("chapters").push('intro');
+
+  equal(novel.get('author'), "Jane", "author should be Jane");
+  equal(coloringBook.get('author'), "anonymous", "missing author should be filled in");
+  deepEqual(novel.get('chapters'), ['intro'], "mutable defaults should be filled in");
+  deepEqual(coloringBook.get('chapters'), [], "mutable defaults should not be shared");
+
+  var json = coloringBook.toJSON();
+  equal(json.author, "anonymous", "default values should be serialized");
+  deepEqual(json.chapters, [], "default values should be serialized");
+});

@@ -15,7 +15,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFind: function(record, id, data) {
     var rootKey = get(record.constructor, 'rootKey'),
-        dataToLoad = rootKey ? data[rootKey] : data;
+        dataToLoad = rootKey ? get(data, rootKey) : data;
 
     record.load(id, dataToLoad);
   },
@@ -32,7 +32,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFindAll: function(klass, records, data) {
     var collectionKey = get(klass, 'collectionKey'),
-        dataToLoad = collectionKey ? data[collectionKey] : data;
+        dataToLoad = collectionKey ? get(data, collectionKey) : data;
 
     records.load(klass, dataToLoad);
   },
@@ -49,7 +49,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   didFindQuery: function(klass, records, params, data) {
       var collectionKey = get(klass, 'collectionKey'),
-          dataToLoad = collectionKey ? data[collectionKey] : data;
+          dataToLoad = collectionKey ? get(data, collectionKey) : data;
 
       records.load(klass, dataToLoad);
   },
@@ -67,9 +67,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   didCreateRecord: function(record, data) {
     var rootKey = get(record.constructor, 'rootKey'),
         primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? data[rootKey] : data;
+		dataToLoad = rootKey ? get(data, rootKey) : data;
 		
-    record.set(primaryKey, dataToLoad[primaryKey]);
+    //record.set(primaryKey, dataToLoad[primaryKey]);  //TODO probably useless now. consider removing
 	record.load(dataToLoad[primaryKey], dataToLoad);
     record.didCreateRecord();
   },
@@ -109,12 +109,13 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   buildURL: function(klass, id) {
     var urlRoot = get(klass, 'url');
+    var urlSuffix = get(klass, 'urlSuffix') || '';
     if (!urlRoot) { throw new Error('Ember.RESTAdapter requires a `url` property to be specified'); }
 
     if (!Ember.isEmpty(id)) {
-      return urlRoot + "/" + id + ".json";
+      return urlRoot + "/" + id + urlSuffix;
     } else {
-      return urlRoot + ".json";
+      return urlRoot + urlSuffix;
     }
   },
 

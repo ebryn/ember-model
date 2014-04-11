@@ -52,6 +52,27 @@ test("model can be specified with a string instead of a class", function() {
   ok(article instanceof Article);
 });
 
+test("model can be specified with a string to a resolved path", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+  App.Article  = Ember.Model.extend({
+      id: Ember.attr(String)
+    });
+  App.Comment = Ember.Model.extend({
+      article: Ember.belongsTo('article', { key: 'article', embedded: true })
+    });
+
+  var comment = App.Comment.create({container: App.__container__});
+  Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
+  var article = Ember.run(comment, comment.get, 'article');
+
+  equal(article.get('id'), 'a');
+  ok(article instanceof App.Article);
+  Ember.run(App, 'destroy');
+});
+
 test("non embedded belongsTo should get a record by its id", function() {
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
@@ -240,6 +261,32 @@ test("must be set with value of same type", function() {
     /Attempted to set property of type/);
 });
 
+test("relationship type cannot be empty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+      id: Ember.attr()
+    }),
+    Post = Ember.Model.extend({
+      id: Ember.attr(),
+      author: Ember.belongsTo('', {key: 'author_id'})
+    });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+    author = Author.create();
+  Ember.run(function() {
+    post.load(1, {id: 1, author_id: author});
+  });
+
+  expectAssertion(function() {
+      post.set('author', null);
+    },
+    /Type cannot be empty/);
+});
+
 test("should be able to set relationship to null", function() {
   expect(2);
 
@@ -348,6 +395,38 @@ test("setting existing nonembedded relationship should make parent dirty", funct
 
   Ember.run(function() {
     post.set('author', secondAuthor);
+  });
+
+  ok(post.get('isDirty'));
+});
+
+test("setting existing nonembedded relationship to NULL should make parent dirty", function() {
+  expect(1);
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author_id'})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create(),
+      author = Author.create(),
+      secondAuthor = Author.create();
+
+  Ember.run(function() {
+    author.load(100, {id: 100, name: 'bob'});
+    secondAuthor.load(101, {id: 101, name: 'ray'});
+    post.load(1, {id: 1, author_id: 100});
+  });
+
+  Ember.run(function() {
+    post.set('author', null);
   });
 
   ok(post.get('isDirty'));
@@ -511,4 +590,28 @@ test("belongsTo records created are available from reference cache", function() 
 
   // referenced company record is the same as the company returned from find
   equal(company, project.get('company'));
+});
+
+test("embedded belongsTo with undefined value", function() {
+  expect(1);
+  var json = {
+    id: 1,
+    name: 'foo'
+    // author missing
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('author'), null);
 });
