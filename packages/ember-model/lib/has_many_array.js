@@ -60,8 +60,8 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     this._super(index, removed, added);
   },
-//XXX used to commet next 2 methods to avoid infinite loop
-  _contentWillChange: function() {
+  
+  /*_contentWillChange: function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -78,7 +78,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
   }.observes('content'),
-  
+  */
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
     var content = item;

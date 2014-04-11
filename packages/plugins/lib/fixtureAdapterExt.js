@@ -15,12 +15,10 @@ Ember.FixtureAdapterExt = Ember.FixtureAdapter.extend({
 		
 		var data = this._getHasMany(record.constructor, Ember.get(record, record.get('constructor.primaryKey')), propName, type);
 		
-		
-			setTimeout(function() {
-				Ember.run(collection, collection.loadData, type, data);
-				Ember.run(collection, collection.notifyLoaded);
-			}, 0);
-		
+		setTimeout(function() {
+			Ember.run(collection, collection.loadData, type, data);
+			Ember.run(collection, collection.notifyLoaded);
+		}, 0);
 
         return content;
     },

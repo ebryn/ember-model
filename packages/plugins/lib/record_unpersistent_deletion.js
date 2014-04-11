@@ -119,7 +119,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
   
   loadData : function(klass,data) {
 	//this.set('content', data);
-	this.load(klass,data);
+	this.load(data);
 	this._setupOriginalContent(this.get('arrangedContent'));
   },
   
@@ -143,7 +143,9 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     }
 
     return isDirty;
-  }.property('arrangedContent.[]', 'originalContent')
+  }.property('arrangedContent.[]', 'originalContent'),
+  
+ 
 
   
 });
