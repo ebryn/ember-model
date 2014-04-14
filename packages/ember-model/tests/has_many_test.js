@@ -259,3 +259,20 @@ test("relationship type cannot be empty", function() {
   /Type cannot be empty/);
 
 });
+
+test("key defaults to model's property key", function() {
+  expect(1);
+
+  var Comment = Ember.Model.extend({
+      id: Ember.attr()
+    }),
+    Article = Ember.Model.extend({
+      comments: Ember.hasMany(Comment)
+    });
+
+  var article = Article.create();
+
+  Ember.run(article, article.load, 1, { comments: Ember.A(['a'] )});
+
+  deepEqual(article.toJSON(), { comments: ['a'] });
+});

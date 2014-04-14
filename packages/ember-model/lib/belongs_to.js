@@ -20,12 +20,13 @@ function getType(record) {
 Ember.belongsTo = function(type, options) {
   options = options || {};
 
-  var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType },
-      relationshipKey = options.key;
+  var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
 
-  return Ember.computed(function(key, value, oldValue) {
+  return Ember.computed(function(propertyKey, value, oldValue) {
     type = meta.getType(this);
     Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
+
+    var key = options.key || propertyKey;
 
     var dirtyAttributes = get(this, '_dirtyAttributes'),
         createdDirtyAttributes = false,
@@ -33,9 +34,9 @@ Ember.belongsTo = function(type, options) {
 
     var dirtyChanged = function(sender) {
       if (sender.get('isDirty')) {
-        self._relationshipBecameDirty(relationshipKey);
+        self._relationshipBecameDirty(key);
       } else {
-        self._relationshipBecameClean(relationshipKey);
+        self._relationshipBecameClean(key);
       }
     };
 
@@ -53,9 +54,9 @@ Ember.belongsTo = function(type, options) {
       }
 
       if (oldValue !== value) {
-        dirtyAttributes.pushObject(key);
+        dirtyAttributes.pushObject(propertyKey);
       } else {
-        dirtyAttributes.removeObject(key);
+        dirtyAttributes.removeObject(propertyKey);
       }
 
       if (createdDirtyAttributes) {
@@ -73,7 +74,7 @@ Ember.belongsTo = function(type, options) {
 
       return value === undefined ? null : value;  
     } else {
-      value = this.getBelongsTo(relationshipKey, type, meta);
+      value = this.getBelongsTo(key, type, meta);
       this._registerBelongsTo(meta);
       if (value !== null && meta.options.embedded) {
         value.get('isDirty'); // getter must be called before adding observer
