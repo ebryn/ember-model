@@ -615,3 +615,24 @@ test("embedded belongsTo with undefined value", function() {
   Ember.run(post, post.load, json.id, json);
   equal(post.get('author'), null);
 });
+
+test("key defaults to model's property key", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ id: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article)
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article: 2 });
+
+  deepEqual(comment.toJSON(), { article: 2 });
+});
