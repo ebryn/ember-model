@@ -256,11 +256,13 @@ test("isDirty is observable", function() {
 });
 
 test("manipulating object presence in a hasMany should dirty the parent", function() {
+  expect(7);
   var Comment = Ember.Model.extend();
 
   var Post = Ember.Model.extend({
     comments: Ember.hasMany(Comment, {key: 'comments'})
   });
+  Post.adapter = Ember.FixtureAdapter.create();
 
   var post = Post.create({isNew: false, _data: {comments: []}});
 
@@ -276,6 +278,21 @@ test("manipulating object presence in a hasMany should dirty the parent", functi
   comments.removeObject(newComment);
 
   ok(!post.get('isDirty'), "After reversing the change, the post should be clean again");
+
+  comments.pushObject(newComment);
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      ok(!post.get('isDirty'), "The post is clean after being saved");
+
+      comments.removeObject(newComment);
+      ok(post.get('isDirty'), "After being modified, the post should be dirty");
+
+      comments.pushObject(newComment);
+      ok(!post.get('isDirty'), "After reverting to the saved state, the post should be clean again");
+    });
+  });
 });
 
 test("manipulating the order of objects in a hasMany shouldn't dirty the parent", function() {
