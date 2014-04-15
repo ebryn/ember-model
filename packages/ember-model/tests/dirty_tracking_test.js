@@ -684,3 +684,71 @@ test("manipulating the content of objects in a hasMany should dirty the parent",
   ok(post.get('comments.isDirty') === true, "post.comments should be dirty after changing comment1's content");
   ok(post.get('isDirty') === true, "Post should be dirty after changing comment1's content");
 });
+
+test("dirty tracking for Number attr", function() {
+  expect(7);
+  var Model = Ember.Model.extend({
+    num: attr(Number)
+  });
+  Model.adapter = Ember.FixtureAdapter.create();
+
+  Model.load({ id: '123', num: 1 });
+  var model = Ember.run(Model, Model.find, '123');
+  equal(model.get('isDirty'), false, "Model should be initially clean");
+
+  model.set('num', 2);
+  equal(model.get('isDirty'), true, "Model should be dirty after being modified");
+
+  model.set('num', 1);
+  equal(model.get('isDirty'), false, "Model should be clean again");
+
+  model.set('num', 2);
+  stop();
+  Ember.run(function() {
+    model.save().then(function() {
+      start();
+      equal(model.get('isDirty'), false, "The model is clean after being saved");
+
+      model.set('num', 3);
+      equal(model.get('isDirty'), true, "Model should be dirty after being modified");
+
+      model.set('num', 1);
+      equal(model.get('isDirty'), true, "Model should be dirty after being modified (original value)");
+
+      model.set('num', 2);
+      equal(model.get('isDirty'), false, "Model should be clean again");
+    });
+  });
+});
+
+test("dirty tracking for Number attr, mixing strings and numbers", function() {
+  expect(6);
+  var Model = Ember.Model.extend({
+    num: attr(Number)
+  });
+  Model.adapter = Ember.FixtureAdapter.create();
+
+  Model.load({ id: '123', num: 1 });
+  var model = Ember.run(Model, Model.find, '123');
+  equal(model.get('isDirty'), false, "Model should be initially clean");
+
+  model.set('num', '1');
+  equal(model.get('isDirty'), false, "Model should still be clean");
+
+  model.set('num', '2');
+  equal(model.get('isDirty'), true, "Model should be dirty");
+
+  stop();
+  Ember.run(function() {
+    model.save().then(function() {
+      start();
+      equal(model.get('isDirty'), false, "The model is clean after being saved");
+
+      model.set('num', '2');
+      equal(model.get('isDirty'), false, "Model should still be clean");
+
+      model.set('num', 2);
+      equal(model.get('isDirty'), false, "Model should be clean since 2 == '2'");
+    });
+  });
+});
