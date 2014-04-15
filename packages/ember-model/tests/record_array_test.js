@@ -207,3 +207,41 @@ test("reload handles record removal", function() {
   deepEqual(records.objectAt(0).toJSON(), {id: 1, name: 'Erik'});
   deepEqual(records.objectAt(1).toJSON(), {id: 3, name: 'Ray'});
 });
+
+test("RecordArray handles already inserted new models being saved", function() {
+  expect(3);
+
+  var data = [
+        {id: 1, name: 'Erik'}
+      ],
+      RESTModel = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      adapter = Ember.RESTAdapter.create(),
+      records, changed;
+
+  RESTModel.url = '/fake/api';
+  RESTModel.adapter = adapter;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(function() {
+    records = RESTModel.findAll();
+  });
+
+  equal(records.get('length'), 1);
+
+  var newModel = RESTModel.create();
+
+  records.pushObject(newModel);
+
+  Ember.run(function() {
+    newModel.save();
+  });
+
+  equal(records.get('length'), 2);
+  equal(records.objectAt(1), newModel);
+});
