@@ -295,8 +295,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (object._hasManyArrays) {
       for (i = 0; i < object._hasManyArrays.length; i++) {
         var array = object._hasManyArrays[i];
+        array.revert();
         if (array.embedded) {
-          array.revert();
           for (var j = 0; j < array.get('length'); j++) {
             obj = array.objectAt(j);
             obj._copyDirtyAttributesToData();
