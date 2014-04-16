@@ -310,7 +310,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         var belongsTo = object._belongsTo[i];
         if (belongsTo.options.embedded) {
           obj = this.get(belongsTo.relationshipKey);
-          obj._copyDirtyAttributesToData();
+          if (obj) {
+            obj._copyDirtyAttributesToData();
+          }
         }
       }
     }
