@@ -5,6 +5,14 @@ Ember.ManyArray = Ember.RecordArray.extend({
   originalContent: null,
   _modifiedRecords: null,
 
+  unloadObject: function(record) {
+    var obj = get(this, 'content').findBy('clientId', record._reference.clientId);
+    get(this, 'content').removeObject(obj);
+
+    var originalObj = get(this, 'originalContent').findBy('clientId', record._reference.clientId);
+    get(this, 'originalContent').removeObject(originalObj);
+  },
+
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
@@ -25,7 +33,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
 
     return isDirty;
-  }.property('content.[]', 'originalContent', '_modifiedRecords.[]'),
+  }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]'),
 
   objectAtContent: function(idx) {
     var content = get(this, 'content');
@@ -41,6 +49,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
       if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
       Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
+      record.registerParentHasManyArray(this);
     }
 
     return record;
@@ -85,6 +94,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       var currentItem = content[i];
       if (currentItem && currentItem.record) {
         this._modifiedRecords.removeObject(currentItem);
+        currentItem.record.unregisterParentHasManyArray(this);
         Ember.removeObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
       }
     }
@@ -101,6 +111,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
         var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
         if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
         Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        currentItem.record.registerParentHasManyArray(this);
       }
     }
 
