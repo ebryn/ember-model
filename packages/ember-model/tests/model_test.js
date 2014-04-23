@@ -32,7 +32,7 @@ test("creates reference when creating record", function() {
       nextModel = Model.create();
 
   equal(reference.clientId, nextClientId, "client id should be set for each new record");
-  notEqual(nextModel._reference.clientId, reference.clientId, "client id shouls be unique");
+  notEqual(nextModel._reference.clientId, reference.clientId, "client id should be unique");
   equal(reference.id, 'abc123', "reference should keep record's id");
   equal(reference.record, model, "reference should keep a reference to a model");
 });
@@ -96,6 +96,29 @@ test("can handle models without an ID", function() {
     equal(records.get('lastObject.name'), 'Alex');
   });
 
+});
+
+test("can handle models with ID of zero", function() {
+  expect(1);
+
+  var ModelWithZeroID = Model.extend({
+      id: Ember.attr(),
+      name: Ember.attr()
+  });
+
+  ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
+  ModelWithZeroID.FIXTURES = [
+    { id: 0, name: 'Erik' }
+  ];
+
+  var record = Ember.run(ModelWithZeroID, ModelWithZeroID.find, 0);
+
+  record.on('didLoad', function() {
+    start();
+    equal(record.get('name'), 'Erik');
+  });
+
+  stop();
 });
 
 // test("coercion", function() {
