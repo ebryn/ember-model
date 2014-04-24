@@ -287,7 +287,28 @@ test("relationship type cannot be empty", function() {
     /Type cannot be empty/);
 });
 
-test("should be able to set relationship to null", function() {
+test("should be able to set embedded relationship to null", function() {
+  expect(2);
+
+  var Article = Ember.Model.extend({
+        id: Ember.attr(String)
+      }),
+      Comment = Ember.Model.extend({
+        article: Ember.belongsTo(Article, { key: 'article', embedded: true }),
+        text: Ember.attr(String)
+      });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+
+  var comment = Comment.create();
+  Ember.run(comment, comment.load, 1, { article: null });
+
+  equal(comment.get('article'), null); // Materialize the data.
+  comment.set('text', 'I totally agree');
+  ok(comment.save());
+});
+
+test("should be able to set nonembedded relationship to null", function() {
   expect(2);
 
   var Author = Ember.Model.extend({
