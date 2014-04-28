@@ -305,8 +305,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (object._hasManyArrays) {
       for (i = 0; i < object._hasManyArrays.length; i++) {
         var array = object._hasManyArrays[i];
+        array.revert();
         if (array.embedded) {
-          array.revert();
           for (var j = 0; j < array.get('length'); j++) {
             obj = array.objectAt(j);
             obj._copyDirtyAttributesToData();
@@ -320,7 +320,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         var belongsTo = object._belongsTo[i];
         if (belongsTo.options.embedded) {
           obj = this.get(belongsTo.relationshipKey);
-          obj._copyDirtyAttributesToData();
+          if (obj) {
+            obj._copyDirtyAttributesToData();
+          }
         }
       }
     }
@@ -330,6 +332,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (!this._hasManyArrays) { this._hasManyArrays = Ember.A([]); }
 
     this._hasManyArrays.pushObject(array);
+  },
+
+  registerParentHasManyArray: function(array) {
+    if (!this._parentHasManyArrays) { this._parentHasManyArrays = Ember.A([]); }
+
+    this._parentHasManyArrays.pushObject(array);
+  },
+
+  unregisterParentHasManyArray: function(array) {
+    if (!this._parentHasManyArrays) { return; }
+
+    this._parentHasManyArrays.removeObject(array);
   },
 
   _reloadHasManys: function(reverting) {
@@ -677,7 +691,7 @@ Ember.Model.reopenClass({
 
   addToRecordArrays: function(record) {
     if (this._findAllRecordArray) {
-      this._findAllRecordArray.pushObject(record);
+      this._findAllRecordArray.addObject(record);
     }
     if (this.recordArrays) {
       this.recordArrays.forEach(function(recordArray) {
@@ -685,13 +699,14 @@ Ember.Model.reopenClass({
           recordArray.registerObserversOnRecord(record);
           recordArray.updateFilter();
         } else {
-          recordArray.pushObject(record);
+          recordArray.addObject(record);
         }
       });
     }
   },
 
   unload: function (record) {
+    this.removeFromHasManyArrays(record);
     this.removeFromRecordArrays(record);
     var primaryKey = record.get(get(this, 'primaryKey'));
     this.removeFromCache(primaryKey);
@@ -709,6 +724,15 @@ Ember.Model.reopenClass({
     }
     if(this._referenceCache && this._referenceCache[key]) {
       delete this._referenceCache[key];
+    }
+  },
+
+  removeFromHasManyArrays: function(record) {
+    if (record._parentHasManyArrays) {
+      record._parentHasManyArrays.forEach(function(hasManyArray) {
+        hasManyArray.unloadObject(record);
+      });
+      record._parentHasManyArrays = null;
     }
   },
 
@@ -807,7 +831,7 @@ Ember.Model.reopenClass({
 
     // if we're creating an item, this process will be done
     // later, once the object has been persisted.
-    if (reference.id) {
+    if (!Ember.isEmpty(reference.id)) {
       this._referenceCache[reference.id] = reference;
     }
   }

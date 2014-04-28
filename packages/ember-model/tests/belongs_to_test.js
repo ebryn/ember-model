@@ -287,7 +287,28 @@ test("relationship type cannot be empty", function() {
     /Type cannot be empty/);
 });
 
-test("should be able to set relationship to null", function() {
+test("should be able to set embedded relationship to null", function() {
+  expect(2);
+
+  var Article = Ember.Model.extend({
+        id: Ember.attr(String)
+      }),
+      Comment = Ember.Model.extend({
+        article: Ember.belongsTo(Article, { key: 'article', embedded: true }),
+        text: Ember.attr(String)
+      });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+
+  var comment = Comment.create();
+  Ember.run(comment, comment.load, 1, { article: null });
+
+  equal(comment.get('article'), null); // Materialize the data.
+  comment.set('text', 'I totally agree');
+  ok(comment.save());
+});
+
+test("should be able to set nonembedded relationship to null", function() {
   expect(2);
 
   var Author = Ember.Model.extend({
@@ -540,9 +561,9 @@ test("unloaded records are removed from reference cache", function() {
   equal(company.get('projects.length'), 2);
 
   Company.unload(company);
-  company.get('projects').forEach(function(project){
-   Project.unload(project);
-  });
+  var project2 = company.get('projects').objectAt(1);
+  Project.unload(project1);
+  Project.unload(project2);
 
   Company.load([compJson2]);
   company = Company.find(1);
@@ -552,6 +573,49 @@ test("unloaded records are removed from reference cache", function() {
   notEqual(project1, reloadedProject1);
   equal(project1.get('title'), 'project one title');
   equal(reloadedProject1.get('title'), 'project one new title');
+});
+
+test("unloaded records are removed from hasMany cache", function() {
+  var Company = Ember.Company = Ember.Model.extend({
+     id: Ember.attr('string'),
+     title: Ember.attr('string'),
+     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+  }),
+    Project = Ember.Project = Ember.Model.extend({
+        id: Ember.attr('string'),
+        title: Ember.attr('string'),
+        company: Ember.belongsTo('Ember.Company', {key:'company'})
+    });
+
+  var compJson = {
+    id:1,
+    title:'coolio',
+    projects:[{ id: 1, title: 'project one title', company: 1 },
+              { id: 2, title: 'project two title', company: 1 },
+              { id: 3, title: 'project three title', company: 1 }]
+    };
+
+  Company.load([compJson]);
+  var company = Company.find(1),
+      project1 = company.get('projects').objectAt(0),
+      project2 = company.get('projects').objectAt(1),
+      project3 = company.get('projects').objectAt(2);
+
+  equal(company.get('projects.length'), 3);
+
+  project1.set('title', 'changed project one title');
+  ok(company.get('projects.isDirty'));
+
+  Project.unload(project1);
+  equal(company.get('projects.length'), 2);
+  equal(company.get('projects.firstObject.title'), 'project two title');
+  ok(!company.get('projects.isDirty'), 'removes dirtiness from unloaded relationship');
+
+  project3.set('title', 'changed project three title');
+  Project.unload(project2);
+  equal(company.get('projects.length'), 1);
+  equal(company.get('projects.firstObject.title'), 'changed project three title');
+  ok(company.get('projects.isDirty'), 'remains dirty');
 });
 
 test("belongsTo records created are available from reference cache", function() {
@@ -614,4 +678,25 @@ test("embedded belongsTo with undefined value", function() {
   var post = Post.create();
   Ember.run(post, post.load, json.id, json);
   equal(post.get('author'), null);
+});
+
+test("key defaults to model's property key", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ id: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article)
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article: 2 });
+
+  deepEqual(comment.toJSON(), { article: 2 });
 });
