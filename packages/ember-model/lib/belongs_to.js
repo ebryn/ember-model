@@ -54,7 +54,7 @@ Ember.belongsTo = function(type, options) {
       }
 
       if (oldValue !== value) {
-        dirtyAttributes.pushObject(propertyKey);
+        dirtyAttributes.addObject(propertyKey);
       } else {
         dirtyAttributes.removeObject(propertyKey);
       }
@@ -72,7 +72,7 @@ Ember.belongsTo = function(type, options) {
         }
       }
 
-      return value === undefined ? null : value;  
+      return value === undefined ? null : value;
     } else {
       value = this.getBelongsTo(key, type, meta);
       this._registerBelongsTo(meta);
