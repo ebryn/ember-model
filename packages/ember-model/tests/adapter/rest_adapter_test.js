@@ -34,6 +34,7 @@ test("throws an error if a url isn't provided", function() {
 module("Ember.RESTAdapter - with a url specified", {
   setup: function() {
     RESTModel = Ember.Model.extend({
+      id: Ember.attr(),
       name: Ember.attr()
     });
     RESTModel.url = "/posts";
@@ -466,6 +467,22 @@ test("createRecord calls didCreateRecord", function() {
   equal(context, adapter, "context of didCreateRecord should have been set to adapter");
 });
 
+test("createRecord record loads data in response", function() {
+  expect(2);
+
+  var data = {post: {id: 1, name: 'Erik 2'}},
+      record = RESTModel.create({name: 'Erik'});
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  Ember.run(record, record.save);
+
+  equal(record.get('id'), 1, 'resolved record should have id');
+  equal(record.get('name'), 'Erik 2', 'resolved record should have loaded data from server');
+});
+
 test("saveRecord", function() {
   expect(5);
 
@@ -511,6 +528,64 @@ test("saveRecord calls didSaveRecord after saving record", function() {
   ok(args, "didSaveRecord callback should have been called");
   deepEqual(args, [record, data], "didSaveRecord callback should have been called with proper arguments.");
   equal(context, adapter, "context of didSaveRecord should have been set to adapter");
+});
+
+test("saveRecord loads response data if it exists", function() {
+  expect(4);
+
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      responseData = {post: {id: 1, name: "Bill"}};
+
+  record.set('name', 'John');
+  ok(record.get('isDirty'), 'Record should be dirty');
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(responseData);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), 'Record should not be dirty');
+  ok(!record.get('isSaving'), 'Record should not be saving');
+  equal(record.get('name'), 'Bill', 'Record should have loaded the data from the server');
+});
+
+test("saveRecord does not load empty response", function() {
+  expect(4);
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      responseData = '';
+
+  record.set('name', 'John');
+  ok(record.get('isDirty'), 'Record should be dirty');
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(responseData);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), 'Record should not be dirty');
+  ok(!record.get('isSaving'), 'Record should not be saving');
+  equal(record.get('name'), 'John', 'Record should not have been reloaded.');
+});
+
+test("saveRecord does not load response if root key is missing", function() {
+  expect(4);
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      responseData = {notRootKey: true};
+
+  record.set('name', 'John');
+  ok(record.get('isDirty'), 'Record should be dirty');
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(responseData);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), 'Record should not be dirty');
+  ok(!record.get('isSaving'), 'Record should not be saving');
+  equal(record.get('name'), 'John', 'Record should not have been reloaded.');
 });
 
 test("deleteRecord", function() {
