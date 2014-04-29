@@ -81,10 +81,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didSaveRecord: function(record, data) {
-    var loadSaveResponse = get(record.constructor, 'loadSaveResponse');
-    if (loadSaveResponse) {
-      this._loadRecordFromData(record, data);
-    }
+    this._loadRecordFromData(record, data);
     record.didSaveRecord();
   },
 
@@ -163,6 +160,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     var rootKey = get(record.constructor, 'rootKey'),
         primaryKey = get(record.constructor, 'primaryKey'),
         dataToLoad = rootKey ? get(data, rootKey) : data;
-    record.load(dataToLoad[primaryKey], dataToLoad);
+    if (!Ember.isEmpty(dataToLoad)) {
+      record.load(dataToLoad[primaryKey], dataToLoad);
+    }
   }
 });

@@ -530,26 +530,62 @@ test("saveRecord calls didSaveRecord after saving record", function() {
   equal(context, adapter, "context of didSaveRecord should have been set to adapter");
 });
 
-test("saveRecord with loadSaveResponse set to true loads the response", function() {
+test("saveRecord loads response data if it exists", function() {
   expect(4);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
-      data = {post: {id: 1, name: "Bill"}};
+      responseData = {post: {id: 1, name: "Bill"}};
 
   record.set('name', 'John');
   ok(record.get('isDirty'), 'Record should be dirty');
 
   adapter._ajax = function(url, params, method) {
-    return ajaxSuccess(data);
+    return ajaxSuccess(responseData);
   };
 
-  RESTModel.loadSaveResponse = true;
   Ember.run(record, record.save);
-  RESTModel.loadSaveResponse = false;
 
   ok(!record.get('isDirty'), 'Record should not be dirty');
   ok(!record.get('isSaving'), 'Record should not be saving');
   equal(record.get('name'), 'Bill', 'Record should have loaded the data from the server');
+});
+
+test("saveRecord does not load empty response", function() {
+  expect(4);
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      responseData = '';
+
+  record.set('name', 'John');
+  ok(record.get('isDirty'), 'Record should be dirty');
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(responseData);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), 'Record should not be dirty');
+  ok(!record.get('isSaving'), 'Record should not be saving');
+  equal(record.get('name'), 'John', 'Record should not have been reloaded.');
+});
+
+test("saveRecord does not load response if root key is missing", function() {
+  expect(4);
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      responseData = {notRootKey: true};
+
+  record.set('name', 'John');
+  ok(record.get('isDirty'), 'Record should be dirty');
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(responseData);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), 'Record should not be dirty');
+  ok(!record.get('isSaving'), 'Record should not be saving');
+  equal(record.get('name'), 'John', 'Record should not have been reloaded.');
 });
 
 test("deleteRecord", function() {
