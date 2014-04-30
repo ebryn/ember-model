@@ -69,15 +69,52 @@ test("removing a record from the many array", function() {
   var comments = article.get('comments'),
       dos = comments.objectAt(1);
 
-  var comment = Comment.create({id: 4, text: "quatro"});
-  article.get('comments').pushObject(comment);
+  comments.removeObject(dos);
+
+  equal(comments.get('length'), 2, "There are now only two items in the array");
+  equal(comments.objectAt(0).get('text'), "uno", "The first element is correct");
+  equal(comments.objectAt(1).get('text'), "tres", "The second element is correct");
+
+});
+
+test("removing a record from the many array that was added after the initial", function() {
+  var json = {
+    id: 1,
+    title: 'foo',
+    comments: [
+      {id: 1, text: 'uno'},
+      {id: 2, text: 'dos'},
+      {id: 3, text: 'tres'}
+    ]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+    comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+  });
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  var comments = article.get('comments'),
+      newComment = Comment.create({id: 4, text: "quatro"});
+
+  article.get('comments').pushObject(newComment);
 
   equal(article.get('isDirty'), true);
   article.set('_dirtyAttributes', []);
   equal(article.get('isDirty'), false, "clearning out dirty attributes should make the article clean again");
 
-  comments.removeObject(comment);
+  comments.removeObject(newComment);
+
   equal(article.get('comments.length'), 3, "removing an object should succeed");
   equal(article.get('isDirty'), true, "removing an object in an embedded has many array should dirty the model");
 
+
 });
+
+
