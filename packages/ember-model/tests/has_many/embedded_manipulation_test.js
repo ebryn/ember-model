@@ -60,7 +60,6 @@ test("removing a record from the many array", function() {
 
   var Article = Ember.Model.extend({
     title: attr(),
-
     comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
   });
 
@@ -70,9 +69,15 @@ test("removing a record from the many array", function() {
   var comments = article.get('comments'),
       dos = comments.objectAt(1);
 
-  comments.removeObject(dos);
+  var comment = Comment.create({id: 4, text: "quatro"});
+  article.get('comments').pushObject(comment);
 
-  equal(comments.get('length'), 2, "There are now only two items in the array");
-  equal(comments.objectAt(0).get('text'), "uno", "The first element is correct");
-  equal(comments.objectAt(1).get('text'), "tres", "The second element is correct");
+  equal(article.get('isDirty'), true);
+  article.set('_dirtyAttributes', []);
+  equal(article.get('isDirty'), false, "clearning out dirty attributes should make the article clean again");
+
+  comments.removeObject(comment);
+  equal(article.get('comments.length'), 3, "removing an object should succeed");
+  equal(article.get('isDirty'), true, "removing an object in an embedded has many array should dirty the model");
+
 });
