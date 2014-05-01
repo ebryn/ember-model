@@ -356,6 +356,24 @@ user.get('firstName') // => Brian
 ```
 
 
+### urlSuffix
+
+
+By default no suffix is added to the url. You may want to specifically add one if using the same url for html and json requests.
+
+```javascript
+App.User = Ember.Model.extend({
+  first_name: attr()
+});
+App.User.urlSuffix = '.json';
+```
+
+```
+GET /users/1.json
+{"id": 1, "first_name": "Brian"}
+```
+
+
 ### Customize Ajax Settings
 
 When using `RESTAdapter` custom headers and ajax settings can be applied by extending `RESTAdapter` and defining `ajaxSettings`
