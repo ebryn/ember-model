@@ -3,6 +3,19 @@ require('ember-model/adapter');
 var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
+  extractData: function (klass, data, rootKeyProperty) {
+    var rootKey = get(klass, rootKeyProperty);
+    return rootKey ? get(data, rootKey) : data;
+  },
+
+  extractRecordData: function(record, data) {
+    return this.extractData(record.constructor, data, 'rootKey');
+  },
+
+  extractCollectionData: function(klass, data) {
+    return this.extractData(klass, data, 'collectionKey');
+  },
+
   find: function(record, id) {
     var url = this.buildURL(record.constructor, id),
         self = this;
@@ -14,10 +27,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didFind: function(record, id, data) {
-    var rootKey = get(record.constructor, 'rootKey'),
-        dataToLoad = rootKey ? get(data, rootKey) : data;
-
-    record.load(id, dataToLoad);
+    record.load(id, this.extractRecordData(record, data));
   },
 
   findAll: function(klass, records) {
@@ -31,10 +41,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didFindAll: function(klass, records, data) {
-    var collectionKey = get(klass, 'collectionKey'),
-        dataToLoad = collectionKey ? get(data, collectionKey) : data;
-
-    records.load(klass, dataToLoad);
+    records.load(klass, this.extractCollectionData(klass, data));
   },
 
   findQuery: function(klass, records, params) {
@@ -48,10 +55,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   didFindQuery: function(klass, records, params, data) {
-      var collectionKey = get(klass, 'collectionKey'),
-          dataToLoad = collectionKey ? get(data, collectionKey) : data;
-
-      records.load(klass, dataToLoad);
+      records.load(klass, this.extractCollectionData(klass, data));
   },
 
   createRecord: function(record) {
@@ -157,9 +161,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   _loadRecordFromData: function(record, data) {
-    var rootKey = get(record.constructor, 'rootKey'),
-        primaryKey = get(record.constructor, 'primaryKey'),
-        dataToLoad = rootKey ? get(data, rootKey) : data;
+    var primaryKey = get(record.constructor, 'primaryKey');
+    var dataToLoad = this.extractRecordData(record, data);
     if (!Ember.isEmpty(dataToLoad)) {
       record.load(dataToLoad[primaryKey], dataToLoad);
     }
