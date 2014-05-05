@@ -110,6 +110,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
+    this.getWithDefault('_dirtyAttributes', []).clear();
+
     this._reloadHasManys();
 
     // eagerly load embedded data
