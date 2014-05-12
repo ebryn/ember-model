@@ -53,19 +53,19 @@ App.Comment.adapter = Ember.RESTAdapter.create();
 // create example
 
 var newUser = App.User.create({name: "Erik"});
-newUser.save(); // POST to /users.json
+newUser.save(); // POST to /users
 
 // hasMany example
 var comments = newUser.get('comments');
 comments.create({text: "hello!"});
-comments.save(); // POST to /comments.json
+comments.save(); // POST to /comments
 
 // find & update example
 
-var existingUser = App.User.find(1); // GET /users/1.json
+var existingUser = App.User.find(1); // GET /users/1
 existingUser.set('name', 'Kris');
 existingUser.get('isDirty'); // => true
-existingUser.save(); // PUT /users/1.json
+existingUser.save(); // PUT /users/1
 ```
 
 ## Model API
@@ -293,7 +293,7 @@ App.User.primaryKey = 'token';
 ```
 
 ```
-GET /users/a4bc81f90.json
+GET /users/a4bc81f90
 {"token": "a4bc81f90", "name": "Brian"}
 ```
 
@@ -310,7 +310,7 @@ App.User.rootKey = 'user';
 ```
 
 ```
-GET /users/1.json
+GET /users/1
 {"user": {"id": 1, "name": "Brian"}}
 ```
 
@@ -327,7 +327,7 @@ App.User.collectionKey = 'users';
 ```
 
 ```
-GET /users.json
+GET /users
 {"users": [{"id": 1, "name": "Brian"}]}
 ```
 
@@ -347,12 +347,30 @@ App.User.camelizeKeys = true;
 ```
 
 ```
-GET /users/1.json
+GET /users/1
 {"id": 1, "first_name": "Brian"}
 ```
 
 ```javascript
 user.get('firstName') // => Brian
+```
+
+
+### urlSuffix
+
+
+By default no suffix is added to the url. You may want to specifically add one if using the same url for html and json requests.
+
+```javascript
+App.User = Ember.Model.extend({
+  first_name: attr()
+});
+App.User.urlSuffix = '.json';
+```
+
+```
+GET /users/1.json
+{"id": 1, "first_name": "Brian"}
 ```
 
 
