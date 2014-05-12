@@ -50,6 +50,7 @@ module("Ember.Model.Store", {
 
     container.register('model:test', TestModel);
     container.register('model:embedded', EmbeddedModel);
+    container.register('store:main', Ember.Model.Store);
   }
 });
 

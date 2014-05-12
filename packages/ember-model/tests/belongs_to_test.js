@@ -700,3 +700,29 @@ test("key defaults to model's property key", function() {
 
   deepEqual(comment.toJSON(), { article: 2 });
 });
+
+test("non embedded belongsTo should return a record with a container", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+  App.Article = Ember.Model.extend({
+    id: Ember.attr(String)
+  });
+  App.Comment = Ember.Model.extend({
+    article: Ember.belongsTo('article', { key: 'article_slug' })
+  });
+
+  App.Article.adapter = Ember.FixtureAdapter.create();
+  App.Article.FIXTURES = [{ id: 'first-article' }];
+
+  var comment = App.Comment.create({container: App.__container__});
+  Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
+  var promise = Ember.run(comment, comment.get, 'article');
+  Ember.run(App, 'destroy');
+  stop();
+  promise.then(function(article) {
+    start();
+    ok(article.get('container'));
+  });
+});

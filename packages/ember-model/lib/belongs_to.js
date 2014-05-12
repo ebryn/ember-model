@@ -1,20 +1,28 @@
 var get = Ember.get,
     set = Ember.set;
 
+function storeFor(record) {
+  if (record.container) {
+    return record.container.lookup('store:main');
+  }
+
+  return null;
+}
+
 function getType(record) {
   var type = this.type;
 
   if (typeof this.type === "string" && this.type) {
-    this.type = Ember.get(Ember.lookup, this.type);
+    type = Ember.get(Ember.lookup, this.type);
 
-    if (!this.type) {
-      var store = Ember.Model.Store.create({ container: record.container });
-      this.type = store.modelFor(type);
-      this.type.reopenClass({ adapter: store.adapterFor(type) });
+    if (!type) {
+      var store = storeFor(record);
+      type = store.modelFor(this.type);
+      type.reopenClass({ adapter: store.adapterFor(this.type) });
     }
   }
 
-  return this.type;
+  return type;
 }
 
 Ember.belongsTo = function(type, options) {
@@ -74,7 +82,8 @@ Ember.belongsTo = function(type, options) {
 
       return value === undefined ? null : value;  
     } else {
-      value = this.getBelongsTo(key, type, meta);
+      var store = storeFor(this);
+      value = this.getBelongsTo(key, type, meta, store);
       this._registerBelongsTo(meta);
       if (value !== null && meta.options.embedded) {
         value.get('isDirty'); // getter must be called before adding observer
@@ -86,7 +95,7 @@ Ember.belongsTo = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getBelongsTo: function(key, type, meta) {
+  getBelongsTo: function(key, type, meta, store) {
     var idOrAttrs = get(this, '_data.' + key),
         record;
 
@@ -100,7 +109,11 @@ Ember.Model.reopen({
       record = type.create({ isLoaded: false, id: id, container: this.container });
       record.load(id, idOrAttrs);
     } else {
-      record = type.find(idOrAttrs);
+      if (store) {
+        record = store.find(meta.type, idOrAttrs);
+      } else {
+        record = type.find(idOrAttrs);
+      }
     }
 
     return record;
