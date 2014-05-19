@@ -80,8 +80,12 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
+        var rootKey = record.constructor.rootKey,
+            json;
+
         self._setPrimaryKey(record);
-        fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
+        json = rootKey ? record.toJSON()[rootKey] : record.toJSON();
+        fixtures.push(klass.findFromCacheOrLoad(json));
         record.didCreateRecord();
         resolve(record);
       }, 0);

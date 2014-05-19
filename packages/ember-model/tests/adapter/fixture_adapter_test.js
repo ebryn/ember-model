@@ -82,6 +82,22 @@ test("createRecord", function() {
   stop();
 });
 
+test("createRecord - handle the case when the `rootKey` property is set", function () {
+  expect(1);
+
+  FixtureModel.rootKey = "fixture";
+  FixtureModel.FIXTURES = [];
+
+  var record = FixtureModel.create({name: "Erik"});
+
+  Ember.run(record, record.save).then(function () {
+    start();
+    var record = FixtureModel.find("fixture-0");
+    deepEqual(record.get("_data"), {id: "fixture-0", name: "Erik"}, "Data is set correctly");
+  });
+  stop();
+});
+
 test("_generatePrimaryKey", function() {
   expect(3);
 
