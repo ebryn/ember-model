@@ -82,10 +82,35 @@ test("createRecord", function() {
   stop();
 });
 
+test("revert", function() {
+  expect(6);
+
+  FixtureModel.FIXTURES = [];
+
+  var record = FixtureModel.create({name: "Erik"});
+
+  // Ember.run(record, record.save);
+  Ember.run(record, record.save).then(function(record) {
+    start();
+    // test revert of a clean record
+    record.revert();
+    equal(record.get('isDirty'), false, "Reverted clean record should not be dirty");
+    equal(record.get('id'), "fixture-0", "Value of clean Record #id should not have changed");
+    equal(record.get('name'), "Erik", "Value of clean Record #name should not have changed");
+    // test revert of a dirty model
+    record.set('name', 'Peter');
+    record.revert();
+    equal(record.get('isDirty'), false, "Reverted dirty record should not be dirty");
+    equal(record.get('id'), "fixture-0", "Value of dirty Record #id should not have changed");
+    equal(record.get('name'), "Erik", "Value of dirty Record #name should have reverted");
+  });
+  stop();
+});
+
 test("_generatePrimaryKey", function() {
   expect(3);
 
-  equal(adapter._generatePrimaryKey(), "fixture-0", "Retrun next primary key");
-  equal(adapter._generatePrimaryKey(), "fixture-1", "Retrun next primary key");
-  equal(adapter._generatePrimaryKey(), "fixture-2", "Retrun next primary key");
+  equal(adapter._generatePrimaryKey(), "fixture-0", "Return next primary key");
+  equal(adapter._generatePrimaryKey(), "fixture-1", "Return next primary key");
+  equal(adapter._generatePrimaryKey(), "fixture-2", "Return next primary key");
 });
