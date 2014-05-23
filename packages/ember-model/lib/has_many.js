@@ -4,7 +4,7 @@ function getType(record) {
   var type = this.type;
 
   if (typeof this.type === "string" && this.type) {
-    this.type = Ember.get(Ember.lookup, this.type);
+    this.type = get(Ember.lookup, this.type);
 
     if (!this.type) {
       var store = record.container.lookup('store:main');
