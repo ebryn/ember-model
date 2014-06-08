@@ -95,10 +95,10 @@ test("model can be specified with a string to a resolved path", function() {
   });
   App.Comment = Ember.Model.extend({
     id: Ember.attr(String),
-    subComments: Ember.hasMany('subcomment', { key: 'subcomments', embedded: true })
+    subComments: Ember.hasMany('subcomment', {embedded: true })
   });
   App.Article = Ember.Model.extend({
-    comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
+    comments: Ember.hasMany('comment', {embedded: true })
   });
 
   var article = App.Article.create({container: App.__container__});
@@ -275,4 +275,29 @@ test("key defaults to model's property key", function() {
   Ember.run(article, article.load, 1, { comments: Ember.A(['a'] )});
 
   deepEqual(article.toJSON(), { comments: ['a'] });
+});
+
+test("model cannot be specified as an object if container exists", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+
+  App.Comment = Ember.Model.extend({
+    id: Ember.attr()
+  });
+  App.Article = Ember.Model.extend({
+    comments: Ember.hasMany(App.Comment, {embedded: true })
+  });
+
+  var article = App.Article.create({container: App.__container__});
+
+  Ember.run(article, article.load, 1, {comments: Ember.A([{id: 'a'}, {id: 'b'}])});
+
+  expectAssertion(function() {
+      article.get('comments');
+    },
+    /Models created from store must define relationships with strings not objects. Using convention 'post' not 'App.Post'/);
+
+  Ember.run(App, 'destroy');
 });

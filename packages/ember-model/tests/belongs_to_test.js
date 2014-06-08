@@ -726,3 +726,26 @@ test("non embedded belongsTo should return a record with a container", function(
     ok(article.get('container'));
   });
 });
+
+test("model cannot be specified as an object if container exists", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+  App.Article  = Ember.Model.extend({
+    id: Ember.attr(String)
+  });
+  App.Comment = Ember.Model.extend({
+    article: Ember.belongsTo(App.Article, { key: 'article', embedded: true })
+  });
+
+  var comment = App.Comment.create({container: App.__container__});
+  Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
+
+  expectAssertion(function() {
+      comment.get('article');
+    },
+    /Models created from store must define relationships with strings not objects. Using convention 'post' not 'App.Post'/);
+
+  Ember.run(App, 'destroy');
+});

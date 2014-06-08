@@ -1,19 +1,43 @@
 var get = Ember.get;
 
-function getType(record) {
-  var type = this.type;
+function isValidType(type, record) {
+  var hasContainer = record.container;
+  var isObject = (typeof type === "object" || typeof type === "function");
 
-  if (typeof this.type === "string" && this.type) {
-    this.type = Ember.get(Ember.lookup, this.type);
+  if (hasContainer && isObject) {
+    return false;
+  }
 
-    if (!this.type) {
-      var store = record.container.lookup('store:main');
-      this.type = store.modelFor(type);
-      this.type.reopenClass({ adapter: store.adapterFor(type) });
+  if (!isObject) {
+    if (hasContainer && get(Ember.lookup, type)) {
+      return false;
     }
   }
 
-  return this.type;
+  return true;
+}
+
+function getType(record) {
+  var type = this.type;
+
+  Ember.assert("Models created from store must define relationships with strings not objects. Using convention 'post' not 'App.Post'", isValidType(this.type, record));
+
+  if (typeof this.type  === "object" || typeof this.type  === "function") {
+    return this.type;
+  }
+
+  this.type = Ember.get(Ember.lookup, type);
+
+  if (this.type) {
+    return this.type;
+  }
+
+  else {
+    var store = record.container.lookup('store:main');
+    this.type = store.modelFor(type);
+    this.type.reopenClass({ adapter: store.adapterFor(type) });
+    return this.type;
+  }
 }
 
 Ember.hasMany = function(type, options) {
