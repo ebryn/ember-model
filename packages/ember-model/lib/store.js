@@ -5,6 +5,15 @@ Ember.Model.Store = Ember.Object.extend({
     return this.container.lookupFactory('model:'+type);
   },
 
+  /**
+   * Returns an Ember.Adapter in following priority:
+   1. Adapter defined on the model class.
+   2. Adapter resolved from `container.lookupFactory(adapter:<type>)`
+   3. Adapter resolved from  `container.lookupFactory(adapter:application)`
+   4. RESTAdapter if no adapter is defined
+   * @param type
+   * @returns Ember.Adapter
+   */
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
         container = this.container;

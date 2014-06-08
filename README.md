@@ -78,13 +78,6 @@ Once you load Ember Model, the store is created and available for use on all rou
 `store.modelFor(<String>)` - returns a model class from type string. Does a
 `container.lookupFactory(model:<type>)`
 
-`store.adapterFor(<String>)` - returns an adapter class from the type string. Will look for an adapter in the following order:
-
-1. Return the adpater defined on the model class.
-2. Return the adapter resolved from `container.lookupFactory(adapter:<type>)`
-3. Return the adapter resolved from  `container.lookupFactory(adapter:application)`
-4. Finally return a RESTAdapter if not adapter is defined
-
 `store.createRecord(<String>)` - create a new record of string type passed in - (`'post'` for example)
 
 `store.find()` - find all records, returns a promise
@@ -98,7 +91,7 @@ The main advantage of the Store API is that it can reduce boilerplate in your ro
 ```
 App.PostRoute = Ember.Route.extend({
   model: function(params) {
-    var data = Ember.$.getJSON('/posts/'+params.post_id);
+    var data = App.Post.find(params.post_id);
     return App.Post.create(data);
   }
 });
@@ -128,9 +121,7 @@ The store still needs work! Most of the gotchas revolve around relationship defi
 
 1. You must create all of your models via store.createRecord()
 
-2. Be consistent. Use that syntax for all of your relationships. 
-
-
+2. Be consistent. If you are using the store to create/find models, use the store convention everywhere. I.E. relationships defined as 'comment' not App.Comment
 
 
 ## Model API
@@ -475,7 +466,15 @@ App.User.adapter = Ember.RESTAdapter.create({
 });
 ```
 
+### Cache
+There is an internal cache in Ember Model. You can turn off all caching on the model level with the transient property. 
 
+```
+App.User = Ember.Model.extend({
+  name: attr()
+});
+App.User.transient = true;
+```
 
 ## Building Ember Model
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
