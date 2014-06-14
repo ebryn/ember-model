@@ -11,9 +11,10 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     if (!content)return arrCnt;
 	var that = this;
 	content.forEach(function(item) {
-      //item = that._materializeRecord(item);
 	  if (!item.record) {
-		item.record = that._materializeRecord(item)
+		item.record = that._materializeRecord(item);
+		Ember.addObserver(item, 'record.isDirty', that, 'recordStateChanged');
+		Ember.addObserver(item, 'record.isDeleted', that, 'recordStateChanged');
 	  }
       item.record.addObserver('isDeleted', that, 'contentItemFilterPropertyDidChange');
       
@@ -48,7 +49,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     });
     this._super(array, idx, removedCount, addedCount);	
 	
-	//this.arrayDidChange(this.get('arrangedContent'), 0, 0, this.get('arrangedContent.length'));
+	this.arrayDidChange(this.get('arrangedContent'), 0, 0, this.get('arrangedContent.length'));
   },
 
   contentArrayWillChange : function (array, idx, removedCount, addedCount) {
@@ -92,7 +93,21 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
       return;
     }
 
-    return this.materializeRecord(idx);
+	// need to add observer if it wasn't materialized before
+    var observerNeeded = (content[idx].record) ? false : true;
+
+    var record = this.materializeRecord(idx, this.container);
+    
+    if (observerNeeded) {
+      var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
+      if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
+      Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
+	  Ember.addObserver(content[idx], 'record.isDeleted', this, 'recordStateChanged');
+      record.registerParentHasManyArray(this);
+    }
+
+    return record;
+	
   },
 
   _materializeRecord : function(reference) {
@@ -119,8 +134,59 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
   
   loadData : function(klass,data) {
 	//this.set('content', data);
-	this.load(data);
+	klass.load(data);
 	this._setupOriginalContent(this.get('arrangedContent'));
+	this.load(data);	
+  },
+  
+  arrayWillChange: function(item, idx, removedCnt, addedCnt) {
+    var content = item;
+    for (var i = idx; i < idx+removedCnt; i++) {
+      var currentItem = content[i];
+      if (currentItem && currentItem.record) {
+        this._modifiedRecords.removeObject(currentItem);
+        currentItem.record.unregisterParentHasManyArray(this);
+        Ember.removeObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+		Ember.removeObserver(currentItem, 'record.isDeleted', this, 'recordStateChanged');
+      }
+    }
+  },
+  
+  arrayDidChange: function(item, idx, removedCnt, addedCnt) {
+    var parent = Em.get(this, 'parent'), relationshipKey = Em.get(this, 'relationshipKey'),
+        isDirty = Em.get(this, 'isDirty');
+
+    var content = item;
+    for (var i = idx; i < idx+addedCnt; i++) {
+      var currentItem = content[i];
+      if (currentItem && currentItem.record) { 
+        var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
+        if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
+        Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+		Ember.addObserver(currentItem, 'record.isDeleted', this, 'recordStateChanged');
+        currentItem.record.registerParentHasManyArray(this);
+      }
+    }
+
+    if (isDirty) {
+      parent._relationshipBecameDirty(relationshipKey);
+    } else {
+      parent._relationshipBecameClean(relationshipKey);
+    }
+  },
+  
+  recordStateChanged: function(obj, keyName) {
+    var parent = Em.get(this, 'parent'), relationshipKey = Em.get(this, 'relationshipKey');    
+
+    if (obj.record.get('isDirty') || obj.record.get('isDeleted')) {
+      if (this._modifiedRecords.indexOf(obj) === -1) { this._modifiedRecords.pushObject(obj); }
+      parent._relationshipBecameDirty(relationshipKey);
+    } else {
+      if (this._modifiedRecords.indexOf(obj) > -1) { this._modifiedRecords.removeObject(obj); }
+      if (!this.get('isDirty')) {
+        parent._relationshipBecameClean(relationshipKey); 
+      }
+    }
   },
   
   isDirty: function() {
@@ -133,6 +199,8 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
 		
     if (originalContentLength !== contentLength) { return true; }
 
+	if (this._modifiedRecords && this._modifiedRecords.length) { return true; }
+	
     var isDirty = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
@@ -143,9 +211,7 @@ Ember.DeletableHasManyArray = Ember.HasManyArray.extend({
     }
 
     return isDirty;
-  }.property('arrangedContent.[]', 'originalContent'),
-  
- 
+  }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]')
 
   
 });
@@ -166,6 +232,7 @@ Ember.Model
         });
 
 		collection.set('content', this._getHasManyContent(key, type, embedded, collection));
+		collection.set('_modifiedRecords', []);
 		
         this._registerHasManyArray(collection);
 
@@ -189,6 +256,24 @@ Ember.Model
           Ember.set(this, 'isSaving', false);
           return promise;
         }
-      }
+      },
+	  
+	  revert: function() {
+		this.getWithDefault('_dirtyAttributes', []).clear();
+		this.set('isDeleted', false);
+		this.notifyPropertyChange('_data');
+		this._revertUnpersistentHasManys();
+	  },
+	  
+	  _revertUnpersistentHasManys : function() {
+		if (!this._hasManyArrays) { return; }
+		var i, j;
+		for (i = 0; i < this._hasManyArrays.length; i++) {
+		  var array = this._hasManyArrays[i];
+			for (j=0; j<array.content.length;j++) {
+				array.content[j].record.revert();
+			}
+		}
+	  }
 
     });

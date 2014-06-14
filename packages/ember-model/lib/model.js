@@ -258,7 +258,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didCreateRecord: function() {
     var primaryKey = get(this.constructor, 'primaryKey'),
         id = get(this, primaryKey);
-
     set(this, 'isNew', false);
 
     set(this, '_dirtyAttributes', []);
@@ -380,8 +379,13 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
-    } else if (this.get(primaryKey) && type.adapter.loadHasMany) {		
-        content = type.adapter.loadHasMany(this, key, type, collection);
+    } else if (this.get(primaryKey) && type.adapter.loadHasMany) {
+		var prevArray = (this._hasManyArrays||[]).findBy('key', key);//XXX dafuq am i doing???
+		if (prevArray) {
+			content = prevArray.content;
+		} else {
+			content = type.adapter.loadHasMany(this, key, type, collection);
+		}
     }
 
     return Ember.A(content || []);
