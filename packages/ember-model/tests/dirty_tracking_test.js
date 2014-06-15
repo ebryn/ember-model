@@ -701,3 +701,44 @@ test("manipulating the content of objects in a hasMany should dirty the parent",
   ok(post.get('comments.isDirty') === true, "post.comments should be dirty after changing comment1's content");
   ok(post.get('isDirty') === true, "Post should be dirty after changing comment1's content");
 });
+
+test("after saving new record, the model and it's embedded properties shouldn't be dirty", function() {
+  expect(5);
+
+  var Comment = Ember.Model.extend({
+    id: Ember.attr(),
+    name: Ember.attr()
+  });
+
+  var Post = Ember.Model.extend({
+    id: Ember.attr(),
+    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+  });
+
+  Post.adapter = {
+    createRecord: function(record) {
+      ok(true, "createRecord was called");
+      var deferred = Ember.Deferred.create();
+      deferred.then(function() {
+        record.didCreateRecord();
+      });
+      deferred.resolve(record);
+      return deferred;
+    }
+  };
+
+  var post = Post.create();
+  post.get('comments').create({name: 'Comment 1'});
+
+  ok(post.get('isDirty') === true, 'Post should be dirty initially');
+  ok(post.get('comments.isDirty') === true, 'Comments should be dirty initially');
+
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      ok(!post.get('isDirty'), "Post should be clean");
+      ok(!post.get('comments.isDirty'), "Comments in post should be clean");
+    });
+  });
+});
