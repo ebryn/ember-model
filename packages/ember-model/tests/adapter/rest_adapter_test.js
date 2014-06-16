@@ -569,6 +569,25 @@ test("saveRecord does not load empty response", function() {
   equal(record.get('name'), 'John', 'Record should not have been reloaded.');
 });
 
+test("saveRecord does not load HEAD response (undefined response body)", function() {
+  expect(4);
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
+      responseData = '';
+
+  record.set('name', 'John');
+  ok(record.get('isDirty'), 'Record should be dirty');
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(undefined);
+  };
+
+  Ember.run(record, record.save);
+
+  ok(!record.get('isDirty'), 'Record should not be dirty');
+  ok(!record.get('isSaving'), 'Record should not be saving');
+  equal(record.get('name'), 'John', 'Record should not have been reloaded.');
+});
+
 test("saveRecord does not load response if root key is missing", function() {
   expect(4);
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
