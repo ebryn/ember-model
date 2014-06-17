@@ -5,5 +5,6 @@ module.exports = {
       return 'packages/' + filepath.replace('ember-model', 'ember-model/lib');
     }
   },
-  'dist/ember-model.js': 'packages/ember-model/lib/main.js'
+  'dist/ember-model.js': 'packages/ember-model/lib/main.js',
+  'dist/ember-model-plugins.js': 'packages/plugins/lib/main.js'
 };

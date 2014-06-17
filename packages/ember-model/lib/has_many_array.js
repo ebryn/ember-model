@@ -69,8 +69,8 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     this._super(index, removed, added);
   },
-
-  _contentWillChange: function() {
+  
+  /*_contentWillChange: function() {
     var content = get(this, 'content');
 
     if (content) {
@@ -87,6 +87,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
   }.observes('content'),
+  */
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
     var content = item;
@@ -99,7 +100,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       }
     }
   },
-
+  
   arrayDidChange: function(item, idx, removedCnt, addedCnt) {
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey'),
         isDirty = get(this, 'isDirty');
@@ -144,7 +145,10 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
   init: function() {
     this._super();
-    this._setupOriginalContent();
+	var klass = get(this, 'modelClass');
+    if (!get(klass, 'isRequested')) {
+		this._setupOriginalContent();
+	}
     this._contentDidChange();
   },
 

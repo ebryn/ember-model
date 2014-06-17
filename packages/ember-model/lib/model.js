@@ -200,7 +200,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         if (meta.kind === 'belongsTo') {
           data = this.serializeBelongsTo(key, meta);
         } else {
-          data = this.serializeHasMany(key, meta);
+          continue; //unknown property(like "chidrenIds:[1,2,3]") not supported by my server REST framework
+          //data = this.serializeHasMany(key, meta); //its here to pass tests
         }
 
         json[relationshipKey] = data;
@@ -235,8 +236,17 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   reload: function() {
-    this.getWithDefault('_dirtyAttributes', []).clear();
+	this.getWithDefault('_dirtyAttributes', []).clear();
+
+/*	if (get(this, 'isRequested')) { //XXX consider removing
+		this._registerHasManyArray(); //TODO refactor to return RSVP.all for all hasManys and object itself
+		return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
+	} else {
+		return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')));
+	}
+*/
     return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')), this.container);
+
   },
 
   revert: function() {
@@ -248,7 +258,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didCreateRecord: function() {
     var primaryKey = get(this.constructor, 'primaryKey'),
         id = get(this, primaryKey);
-
     set(this, 'isNew', false);
 
     set(this, '_dirtyAttributes', []);
@@ -343,7 +352,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var i, j;
     for (i = 0; i < this._hasManyArrays.length; i++) {
       var array = this._hasManyArrays[i],
-          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'));
+          hasManyContent = this._getHasManyContent(get(array, 'key'), get(array, 'modelClass'), get(array, 'embedded'), array);
       if (!reverting) {
         for (j = 0; j < array.get('length'); j++) {
           if (array.objectAt(j).get('isNew') && !array.objectAt(j).get('isDeleted')) {
@@ -355,13 +364,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
   },
 
-  _getHasManyContent: function(key, type, embedded) {
-    var content = get(this, '_data.' + key);
+  _getHasManyContent: function(key, type, embedded, collection) {
+    var content = get(this, '_data.' + key), primaryKey = get(type, 'primaryKey');
 
     if (content) {
-      var mapFunction, primaryKey, reference;
+      var mapFunction, reference;
       if (embedded) {
-        primaryKey = get(type, 'primaryKey');
         mapFunction = function(attrs) {
           reference = type._getOrCreateReferenceForId(attrs[primaryKey]);
           reference.data = attrs;
@@ -371,6 +379,13 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
+    } else if (this.get(primaryKey) && type.adapter.loadHasMany) {
+		var prevArray = (this._hasManyArrays||[]).findBy('key', key);//XXX dafuq am i doing???
+		if (prevArray) {
+			content = prevArray.content;
+		} else {
+			content = type.adapter.loadHasMany(this, key, type, collection);
+		}
     }
 
     return Ember.A(content || []);
@@ -558,7 +573,12 @@ Ember.Model.reopenClass({
   reload: function(id, container) {
     var record = this.cachedRecordForId(id, container);
     record.set('isLoaded', false);
-    return this._fetchById(record, id);
+    return this._fetchById(record, id).then(function() {
+		if (record._hasManyArrays) {
+			record._hasManyArrays.forEach(function(item){item.set('content',null);});//clear hasManys, so that they would reload
+			record._reloadHasManys();
+		}
+	});
   },
 
   _fetchById: function(record, id) {
@@ -601,7 +621,8 @@ Ember.Model.reopenClass({
     this._currentBatchIds = null;
     this._currentBatchRecordArrays = null;
     this._currentBatchDeferreds = null;
-
+    
+    if (!batchIds) return;
     for (i = 0; i < batchIds.length; i++) {
       if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
         requestIds.push(batchIds[i]);

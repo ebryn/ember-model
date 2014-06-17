@@ -39,5 +39,6 @@ module.exports = function(grunt) {
   grunt.registerTask('production', ['copy:production', 'strip:production', 'uglify:production', 'banner']);
   grunt.registerTask('test', ['jshint:all', 'neuter', 'build_test_runner_file', 'qunit:cli', 'clean:test']);
   grunt.registerTask('default', ['build']);
+  
 
 };
