@@ -135,7 +135,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         if (method === "GET") {
           settings.data = params;
         } else {
-          settings.contentType = "application/json; charset=utf-8";
+          settings.contentType = settings.contentType || "application/json; charset=utf-8";
           settings.data = JSON.stringify(params);
         }
       }
