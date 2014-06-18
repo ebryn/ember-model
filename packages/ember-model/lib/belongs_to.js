@@ -1,5 +1,5 @@
 var get = Ember.get,
-    set = Ember.set;
+  set = Ember.set;
 
 function storeFor(record) {
   if (record.container) {
@@ -9,20 +9,45 @@ function storeFor(record) {
   return null;
 }
 
-function getType(record) {
-  var type = this.type;
+function isValidType(type, record) {
+  var hasContainer = record.container;
+  var isObject = (typeof type  === "object" || typeof type  === "function");
 
-  if (typeof this.type === "string" && this.type) {
-    type = Ember.get(Ember.lookup, this.type);
+  if (hasContainer && isObject) {
+    return false;
+  }
 
-    if (!type) {
-      var store = storeFor(record);
-      type = store.modelFor(this.type);
-      type.reopenClass({ adapter: store.adapterFor(this.type) });
+  if (!isObject) {
+    if (hasContainer && Ember.get(Ember.lookup, type)) {
+      return false;
     }
   }
 
-  return type;
+  return true;
+}
+
+function getType(record) {
+  var type = this.type;
+
+  if (record) {
+    Ember.assert("Models created from store must define relationships with strings not objects. Using convention 'post' not 'App.Post'", isValidType(this.type, record));
+  }
+  if (typeof this.type  === "object" || typeof this.type  === "function") {
+    return this.type;
+  }
+
+  this.type = get(Ember.lookup, type);
+
+  if (this.type) {
+    return this.type;
+  }
+
+  else {
+    var store = storeFor(record);
+    this.type = store.modelFor(type);
+    this.type.reopenClass({ adapter: store.adapterFor(type) });
+    return this.type;
+  }
 }
 
 Ember.belongsTo = function(type, options) {
