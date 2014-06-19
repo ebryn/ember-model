@@ -88,7 +88,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     if (!reference) {
       reference = this.constructor._getOrCreateReferenceForId(id);
-      reference.record = this;
+      set(reference, 'record', this);
       this._reference = reference;
     } else if (reference.id !== id) {
       reference.id = id;
