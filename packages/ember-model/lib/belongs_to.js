@@ -80,7 +80,7 @@ Ember.belongsTo = function(type, options) {
         }
       }
 
-      return value === undefined ? null : value;  
+      return value === undefined ? null : value;
     } else {
       var store = storeFor(this);
       value = this.getBelongsTo(key, type, meta, store);
@@ -110,7 +110,7 @@ Ember.Model.reopen({
       record.load(id, idOrAttrs);
     } else {
       if (store) {
-        record = store.find(meta.type, idOrAttrs);
+        record = store._findSync(meta.type, idOrAttrs);
       } else {
         record = type.find(idOrAttrs);
       }

@@ -1,3 +1,5 @@
+function NIL() {}
+
 Ember.Model.Store = Ember.Object.extend({
   container: null,
 
@@ -27,17 +29,30 @@ Ember.Model.Store = Ember.Object.extend({
   },
 
   find: function(type, id) {
+    if (arguments.length === 1) { id = NIL; }
+    return this._find(type, id, true);
+  },
+
+  _find: function(type, id, async) {
     var klass = this.modelFor(type);
-    klass.reopenClass({adapter: this.adapterFor(type)});
-    if (!id) {
-      return klass._findFetchAll(true, this.container);
+
+    // if (!klass.adapter) {
+      klass.reopenClass({adapter: this.adapterFor(type)});
+    // }
+
+    if (id === NIL) {
+      return klass._findFetchAll(async, this.container);
     } else if (Ember.isArray(id)) {
-      return klass._findFetchMany(id, true, this.container);
-    }else if (typeof id === 'object') {
-      return klass._findFetchQuery(id, true, this.container);
+      return klass._findFetchMany(id, async, this.container);
+    } else if (typeof id === 'object') {
+      return klass._findFetchQuery(id, async, this.container);
     } else {
-    return klass._findFetchById(id, true, this.container);
+      return klass._findFetchById(id, async, this.container);
     }
+  },
+
+  _findSync: function(type, id) {
+    return this._find(type, id, false);
   }
 });
 
