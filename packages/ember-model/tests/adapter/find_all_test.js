@@ -30,7 +30,7 @@ test("Model.find() delegates to Adapter#findAll", function() {
 test("Model.find() returns the same RecordArray for each successful call", function() {
   var Model = Ember.Model.extend();
   Model.adapter = {
-    findAll: Ember.K
+    findAll: Ember.RSVP.resolve
   };
 
   var firstResult = Model.find();

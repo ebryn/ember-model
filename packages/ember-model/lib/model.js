@@ -497,7 +497,10 @@ Ember.Model.reopenClass({
   _findFetchAll: function(isFetch, container) {
     var self = this;
 
-    if (this._findAllRecordArray) {
+    var currentFetchPromise = this._currentFindFetchAllPromise;
+    if (isFetch && currentFetchPromise) {
+      return currentFetchPromise;
+    } else if (this._findAllRecordArray) {
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -509,7 +512,11 @@ Ember.Model.reopenClass({
 
     var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, container: container});
 
-    var promise = this.adapter.findAll(this, records);
+    var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
+
+    promise.finally(function() {
+      self._currentFindFetchAllPromise = null;
+    });
 
     // Remove the cached record array if the promise is rejected
     if (promise.then) {
