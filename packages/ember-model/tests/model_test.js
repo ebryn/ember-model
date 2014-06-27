@@ -701,6 +701,36 @@ test("fetchQuery returns a promise", function() {
   stop();
 });
 
+test("second promise returned by fetchAll when loading, resolves on load", function() {
+  expect(1);
+
+  var deferred = Ember.Deferred.create();
+
+  var DeferredResolvingAdapter = Ember.FixtureAdapter.extend({
+    findAll: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        deferred.then(function() {
+          records.set('isLoaded', true);
+          resolve(records);
+        });
+      });
+    }
+  });
+  Model.adapter = DeferredResolvingAdapter.create();
+
+  var firstPromise = Ember.run(Model, Model.fetchAll);
+  var secondPromise = Ember.run(Model, Model.fetchAll);
+
+  secondPromise.then(function(records) {
+    start();
+    ok(records.get('isLoaded'), 'records should be loaded when promise resolves');
+  });
+
+  deferred.resolve();
+
+  stop();
+});
+
 test("fetchAll returns a promise", function() {
     var promise = Ember.run(Model, Model.fetchAll);
     promise.then(function(records) {
@@ -805,7 +835,7 @@ test("fetchAll resolves with error object", function() {
   var promise = Ember.run(Model, Model.fetchAll);
   promise.then(null, function(error) {
     start();
-    deepEqual(error, {error: true});
+    equal(error.error, true);
   });
   stop();
 });
