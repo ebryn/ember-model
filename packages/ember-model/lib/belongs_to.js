@@ -42,9 +42,9 @@ Ember.belongsTo = function(type, options) {
 
     var dirtyChanged = function(sender) {
       if (sender.get('isDirty')) {
-        self._relationshipBecameDirty(key);
+        self._relationshipBecameDirty(propertyKey);
       } else {
-        self._relationshipBecameClean(key);
+        self._relationshipBecameClean(propertyKey);
       }
     };
 
