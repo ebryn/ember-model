@@ -22,10 +22,10 @@ Ember.Model.Store = Ember.Object.extend({
     }
   },
 
-  createRecord: function(type) {
+  createRecord: function(type, props) {
     var klass = this.modelFor(type);
     klass.reopenClass({adapter: this.adapterFor(type)});
-    return klass.create({container: this.container});
+    return klass.create(Ember.merge({container: this.container}, props));
   },
 
   find: function(type, id) {
