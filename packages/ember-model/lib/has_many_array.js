@@ -168,16 +168,15 @@ Ember.HasManyArray = Ember.ManyArray.extend({
     var klass = get(this, 'modelClass'),
         content = get(this, 'content'),
         reference = content.objectAt(idx),
-        record;
+        record = reference.record;
 
-    if (reference.record) {
-      record = reference.record;
-    } else {
-      record = klass.find(reference.id);
+    if (record) {
+      if (! record.container) {
+        record.container = container;
+      }
+      return record;
     }
-
-    record.container = container;
-    return record;
+    return klass._findFetchById(reference.id, false, container);
   },
 
   toJSON: function() {
