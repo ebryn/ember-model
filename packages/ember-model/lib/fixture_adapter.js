@@ -80,21 +80,36 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
+        var data;
+
         self._setPrimaryKey(record);
-        fixtures.push(klass.findFromCacheOrLoad(record.toJSON()));
-        record.didCreateRecord();
+        data = record.toJSON();
+        fixtures.push(klass.findFromCacheOrLoad(data));
+        self.didCreateRecord(record, data);
         resolve(record);
       }, 0);
     });
   },
 
+  didCreateRecord: function(record, data) {
+    this._loadRecordFromData(record, data);
+    record.didCreateRecord();
+  },
+
   saveRecord: function(record) {
+    var self = this, data = record.toJSON();
+
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        record.didSaveRecord();
+        self.didSaveRecord(record, data);
         resolve(record);
       }, 0);
     });
+  },
+
+  didSaveRecord: function(record, data) {
+    this._loadRecordFromData(record, data);
+    record.didSaveRecord();
   },
 
   deleteRecord: function(record) {
@@ -104,5 +119,14 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
         resolve(record);
       }, 0);
     });
+  },
+
+  _loadRecordFromData: function(record, data) {
+    var rootKey = get(record.constructor, 'rootKey'),
+        primaryKey = get(record.constructor, 'primaryKey'),
+        dataToLoad = rootKey ? get(data, rootKey) : data;
+    if (!Ember.isEmpty(dataToLoad)) {
+      record.load(dataToLoad[primaryKey], dataToLoad);
+    }
   }
 });
