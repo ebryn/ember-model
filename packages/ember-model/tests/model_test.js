@@ -704,12 +704,12 @@ test("fetchQuery returns a promise", function() {
 test("second promise returned by fetchAll when loading, resolves on load", function() {
   expect(1);
 
-  var deferred = Ember.Deferred.create();
+  var deferred = Ember.RSVP.defer();
 
   var DeferredResolvingAdapter = Ember.FixtureAdapter.extend({
     findAll: function(klass, records, params) {
       return new Ember.RSVP.Promise(function(resolve, reject) {
-        deferred.then(function() {
+        deferred.promise.then(function() {
           records.set('isLoaded', true);
           resolve(records);
         });

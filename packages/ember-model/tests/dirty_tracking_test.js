@@ -100,12 +100,12 @@ test("after saving, the model shouldn't be dirty", function() {
   Model.adapter = {
     saveRecord: function(record) {
       ok(true, "saveRecord was called");
-      var deferred = Ember.Deferred.create();
-      deferred.then(function() {
+      var deferred = Ember.RSVP.defer();
+      deferred.promise.then(function() {
         record.didSaveRecord();
       });
       deferred.resolve(record);
-      return deferred;
+      return deferred.promise;
     }
   };
 
