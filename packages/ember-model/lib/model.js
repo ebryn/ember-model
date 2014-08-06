@@ -514,7 +514,7 @@ Ember.Model.reopenClass({
 
     var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
 
-    promise.finally(function() {
+    promise['finally'](function() {
       self._currentFindFetchAllPromise = null;
     });
 
