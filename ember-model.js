@@ -523,7 +523,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       relationship = meta.descs[relationshipKey];
       relationshipMeta = relationship.meta();
 
-      if (relationshipMeta.options.embedded) {
+       // Check to see if the data exists
+      if (relationshipMeta.options.embedded && typeof relationshipData != 'undefined') {
         relationshipType = relationshipMeta.type;
         if (typeof relationshipType === "string") {
           relationshipType = Ember.get(Ember.lookup, relationshipType);
