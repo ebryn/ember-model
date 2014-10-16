@@ -57,6 +57,14 @@ module("Ember.Model.Store", {
 test("store.createRecord(type) returns a record with a container", function() {
   var record = Ember.run(store, store.createRecord, 'test');
   equal(record.container, container);
+  equal(record.container, container);
+});
+
+test("store.createRecord(type) with properties", function() {
+  expect(2);
+  var record = Ember.run(store, store.createRecord, 'test', {token: 'c', name: 'Andrew'});
+  equal(record.get('token'), 'c');
+  equal(record.get('name'), 'Andrew');
 });
 
 test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
