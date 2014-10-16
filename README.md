@@ -76,7 +76,7 @@ existingUser.save(); // PUT /users/1
 
 `Model#deleteRecord` - delete a record
 
-`Model#load` - load JSON into the record (typically used inside adapter definition)
+`Model#load(<id>, <object>)` - load JSON into the record (typically used inside adapter definition)
 
 `Model#toJSON` - serialize the record to JSON
 
