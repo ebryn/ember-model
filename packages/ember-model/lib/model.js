@@ -650,7 +650,9 @@ Ember.Model.reopenClass({
   getCachedReferenceRecord: function(id, container){
     var ref = this._getReferenceById(id);
     if(ref && ref.record) {
-      ref.record.container = container;
+      if (! ref.record.container) {
+        ref.record.container = container;
+      }
       return ref.record;
     }
     return undefined;
@@ -770,7 +772,7 @@ Ember.Model.reopenClass({
     }, this).forEach(callback);
   },
 
-  load: function(hashes) {
+  load: function(hashes, container) {
     if (Ember.typeOf(hashes) !== 'array') { hashes = [hashes]; }
 
     if (!this.sideloadedData) { this.sideloadedData = {}; }
@@ -778,7 +780,7 @@ Ember.Model.reopenClass({
     for (var i = 0, l = hashes.length; i < l; i++) {
       var hash = hashes[i],
           primaryKey = hash[get(this, 'primaryKey')],
-          record = this.getCachedReferenceRecord(primaryKey);
+          record = this.getCachedReferenceRecord(primaryKey, container);
 
       if (record) {
         record.load(primaryKey, hash);
