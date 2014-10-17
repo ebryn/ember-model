@@ -627,6 +627,64 @@ test("toJSON includes non-embedded relationships", function() {
   equal(json.author, 1, "JSON should contain id of belongsTo relationship");
 });
 
+test("toJSON works with string names", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+
+  var Comment = Ember.Model.extend({
+        container: App.__container__,
+        id: Ember.attr(),
+        text: Ember.attr()
+      }),
+      Author = Ember.Model.extend({
+        container: App.__container__,
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Article = Ember.Model.extend({
+        container: App.__container__,
+        id: 1,
+        title: Ember.attr(),
+        comments: Ember.hasMany('comment', { key: 'comments' }),
+        author: Ember.belongsTo('author', { key: 'author' })
+      });
+
+  App.__container__.register('model:comment', Comment);
+  App.__container__.register('model:author', Author);
+  App.__container__.register('model:article', Article);
+
+  var articleData = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3],
+    author: 1
+  };
+
+  Author.adapter = Ember.FixtureAdapter.create();
+  Comment.adapter = Ember.FixtureAdapter.create();
+
+  Author.FIXTURES = [{id: 1, name: 'drogus'}];
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+
+  var article = Article.create();
+  Ember.run(article, article.load, articleData.id, articleData);
+
+  var json = Ember.run(article, article.toJSON);
+
+  deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
+  equal(json.author, 1, "JSON should contain id of belongsTo relationship");
+  Ember.run(function() {
+    App.destroy();
+  });
+});
+
 test("creating a record with camelizedKeys = true works as expected", function() {
   expect(1);
 
