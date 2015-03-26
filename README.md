@@ -8,7 +8,13 @@ EM is still a work in progress, but it's flexible and stable enough to be [used 
 
 ## Getting Started with Ember Model
 
-[Download latest build of Ember Model](http://builds.erikbryn.com/ember-model/ember-model-latest.js)
+### Ember CLI
+
+`ember install:addon ember-model`
+
+### Bower
+
+`bower install ember-model --save`
 
 [![Getting started Embercast](http://f.cl.ly/items/1T1t2T2p3d2u0A2b0q2P/embercast.png)](http://www.embercasts.com/episodes/getting-started-with-ember-model)
 
