@@ -35,6 +35,58 @@ If you want more features than Ember Model provides, file an issue. Feature requ
 
 ## Example usage
 
+### Ember CLI / ES6 modules
+
+```javascript
+// app/models/user.js
+import { Model, attr, hasMany } from 'ember-model';
+
+var User = Model.extend({
+  id: attr(),
+  name: attr(),
+  comments: hasMany("comment", {key: 'comment_ids'})
+}).reopenClass({
+  url: "/users"
+});
+
+export default User;
+```
+
+```javascript
+// app/models/comment.js
+import { Model, attr, hasMany } from 'ember-model';
+
+var Comment = Model.extend({
+  id: attr(),
+  text: attr()
+}).reopenClass({
+  url: "/comments"
+});
+
+export default Comment;
+```
+
+```javascript
+// create example
+var newUser = this.store.createRecord('user', {name: "Erik"});
+newUser.save(); // POST to /users
+
+// hasMany example
+var comments = newUser.get('comments');
+comments.create({text: "hello!"});
+comments.save(); // POST to /comments
+
+// find & update example
+
+this.store.find('user', 1).then(user => { // GET /users/1
+  user.set('name', 'Kris');
+  user.get('isDirty'); // => true
+  user.save(); // PUT /users/1
+});
+```
+
+### Globals
+
 ```javascript
 var attr = Ember.attr, hasMany = Ember.hasMany;
 
