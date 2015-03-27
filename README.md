@@ -126,6 +126,16 @@ existingUser.get('isDirty'); // => true
 existingUser.save(); // PUT /users/1
 ```
 
+## Store API
+
+`Store#find(<type>)` - find all records by type, returns a promise
+
+`Store#find(<type>, <id>)` - find by primary key (multiple calls within a single run loop can coalesce to a findMany), returns a promise
+
+`Store#find(<type>, <object>)` - find query - object gets passed directly to your adapter, returns a promise
+
+`Store#createRecord(<type>, <object>)` - create a new record
+
 ## Model API
 
 `Model.create` - create a new record
