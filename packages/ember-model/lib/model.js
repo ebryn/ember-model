@@ -118,7 +118,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
     for (var i = 0, l = relationships.length; i < l; i++) {
       relationshipKey = relationships[i];
-      relationship = meta.descs[relationshipKey];
+      relationship = this[relationshipKey];
       relationshipMeta = relationship.meta();
 
       if (relationshipMeta.options.embedded) {

@@ -651,9 +651,9 @@ test("toJSON works with string names", function() {
         author: Ember.belongsTo('author', { key: 'author' })
       });
 
-  App.__container__.register('model:comment', Comment);
-  App.__container__.register('model:author', Author);
-  App.__container__.register('model:article', Article);
+  App.registry.register('model:comment', Comment);
+  App.registry.register('model:author', Author);
+  App.registry.register('model:article', Article);
 
   var articleData = {
     id: 1,

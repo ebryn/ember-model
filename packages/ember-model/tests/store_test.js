@@ -1,8 +1,9 @@
-var TestModel, EmbeddedModel, UUIDModel, store, container, App;
+var TestModel, EmbeddedModel, UUIDModel, store, registry, container, App;
 
 module("Ember.Model.Store", {
   setup: function() {
-    container = new Ember.Container();
+    registry = new Ember.Registry();
+    container = registry.container();
 
     store = Ember.Model.Store.create({container: container});
     TestModel = Ember.Model.extend({
@@ -60,10 +61,10 @@ module("Ember.Model.Store", {
     });
     EmbeddedModel.adapter = Ember.FixtureAdapter.create({});
 
-    container.register('model:test', TestModel);
-    container.register('model:embedded', EmbeddedModel);
-    container.register('model:uuid', UUIDModel);
-    container.register('store:main', Ember.Model.Store);
+    registry.register('model:test', TestModel);
+    registry.register('model:embedded', EmbeddedModel);
+    registry.register('model:uuid', UUIDModel);
+    registry.register('store:main', Ember.Model.Store);
   }
 });
 
@@ -171,16 +172,16 @@ test("store.adapterFor(type) returns klass.adapter first", function() {
 
 test("store.adapterFor(type) returns type adapter if no klass.adapter", function() {
   TestModel.adapter = undefined;
-  container.register('adapter:test', Ember.FixtureAdapter);
-  container.register('adapter:application', null);
+  registry.register('adapter:test', Ember.FixtureAdapter);
+  registry.register('adapter:application', null);
   var adapter = Ember.run(store, store.adapterFor, 'test');
   ok(adapter instanceof Ember.FixtureAdapter);
 });
 
 test("store.adapterFor(type) returns application adapter if no klass.adapter or type adapter", function() {
   TestModel.adapter = undefined;
-  container.register('adapter:test', null);
-  container.register('adapter:application', Ember.FixtureAdapter);
+  registry.register('adapter:test', null);
+  registry.register('adapter:application', Ember.FixtureAdapter);
   var adapter = Ember.run(store, store.adapterFor, 'test');
   ok(adapter instanceof Ember.FixtureAdapter);
 });
@@ -188,9 +189,9 @@ test("store.adapterFor(type) returns application adapter if no klass.adapter or 
 test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
 
   TestModel.adapter = undefined;
-  container.register('adapter:test', null);
-  container.register('adapter:application', null);
-  container.register('adapter:REST',  Ember.RESTAdapter);
+  registry.register('adapter:test', null);
+  registry.register('adapter:application', null);
+  registry.register('adapter:REST',  Ember.RESTAdapter);
   var adapter = Ember.run(store, store.adapterFor, 'test');
   ok(adapter instanceof Ember.RESTAdapter);
 });
@@ -199,8 +200,8 @@ test("store.find(type) records use application adapter if no klass.adapter or ty
   expect(3);
   TestModel.adapter = undefined;
   EmbeddedModel.adapter = undefined;
-  container.register('adapter:test', null);
-  container.register('adapter:application', Ember.FixtureAdapter);
+  registry.register('adapter:test', null);
+  registry.register('adapter:application', Ember.FixtureAdapter);
   
   var promise = Ember.run(store, store.find, 'test','a');
 
