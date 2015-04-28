@@ -508,10 +508,10 @@ test("belongsTo from an embedded source is able to materialize without having to
     projects:[{
           id: 1,
           title: 'project one title',
-          company: 1, 
-          posts: [{id: 1, title: 'title', body: 'body', project:1 }, 
+          company: 1,
+          posts: [{id: 1, title: 'title', body: 'body', project:1 },
                   {id: 2, title: 'title two', body: 'body two', project:1 }]
-      }] 
+      }]
     };
 
   Company.load([compJson]);
@@ -519,7 +519,7 @@ test("belongsTo from an embedded source is able to materialize without having to
 
   equal(company.get('projects.length'), 1);
   equal(company.get('projects.firstObject.posts.length'), 2);
-  
+
   var project1 = company.get('projects.firstObject');
   equal(company, project1.get('company'));
 
@@ -546,12 +546,12 @@ test("unloaded records are removed from reference cache", function() {
     id:1,
     title:'coolio',
     projects:[{ id: 1, title: 'project one title', company: 1 },
-              { id: 2, title: 'project two title', company: 1 }]  
+              { id: 2, title: 'project two title', company: 1 }]
     }, compJson2 = {
     id:1,
     title:'coolio',
     projects:[{ id: 1, title: 'project one new title', company: 1 },
-              { id: 2, title: 'project two new title', company: 1 }]  
+              { id: 2, title: 'project two new title', company: 1 }]
     };
 
   Company.load([compJson]);
@@ -638,7 +638,7 @@ test("belongsTo records created are available from reference cache", function() 
     project:{
           id: 1,
           title: 'project one title',
-          company: 1 
+          company: 1
       }
     };
 
@@ -718,11 +718,7 @@ test("non embedded belongsTo should return a record with a container", function(
 
   var comment = App.Comment.create({container: App.__container__});
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
-  var promise = Ember.run(comment, comment.get, 'article');
+  var article = Ember.run(comment, comment.get, 'article');
+  ok(article.get('container'));
   Ember.run(App, 'destroy');
-  stop();
-  promise.then(function(article) {
-    start();
-    ok(article.get('container'));
-  });
 });

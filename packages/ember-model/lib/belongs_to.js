@@ -42,9 +42,9 @@ Ember.belongsTo = function(type, options) {
 
     var dirtyChanged = function(sender) {
       if (sender.get('isDirty')) {
-        self._relationshipBecameDirty(key);
+        self._relationshipBecameDirty(propertyKey);
       } else {
-        self._relationshipBecameClean(key);
+        self._relationshipBecameClean(propertyKey);
       }
     };
 
@@ -80,7 +80,7 @@ Ember.belongsTo = function(type, options) {
         }
       }
 
-      return value === undefined ? null : value;  
+      return value === undefined ? null : value;
     } else {
       var store = storeFor(this);
       value = this.getBelongsTo(key, type, meta, store);
@@ -110,7 +110,7 @@ Ember.Model.reopen({
       record.load(id, idOrAttrs);
     } else {
       if (store) {
-        record = store.find(meta.type, idOrAttrs);
+        record = store._findSync(meta.type, idOrAttrs);
       } else {
         record = type.find(idOrAttrs);
       }

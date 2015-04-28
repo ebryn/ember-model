@@ -8,7 +8,13 @@ EM is still a work in progress, but it's flexible and stable enough to be [used 
 
 ## Getting Started with Ember Model
 
-[Download latest build of Ember Model](http://builds.erikbryn.com/ember-model/ember-model-latest.js)
+### Ember CLI
+
+`ember install:addon ember-model`
+
+### Bower
+
+`bower install ember-model --save`
 
 [![Getting started Embercast](http://f.cl.ly/items/1T1t2T2p3d2u0A2b0q2P/embercast.png)](http://www.embercasts.com/episodes/getting-started-with-ember-model)
 
@@ -28,6 +34,58 @@ Need more help getting started? Join us in #ember-model on Freenode.
 If you want more features than Ember Model provides, file an issue. Feature requests/contributions are welcome but the goal is to keep things simple and fast.
 
 ## Example usage
+
+### Ember CLI / ES6 modules
+
+```javascript
+// app/models/user.js
+import { Model, attr, hasMany } from 'ember-model';
+
+var User = Model.extend({
+  id: attr(),
+  name: attr(),
+  comments: hasMany("comment", {key: 'comment_ids'})
+}).reopenClass({
+  url: "/users"
+});
+
+export default User;
+```
+
+```javascript
+// app/models/comment.js
+import { Model, attr, hasMany } from 'ember-model';
+
+var Comment = Model.extend({
+  id: attr(),
+  text: attr()
+}).reopenClass({
+  url: "/comments"
+});
+
+export default Comment;
+```
+
+```javascript
+// create example
+var newUser = this.store.createRecord('user', {name: "Erik"});
+newUser.save(); // POST to /users
+
+// hasMany example
+var comments = newUser.get('comments');
+comments.create({text: "hello!"});
+comments.save(); // POST to /comments
+
+// find & update example
+
+this.store.find('user', 1).then(user => { // GET /users/1
+  user.set('name', 'Kris');
+  user.get('isDirty'); // => true
+  user.save(); // PUT /users/1
+});
+```
+
+### Globals
 
 ```javascript
 var attr = Ember.attr, hasMany = Ember.hasMany;
@@ -68,6 +126,16 @@ existingUser.get('isDirty'); // => true
 existingUser.save(); // PUT /users/1
 ```
 
+## Store API
+
+`Store#find(<type>)` - find all records by type, returns a promise
+
+`Store#find(<type>, <id>)` - find by primary key (multiple calls within a single run loop can coalesce to a findMany), returns a promise
+
+`Store#find(<type>, <object>)` - find query - object gets passed directly to your adapter, returns a promise
+
+`Store#createRecord(<type>, <object>)` - create a new record
+
 ## Model API
 
 `Model.create` - create a new record
@@ -76,7 +144,7 @@ existingUser.save(); // PUT /users/1
 
 `Model#deleteRecord` - delete a record
 
-`Model#load` - load JSON into the record (typically used inside adapter definition)
+`Model#load(<id>, <object>)` - load JSON into the record (typically used inside adapter definition)
 
 `Model#toJSON` - serialize the record to JSON
 

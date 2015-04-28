@@ -10,14 +10,16 @@
   <div id="qunit-fixture"></div>
   <script type="text/javascript" src="../bower_components/jquery/dist/jquery.js"></script>
   <script type="text/javascript" src="../bower_components/handlebars/handlebars.js"></script>
-  <script type="text/javascript" src="../bower_components/ember/ember.js"></script>
+  <script type="text/javascript" src="../bower_components/ember/ember.debug.js"></script>
 
   <script type="text/javascript" src="../bower_components/qunit/qunit/qunit.js"></script>
 
   <script type="text/javascript" src="expect_assertion_helper.js"></script>
 
   <script type="text/javascript">
-    TESTING = true;  
+    TESTING = true;
+    // FIXME: Logging rejected promises
+    Ember.Logger.error = Ember.K;
   </script>
 
   <script src="../dist/ember-model.js"></script>

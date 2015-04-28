@@ -100,12 +100,12 @@ test("after saving, the model shouldn't be dirty", function() {
   Model.adapter = {
     saveRecord: function(record) {
       ok(true, "saveRecord was called");
-      var deferred = Ember.Deferred.create();
-      deferred.then(function() {
+      var deferred = Ember.RSVP.defer();
+      deferred.promise.then(function() {
         record.didSaveRecord();
       });
       deferred.resolve(record);
-      return deferred;
+      return deferred.promise;
     }
   };
 
@@ -551,6 +551,51 @@ test("save parent of embedded belongsTo", function() {
       Post = Ember.Model.extend({
         id: Ember.attr(),
         author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+      });
+
+  Post.adapter = Ember.FixtureAdapter.create();
+
+  var post = Post.create();
+  Ember.run(post, post.load, json.id, json);
+  equal(post.get('isDirty'), false, 'post should be clean initially');
+
+  post.set('author.name', 'Billy Bob');
+  equal(post.get('author.isDirty'), true, 'author should be dirty after being modified');
+  equal(post.get('isDirty'), true, 'changes to embedded belongsTo should dirty the parent');
+
+  stop();
+  Ember.run(function() {
+    post.save().then(function() {
+      start();
+      equal(post.get('author.isDirty'), false, 'the author should be clean after being saved');
+      equal(post.get('isDirty'), false, 'the post should be clean after being saved');
+
+      post.set('author.name', 'John Doe');
+      equal(post.get('author.isDirty'), true, 'the author should be dirty again');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+
+      post.set('author.name', 'Cory Loken'); // special case: setting back to its original value
+      equal(post.get('author.isDirty'), true, 'the author should be dirty because it was saved as "Billy Bob"');
+      equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+    });
+  });
+});
+
+test("save parent of embedded belongsTo with different named key", function() {
+  expect(9);
+  var json = {
+    id: 1,
+    name: 'foo',
+    the_author: { id: 1, name: 'Cory Loken' }
+  };
+
+  var Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Post = Ember.Model.extend({
+        id: Ember.attr(),
+        author: Ember.belongsTo(Author, {key: 'the_author', embedded: true})
       });
 
   Post.adapter = Ember.FixtureAdapter.create();
