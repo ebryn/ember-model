@@ -30,6 +30,15 @@ function hasCachedValue(object, key) {
   }
 }
 
+function isDescriptor(value) {
+  // Ember < 1.11
+  if (Ember.Descriptor !== undefined) {
+    return value instanceof Ember.Descriptor;
+  }
+  // Ember >= 1.11
+  return value && typeof value === 'object' && value.isDescriptor;
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -141,7 +150,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (value instanceof Ember.Descriptor) {
+    if (isDescriptor(value)) {
       var meta = value.meta();
       var klass = proto.constructor;
 
