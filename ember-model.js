@@ -1770,7 +1770,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
-        if (method === "GET") {
+        if (settings.type === "GET") {
           settings.data = params;
         } else {
           settings.contentType = "application/json; charset=utf-8";
