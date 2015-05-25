@@ -542,6 +542,15 @@ function hasCachedValue(object, key) {
   }
 }
 
+function isDescriptor(value) {
+  // Ember < 1.11
+  if (Ember.Descriptor !== undefined) {
+    return value instanceof Ember.Descriptor;
+  }
+  // Ember >= 1.11
+  return value && typeof value === 'object' && value.isDescriptor;
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -653,7 +662,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (value instanceof Ember.Descriptor) {
+    if (isDescriptor(value)) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -1778,8 +1787,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         }
       }
 
-      settings.success = function(json) {
+      settings.success = function(json, textStatus, jqXHR) {
         Ember.run(null, resolve, json);
+        if (settings.successCallback) {
+          settings.successCallback.call(this, json, textStatus, jqXHR);
+        }
       };
 
       settings.error = function(jqXHR, textStatus, errorThrown) {
@@ -1789,8 +1801,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         }
 
         Ember.run(null, reject, jqXHR);
-      };
 
+        if (settings.errorCallback) {
+          settings.errorCallback.call(this, jqXHR, textStatus, errorThrown);
+        }
+      };
 
       Ember.$.ajax(settings);
    });

@@ -138,8 +138,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         }
       }
 
-      settings.success = function(json) {
+      settings.success = function(json, textStatus, jqXHR) {
         Ember.run(null, resolve, json);
+        if (settings.successCallback) {
+          settings.successCallback.call(this, json, textStatus, jqXHR);
+        }
       };
 
       settings.error = function(jqXHR, textStatus, errorThrown) {
@@ -149,8 +152,11 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         }
 
         Ember.run(null, reject, jqXHR);
-      };
 
+        if (settings.errorCallback) {
+          settings.errorCallback.call(this, jqXHR, textStatus, errorThrown);
+        }
+      };
 
       Ember.$.ajax(settings);
    });
