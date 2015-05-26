@@ -1779,11 +1779,16 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
-        if (settings.type === "GET") {
+        if (settings.type.trim().toUpperCase() === "GET") {
           settings.data = params;
-        } else {
-          settings.contentType = "application/json; charset=utf-8";
-          settings.data = JSON.stringify(params);
+        } else { // POST, PUT
+          if (settings.dataType.trim().toUpperCase() === "JSON") {
+            settings.contentType = "application/json; charset=utf-8";
+            settings.data = JSON.stringify(params);
+          } else {
+            settings.contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+            settings.data = params;
+          }
         }
       }
 
