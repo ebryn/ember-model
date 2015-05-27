@@ -57,7 +57,7 @@ Ember.Model.Store = Ember.Object.extend({
 });
 
 Ember.onLoad('Ember.Application', function(Application) {
-  Application.initializer({
+  Application.instanceInitializer({
     name: "store",
 
     initialize: function(container, application) {
