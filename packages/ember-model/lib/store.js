@@ -57,7 +57,9 @@ Ember.Model.Store = Ember.Object.extend({
 });
 
 Ember.onLoad('Ember.Application', function(Application) {
-  (Application.instanceInitializer || Application.initializer)({
+  var initializer = (Application.instanceInitializer || Application.initializer);
+
+  var args = {
     name: "store",
 
     initialize: function(container, application) {
@@ -66,5 +68,7 @@ Ember.onLoad('Ember.Application', function(Application) {
       application.inject('route', 'store', 'store:main');
       application.inject('controller', 'store', 'store:main');
     }
-  });
+  };
+
+  initializer.apply(Application, [args]);
 });
