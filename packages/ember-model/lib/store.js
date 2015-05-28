@@ -57,18 +57,27 @@ Ember.Model.Store = Ember.Object.extend({
 });
 
 Ember.onLoad('Ember.Application', function(Application) {
-  var initializer = (Application.instanceInitializer || Application.initializer);
+  if(Application.instanceInitializer) {
+    Application.instanceInitializer({
+      name: "store",
 
-  var args = {
-    name: "store",
+      initialize: function(instance) {
+        instance.register('store:main', instance.container.lookupFactory('store:application') || Ember.Model.Store);
 
-    initialize: function(container, application) {
-      application.register('store:main', container.lookupFactory('store:application') || Ember.Model.Store);
+        instance.inject('route', 'store', 'store:main');
+        instance.inject('controller', 'store', 'store:main');
+      }
+    });
+  } else {
+    Application.initializer({
+      name: "store",
 
-      application.inject('route', 'store', 'store:main');
-      application.inject('controller', 'store', 'store:main');
-    }
-  };
+      initialize: function(container, application) {
+        application.register('store:main', container.lookupFactory('store:application') || Ember.Model.Store);
 
-  initializer.apply(Application, [args]);
+        application.inject('route', 'store', 'store:main');
+        application.inject('controller', 'store', 'store:main');
+      }
+    });
+  }
 });
