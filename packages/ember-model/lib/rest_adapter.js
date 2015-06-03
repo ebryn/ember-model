@@ -119,8 +119,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     return {
       url         : url,
       type        : method,
-      dataType    : "json",
-      contentType : "application/json"
+      dataType    : "json"
     };
   },
 
