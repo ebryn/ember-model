@@ -11,6 +11,12 @@ if (Ember.libraries) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 function mustImplement(message) {
   var fn = function() {
     var className = this.constructor.toString();
@@ -39,6 +45,14 @@ Ember.Adapter = Ember.Object.extend({
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get,
     set = Ember.set;
@@ -156,6 +170,12 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get,
     set = Ember.set;
 
@@ -212,6 +232,14 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get;
 
@@ -270,6 +298,12 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
     }
   }
 });
+
+})();
+
+(function() {
+
+
 
 })();
 
@@ -512,6 +546,20 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get,
     set = Ember.set,
@@ -1357,6 +1405,12 @@ Ember.Model.reopenClass({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 function getType(record) {
@@ -1414,6 +1468,12 @@ Ember.Model.reopen({
     return collection;
   }
 });
+
+
+})();
+
+(function() {
+
 
 
 })();
@@ -1560,6 +1620,12 @@ Ember.Model.reopen({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get,
   set = Ember.set,
   meta = Ember.meta;
@@ -1615,7 +1681,7 @@ function serialize(value, type) {
 
 Ember.attr = function(type, options) {
   return Ember.computed("_data", {
-    get: function(key){
+    get: function(key) {
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
           dataValue = data && get(data, dataKey);
@@ -1626,7 +1692,7 @@ Ember.attr = function(type, options) {
 
       return this.getAttr(key, deserialize(dataValue, type));
     },
-    set: function(key, value){
+    set: function(key, value) {
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
           dataValue = data && get(data, dataKey),
@@ -1657,19 +1723,22 @@ Ember.attr = function(type, options) {
       }
 
       return value;
-    },
-  }).meta({isAttribute: true, type: type, options: options});
-    get: function(key) {
-      var data = get(this, '_data'),
-        dataKey = this.dataKey(key),
-        dataValue = data && get(data, dataKey);
     }
+  }).meta({isAttribute: true, type: type, options: options});
 };
 
 
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get;
 
@@ -1855,6 +1924,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 Ember.loadPromise = function(target) {
@@ -1876,6 +1951,12 @@ Ember.loadPromise = function(target) {
     return deferred.promise;
   }
 };
+
+
+})();
+
+(function() {
+
 
 
 })();
@@ -2002,6 +2083,12 @@ Ember.onLoad('Ember.Application', function(Application) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 function NIL() {}
 
 Ember.Model.Store = Ember.Object.extend({
@@ -2076,6 +2163,13 @@ Ember.onLoad('Ember.Application', function(Application) {
   });
 
 });
+
+
+})();
+
+(function() {
+
+
 
 
 })();

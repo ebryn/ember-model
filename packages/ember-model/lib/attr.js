@@ -53,7 +53,7 @@ function serialize(value, type) {
 
 Ember.attr = function(type, options) {
   return Ember.computed("_data", {
-    get: function(key){
+    get: function(key) {
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
           dataValue = data && get(data, dataKey);
@@ -64,7 +64,7 @@ Ember.attr = function(type, options) {
 
       return this.getAttr(key, deserialize(dataValue, type));
     },
-    set: function(key, value){
+    set: function(key, value) {
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
           dataValue = data && get(data, dataKey),
@@ -95,11 +95,6 @@ Ember.attr = function(type, options) {
       }
 
       return value;
-    },
-  }).meta({isAttribute: true, type: type, options: options});
-    get: function(key) {
-      var data = get(this, '_data'),
-        dataKey = this.dataKey(key),
-        dataValue = data && get(data, dataKey);
     }
+  }).meta({isAttribute: true, type: type, options: options});
 };
