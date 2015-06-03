@@ -11,6 +11,12 @@ if (Ember.libraries) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 function mustImplement(message) {
   var fn = function() {
     var className = this.constructor.toString();
@@ -39,6 +45,14 @@ Ember.Adapter = Ember.Object.extend({
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get,
     set = Ember.set;
@@ -156,6 +170,12 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get,
     set = Ember.set;
 
@@ -212,6 +232,14 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get;
 
@@ -270,6 +298,12 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
     }
   }
 });
+
+})();
+
+(function() {
+
+
 
 })();
 
@@ -512,6 +546,20 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get,
     set = Ember.set,
@@ -1357,6 +1405,12 @@ Ember.Model.reopenClass({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 function getType(record) {
@@ -1414,6 +1468,12 @@ Ember.Model.reopen({
     return collection;
   }
 });
+
+
+})();
+
+(function() {
+
 
 
 })();
@@ -1547,6 +1607,12 @@ Ember.Model.reopen({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get,
     set = Ember.set,
     meta = Ember.meta;
@@ -1648,6 +1714,14 @@ Ember.attr = function(type, options) {
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get;
 
@@ -1766,9 +1840,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   ajaxSettings: function(url, method) {
     return {
-      url: url,
-      type: method,
-      dataType: "json"
+      url         : url,
+      type        : method,
+      dataType    : "json",
+      contentType : "application/json"
     };
   },
 
@@ -1779,14 +1854,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
-        if (settings.type.trim().toUpperCase() === "GET") {
+        if (/get/i.test(settings.type)) { // GET
           settings.data = params;
         } else { // POST, PUT
-          if (settings.dataType.trim().toUpperCase() === "JSON") {
-            settings.contentType = "application/json; charset=utf-8";
+          if (/json/i.test(settings.contentType)) {
             settings.data = JSON.stringify(params);
-          } else {
-            settings.contentType = "application/x-www-form-urlencoded; charset=UTF-8";
+          } else { // application/x-www-form-urlencoded; charset=UTF-8
             settings.data = params;
           }
         }
@@ -1834,6 +1907,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 Ember.loadPromise = function(target) {
@@ -1855,6 +1934,12 @@ Ember.loadPromise = function(target) {
     return deferred.promise;
   }
 };
+
+
+})();
+
+(function() {
+
 
 
 })();
@@ -1981,6 +2066,12 @@ Ember.onLoad('Ember.Application', function(Application) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 function NIL() {}
 
 Ember.Model.Store = Ember.Object.extend({
@@ -2051,6 +2142,13 @@ Ember.onLoad('Ember.Application', function(Application) {
     }
   });
 });
+
+
+})();
+
+(function() {
+
+
 
 
 })();
