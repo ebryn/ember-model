@@ -1,6 +1,6 @@
 (function() {
 
-var VERSION = '0.0.15';
+var VERSION = '0.0.16';
 
 if (Ember.libraries) {
   Ember.libraries.register('Ember Model', VERSION);
@@ -191,7 +191,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-    
+
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
@@ -316,12 +316,12 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var content = get(this, 'content');
 
     if (!content.length) { return; }
-    
+
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
     var record = this.materializeRecord(idx, this.container);
-    
+
     if (observerNeeded) {
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
       if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
@@ -384,7 +384,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var content = item;
     for (var i = idx; i < idx+addedCnt; i++) {
       var currentItem = content[i];
-      if (currentItem && currentItem.record) { 
+      if (currentItem && currentItem.record) {
         var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
         if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
         Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
@@ -426,7 +426,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   recordStateChanged: function(obj, keyName) {
-    var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');    
+    var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');
 
     if (obj.record.get('isDirty')) {
       if (this._modifiedRecords.indexOf(obj) === -1) { this._modifiedRecords.pushObject(obj); }
@@ -434,7 +434,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     } else {
       if (this._modifiedRecords.indexOf(obj) > -1) { this._modifiedRecords.removeObject(obj); }
       if (!this.get('isDirty')) {
-        parent._relationshipBecameClean(relationshipKey); 
+        parent._relationshipBecameClean(relationshipKey);
       }
     }
   }
@@ -600,7 +600,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     if (!reference) {
       reference = this.constructor._getOrCreateReferenceForId(id);
-      reference.record = this;
+      set(reference, 'record', this);
       this._reference = reference;
     } else if (reference.id !== id) {
       reference.id = id;
