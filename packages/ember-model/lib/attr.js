@@ -1,3 +1,4 @@
+require('ember-model/computed');
 var get = Ember.get,
     set = Ember.set,
     meta = Ember.meta;
@@ -52,7 +53,7 @@ function serialize(value, type) {
 }
 
 Ember.attr = function(type, options) {
-  return Ember.computed("_data", {
+  return Ember.Model.computed("_data", {
     get: function(key){
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
