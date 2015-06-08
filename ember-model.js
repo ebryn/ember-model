@@ -1357,6 +1357,54 @@ Ember.Model.reopenClass({
 
 (function() {
 
+var supportsComputedGetterSetter;
+
+try {
+  Ember.computed({
+    get: function() { },
+    set: function() { }
+  });
+  supportsComputedGetterSetter = true;
+} catch(e) {
+  supportsComputedGetterSetter = false;
+}
+
+Ember.Model.computed = function() {
+  var polyfillArguments = [];
+  var config = arguments[arguments.length - 1];
+
+  if (typeof config === 'function' || supportsComputedGetterSetter) {
+    return Ember.computed.apply(null, arguments);
+  }
+
+  for (var i = 0, l = arguments.length - 1; i < l; i++) {
+    polyfillArguments.push(arguments[i]);
+  }
+
+  var func;
+  if (config.set) {
+    func = function(key, value, oldValue) {
+      if (arguments.length > 1) {
+        return config.set.call(this, key, value, oldValue);
+      } else {
+        return config.get.call(this, key);
+      }
+    };
+  } else {
+    func = function(key) {
+      return config.get.call(this, key);
+    };
+  }
+
+  polyfillArguments.push(func);
+
+  return Ember.computed.apply(null, polyfillArguments);
+};
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 function getType(record) {
@@ -1380,7 +1428,7 @@ Ember.hasMany = function(type, options) {
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'hasMany', getType: getType};
 
-  return Ember.computed({
+  return Ember.Model.computed({
     get: function(propertyKey) {
       type = meta.getType(this);
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
@@ -1452,7 +1500,7 @@ Ember.belongsTo = function(type, options) {
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
 
-  return Ember.computed("_data", {
+  return Ember.Model.computed("_data", {
     get: function(propertyKey){
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
@@ -1614,7 +1662,7 @@ function serialize(value, type) {
 }
 
 Ember.attr = function(type, options) {
-  return Ember.computed("_data", {
+  return Ember.Model.computed("_data", {
     get: function(key){
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
