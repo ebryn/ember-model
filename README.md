@@ -10,7 +10,7 @@ EM is still a work in progress, but it's flexible and stable enough to be [used 
 
 ### Ember CLI
 
-`ember install:addon ember-model`
+`ember install ember-model`
 
 ### Bower
 
