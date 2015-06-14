@@ -1,3 +1,4 @@
+require('ember-model/computed');
 var get = Ember.get,
     set = Ember.set;
 
@@ -30,30 +31,52 @@ Ember.belongsTo = function(type, options) {
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
 
-  return Ember.computed(function(propertyKey, value, oldValue) {
-    type = meta.getType(this);
-    Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
+  return Ember.Model.computed("_data", {
+    get: function(propertyKey){
+      type = meta.getType(this);
+      Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
-    var key = options.key || propertyKey;
+      var key = options.key || propertyKey,
+          self = this;
 
-    var dirtyAttributes = get(this, '_dirtyAttributes'),
-        createdDirtyAttributes = false,
-        self = this;
+      var dirtyChanged = function(sender) {
+        if (sender.get('isDirty')) {
+          self._relationshipBecameDirty(propertyKey);
+        } else {
+          self._relationshipBecameClean(propertyKey);
+        }
+      };
 
-    var dirtyChanged = function(sender) {
-      if (sender.get('isDirty')) {
-        self._relationshipBecameDirty(propertyKey);
-      } else {
-        self._relationshipBecameClean(propertyKey);
+      var store = storeFor(this),
+          value = this.getBelongsTo(key, type, meta, store);
+      this._registerBelongsTo(meta);
+      if (value !== null && meta.options.embedded) {
+        value.get('isDirty'); // getter must be called before adding observer
+        value.addObserver('isDirty', dirtyChanged);
       }
-    };
+      return value;
+    },
 
-    if (!dirtyAttributes) {
-      dirtyAttributes = [];
-      createdDirtyAttributes = true;
-    }
+    set: function(propertyKey, value, oldValue){
+      type = meta.getType(this);
+      Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
-    if (arguments.length > 1) {
+      var dirtyAttributes = get(this, '_dirtyAttributes'),
+          createdDirtyAttributes = false,
+          self = this;
+
+      var dirtyChanged = function(sender) {
+        if (sender.get('isDirty')) {
+          self._relationshipBecameDirty(propertyKey);
+        } else {
+          self._relationshipBecameClean(propertyKey);
+        }
+      };
+
+      if (!dirtyAttributes) {
+        dirtyAttributes = [];
+        createdDirtyAttributes = true;
+      }
 
       if (value) {
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
@@ -81,17 +104,8 @@ Ember.belongsTo = function(type, options) {
       }
 
       return value === undefined ? null : value;
-    } else {
-      var store = storeFor(this);
-      value = this.getBelongsTo(key, type, meta, store);
-      this._registerBelongsTo(meta);
-      if (value !== null && meta.options.embedded) {
-        value.get('isDirty'); // getter must be called before adding observer
-        value.addObserver('isDirty', dirtyChanged);
-      }
-      return value;
     }
-  }).property('_data').meta(meta);
+  }).meta(meta);
 };
 
 Ember.Model.reopen({

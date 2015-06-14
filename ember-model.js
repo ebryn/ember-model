@@ -542,6 +542,15 @@ function hasCachedValue(object, key) {
   }
 }
 
+function isDescriptor(value) {
+  // Ember < 1.11
+  if (Ember.Descriptor !== undefined) {
+    return value instanceof Ember.Descriptor;
+  }
+  // Ember >= 1.11
+  return value && typeof value === 'object' && value.isDescriptor;
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -653,7 +662,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (value instanceof Ember.Descriptor) {
+    if (isDescriptor(value)) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -1348,6 +1357,54 @@ Ember.Model.reopenClass({
 
 (function() {
 
+var supportsComputedGetterSetter;
+
+try {
+  Ember.computed({
+    get: function() { },
+    set: function() { }
+  });
+  supportsComputedGetterSetter = true;
+} catch(e) {
+  supportsComputedGetterSetter = false;
+}
+
+Ember.Model.computed = function() {
+  var polyfillArguments = [];
+  var config = arguments[arguments.length - 1];
+
+  if (typeof config === 'function' || supportsComputedGetterSetter) {
+    return Ember.computed.apply(null, arguments);
+  }
+
+  for (var i = 0, l = arguments.length - 1; i < l; i++) {
+    polyfillArguments.push(arguments[i]);
+  }
+
+  var func;
+  if (config.set) {
+    func = function(key, value, oldValue) {
+      if (arguments.length > 1) {
+        return config.set.call(this, key, value, oldValue);
+      } else {
+        return config.get.call(this, key);
+      }
+    };
+  } else {
+    func = function(key) {
+      return config.get.call(this, key);
+    };
+  }
+
+  polyfillArguments.push(func);
+
+  return Ember.computed.apply(null, polyfillArguments);
+};
+
+})();
+
+(function() {
+
 var get = Ember.get;
 
 function getType(record) {
@@ -1371,18 +1428,18 @@ Ember.hasMany = function(type, options) {
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'hasMany', getType: getType};
 
-  return Ember.computed(function(propertyKey, newContentArray, existingArray) {
-    type = meta.getType(this);
-    Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
+  return Ember.Model.computed({
+    get: function(propertyKey) {
+      type = meta.getType(this);
+      Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
-    var key = options.key || propertyKey;
-
-    if (arguments.length > 1) {
-      return existingArray.setObjects(newContentArray);
-    } else {
+      var key = options.key || propertyKey;
       return this.getHasMany(key, type, meta, this.container);
+    },
+    set: function(propertyKey, newContentArray, existingArray) {
+      return existingArray.setObjects(newContentArray);
     }
-  }).property().meta(meta);
+  }).meta(meta);
 };
 
 Ember.Model.reopen({
@@ -1443,30 +1500,52 @@ Ember.belongsTo = function(type, options) {
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
 
-  return Ember.computed(function(propertyKey, value, oldValue) {
-    type = meta.getType(this);
-    Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
+  return Ember.Model.computed("_data", {
+    get: function(propertyKey){
+      type = meta.getType(this);
+      Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
-    var key = options.key || propertyKey;
+      var key = options.key || propertyKey,
+          self = this;
 
-    var dirtyAttributes = get(this, '_dirtyAttributes'),
-        createdDirtyAttributes = false,
-        self = this;
+      var dirtyChanged = function(sender) {
+        if (sender.get('isDirty')) {
+          self._relationshipBecameDirty(propertyKey);
+        } else {
+          self._relationshipBecameClean(propertyKey);
+        }
+      };
 
-    var dirtyChanged = function(sender) {
-      if (sender.get('isDirty')) {
-        self._relationshipBecameDirty(propertyKey);
-      } else {
-        self._relationshipBecameClean(propertyKey);
+      var store = storeFor(this),
+          value = this.getBelongsTo(key, type, meta, store);
+      this._registerBelongsTo(meta);
+      if (value !== null && meta.options.embedded) {
+        value.get('isDirty'); // getter must be called before adding observer
+        value.addObserver('isDirty', dirtyChanged);
       }
-    };
+      return value;
+    },
 
-    if (!dirtyAttributes) {
-      dirtyAttributes = [];
-      createdDirtyAttributes = true;
-    }
+    set: function(propertyKey, value, oldValue){
+      type = meta.getType(this);
+      Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
-    if (arguments.length > 1) {
+      var dirtyAttributes = get(this, '_dirtyAttributes'),
+          createdDirtyAttributes = false,
+          self = this;
+
+      var dirtyChanged = function(sender) {
+        if (sender.get('isDirty')) {
+          self._relationshipBecameDirty(propertyKey);
+        } else {
+          self._relationshipBecameClean(propertyKey);
+        }
+      };
+
+      if (!dirtyAttributes) {
+        dirtyAttributes = [];
+        createdDirtyAttributes = true;
+      }
 
       if (value) {
         Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
@@ -1494,17 +1573,8 @@ Ember.belongsTo = function(type, options) {
       }
 
       return value === undefined ? null : value;
-    } else {
-      var store = storeFor(this);
-      value = this.getBelongsTo(key, type, meta, store);
-      this._registerBelongsTo(meta);
-      if (value !== null && meta.options.embedded) {
-        value.get('isDirty'); // getter must be called before adding observer
-        value.addObserver('isDirty', dirtyChanged);
-      }
-      return value;
     }
-  }).property('_data').meta(meta);
+  }).meta(meta);
 };
 
 Ember.Model.reopen({
@@ -1592,20 +1662,30 @@ function serialize(value, type) {
 }
 
 Ember.attr = function(type, options) {
-  return Ember.computed(function(key, value) {
-    var data = get(this, '_data'),
-        dataKey = this.dataKey(key),
-        dataValue = data && get(data, dataKey),
-        beingCreated = meta(this).proto === this,
-        dirtyAttributes = get(this, '_dirtyAttributes'),
-        createdDirtyAttributes = false;
+  return Ember.Model.computed("_data", {
+    get: function(key){
+      var data = get(this, '_data'),
+          dataKey = this.dataKey(key),
+          dataValue = data && get(data, dataKey);
 
-    if (!dirtyAttributes) {
-      dirtyAttributes = [];
-      createdDirtyAttributes = true;
-    }
+      if (dataValue==null && options && options.defaultValue!=null) {
+        return Ember.copy(options.defaultValue);
+      }
 
-    if (arguments.length === 2) {
+      return this.getAttr(key, deserialize(dataValue, type));
+    },
+    set: function(key, value){
+      var data = get(this, '_data'),
+          dataKey = this.dataKey(key),
+          dataValue = data && get(data, dataKey),
+          beingCreated = meta(this).proto === this,
+          dirtyAttributes = get(this, '_dirtyAttributes'),
+          createdDirtyAttributes = false;
+      if (!dirtyAttributes) {
+        dirtyAttributes = [];
+        createdDirtyAttributes = true;
+      }
+
       if (beingCreated) {
         if (!data) {
           data = {};
@@ -1626,13 +1706,7 @@ Ember.attr = function(type, options) {
 
       return value;
     }
-
-    if (dataValue==null && options && options.defaultValue!=null) {
-      return Ember.copy(options.defaultValue);
-    }
-
-    return this.getAttr(key, deserialize(dataValue, type));
-  }).property('_data').meta({isAttribute: true, type: type, options: options});
+  }).meta({isAttribute: true, type: type, options: options});
 };
 
 
@@ -2020,16 +2094,20 @@ Ember.Model.Store = Ember.Object.extend({
 });
 
 Ember.onLoad('Ember.Application', function(Application) {
+
   Application.initializer({
     name: "store",
 
-    initialize: function(container, application) {
-      application.register('store:main', container.lookupFactory('store:application') || Ember.Model.Store);
+    initialize: function(_, application) {
+      var store = application.Store || Ember.Model.Store;
+      application.register('store:application', store);
+      application.register('store:main', store);
 
       application.inject('route', 'store', 'store:main');
       application.inject('controller', 'store', 'store:main');
     }
   });
+
 });
 
 

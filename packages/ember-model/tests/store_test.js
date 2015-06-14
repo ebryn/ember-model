@@ -202,7 +202,7 @@ test("store.find(type) records use application adapter if no klass.adapter or ty
   EmbeddedModel.adapter = undefined;
   registry.register('adapter:test', null);
   registry.register('adapter:application', Ember.FixtureAdapter);
-  
+
   var promise = Ember.run(store, store.find, 'test','a');
 
   promise.then(function(record) {
@@ -217,10 +217,11 @@ test("store.find(type) records use application adapter if no klass.adapter or ty
 
 test("Registering a custom store on application works", function() {
   Ember.run(function() {
+    var CustomStore = Ember.Model.Store.extend({ custom: true });
     App = Ember.Application.create({
-      TestRoute: Ember.Route.extend()
+      TestRoute: Ember.Route.extend(),
+      Store: CustomStore
     });
-    App.ApplicationStore = Ember.Model.Store.extend({ custom: true });
   });
 
   container = App.__container__;
