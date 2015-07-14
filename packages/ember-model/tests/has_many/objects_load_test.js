@@ -3,7 +3,7 @@ var attr = Ember.attr;
 module("Ember.HasManyArray - objects loading");
 
 test("loads objects based on their ids", function() {
-  expect(5);
+  expect(6);
 
   var json = {
     id: 1,
@@ -45,5 +45,6 @@ test("loads objects based on their ids", function() {
     ok(Ember.run(comments, comments.get, 'firstObject') instanceof Comment, "The first object is a Comment object");
     deepEqual(Ember.run(comments, comments.mapProperty, 'text'), ['uno', 'dos', 'tres'], "The comments are loaded");
     ok(!comments.everyProperty('isNew'), "Records should not be new");
+    ok(comments.get('isLoaded'), "Sets isLoaded to true");
   });
 });
