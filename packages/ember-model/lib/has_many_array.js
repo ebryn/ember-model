@@ -128,6 +128,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       originalContent: content.slice()
     });
     set(this, '_modifiedRecords', []);
+    this.notifyLoaded();
   },
 
   revert: function() {
