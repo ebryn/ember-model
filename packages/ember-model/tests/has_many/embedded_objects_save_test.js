@@ -54,7 +54,7 @@ test("derp", function() {
 
   equal(comments.get('length'), 4);
   ok(newComment instanceof Comment);
-  deepEqual(Ember.run(comments, comments.mapProperty, 'text'), ['uno', 'dos', 'tres', 'quattro']);
+  deepEqual(Ember.run(comments, comments.mapBy, 'text'), ['uno', 'dos', 'tres', 'quattro']);
 
   Ember.run(function() {
     stop();
