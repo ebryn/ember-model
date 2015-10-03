@@ -17,22 +17,23 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
         content = get(this, 'content'),
-        contentLength = get(content, 'length');
+        contentLength = get(content, 'length'),
+        i, l;
 
     if (originalContentLength !== contentLength) { return true; }
 
     if (this._modifiedRecords && this._modifiedRecords.length) { return true; }
 
-    var isDirty = false;
-
-    for (var i = 0, l = contentLength; i < l; i++) {
-      if (!originalContent.contains(content[i])) {
-        isDirty = true;
-        break;
-      }
+    if (get(this, 'ordered')) {
+        for (i = 0, l = contentLength; i < l; i++) {
+            if (originalContent.objectAt(i) !== content.objectAt(i)) { return true; }
+        }
+    } else {
+        for (i = 0, l = contentLength; i < l; i++) {
+            if (!originalContent.contains(content[i])) { return true; }
+        }
     }
-
-    return isDirty;
+    return false;
   }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]'),
 
   objectAtContent: function(idx) {

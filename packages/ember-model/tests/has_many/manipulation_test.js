@@ -284,3 +284,59 @@ test("setting a hasMany array with setObjects", function() {
   equal(article.get('comments.length'), 3, "should be 3 comments after revert");
   equal(article.get('comments.isDirty'), false, "should not be dirty after revert");
 });
+
+test("reordering a hasMany array", function () {
+  var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+    comments: Ember.hasMany(Comment, { key: 'comments', ordered: true })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+  // New by default for some reason
+  article.get('comments').forEach(function (comment) { comment.set('isNew', false); });
+
+  // Control test
+  article.get('comments').setObjects([Comment.find(2), Comment.find(1), Comment.find(3)]);
+  equal(article.get('comments.length'), 3, "should be 3 comments after set");
+  equal(article.get('comments.isDirty'), true, "comments should be dirty after set");
+
+  // Reorder using replace (through insertAt)
+  article.get('comments').removeAt(0);
+  article.get('comments').insertAt(1, Comment.find(2));
+  equal(article.get('comments.length'), 3, "should be 3 comments after set");
+  equal(article.get('comments.isDirty'), false, "should not be dirty after replacing to right order");
+
+  // Reorder using setObjects
+  article.get('comments').setObjects([Comment.find(2), Comment.find(1), Comment.find(3)]);
+  equal(article.get('comments.isDirty'), true, "comments should be dirty after set");
+
+  article.get('comments').setObjects([Comment.find(1), Comment.find(2), Comment.find(3)]);
+  equal(article.get('comments.length'), 3, "should be 3 comments after set");
+  equal(article.get('comments.isDirty'), false, "should not be dirty after setObjects in right order");
+
+  // Reorder using item array
+  article.get('comments').setObjects([Comment.find(2), Comment.find(1), Comment.find(3)]);
+  equal(article.get('comments.isDirty'), true, "comments should be dirty after set");
+
+  article.set('comments', [Comment.find(1), Comment.find(2), Comment.find(3)]);
+  equal(article.get('comments.length'), 3, "should be 3 comments after set");
+  equal(article.get('comments.isDirty'), false, "should not be dirty after set in right order");
+});
