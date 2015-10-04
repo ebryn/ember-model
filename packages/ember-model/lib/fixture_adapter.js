@@ -5,7 +5,7 @@ var get = Ember.get,
 
 Ember.FixtureAdapter = Ember.Adapter.extend({
   _counter: 0,
-  _findData: function(klass, id) {
+  _findData: function(klass, id, subgraph) {
     var fixtures = klass.FIXTURES,
         idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
@@ -35,142 +35,22 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     return "fixture-" + counter;
   },
 
-  find: function(record, id) {
-    var data = this._findData(record.constructor, id);
-
+  find: function(record, id, subgraph) {
+    var data = this._findData(record.constructor, id, subgraph);
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        Ember.run(record, record.load, id, data);
+        Ember.run(record, record.load, id, data, subgraph);
         resolve(record);
       }, 0);
     });
   },
 
-  findMany: function(klass, records, ids) {
+  findMany: function(klass, records, ids, subgraph) {
     var fixtures = klass.FIXTURES,
         requestedData = [];
 
     for (var i = 0, l = ids.length; i < l; i++) {
-      requestedData.push(this._findData(klass, ids[i]));
-    }
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(this, function() {
-        Ember.run(records, records.load, klass, requestedData);
-        resolve(records);
-      }, 0);
-    });
-  },
-
-  findAll: function(klass, records) {
-    var fixtures = klass.FIXTURES;
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(this, function() {
-        Ember.run(records, records.load, klass, fixtures);
-        resolve(records);
-      }, 0);
-    });
-  },
-
-  createRecord: function(record) {
-    var klass = record.constructor,
-        fixtures = klass.FIXTURES,
-        self = this;
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(this, function() {
-        var rootKey = record.constructor.rootKey,
-            json;
-
-        self._setPrimaryKey(record);
-        json = rootKey ? record.toJSON()[rootKey] : record.toJSON();
-        fixtures.push(klass.findFromCacheOrLoad(json));
-        record.didCreateRecord();
-        resolve(record);
-      }, 0);
-    });
-  },
-
-  saveRecord: function(record) {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(this, function() {
-        record.didSaveRecord();
-        resolve(record);
-      }, 0);
-    });
-  },
-
-  deleteRecord: function(record) {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(this, function() {
-        record.didDeleteRecord();
-        resolve(record);
-      }, 0);
-    });
-  }
-});
-
-Ember.SubmodelFixtureAdapter = Ember.Adapter.extend({
-  _counter: 0,
-  _findData: function(record, id) {
-    var klass = record.constructor,
-        fixtures = klass.FIXTURES,
-        idAsString = id.toString(),
-        primaryKey = get(klass, 'primaryKey'),
-        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; }),
-        res;
-
-    if(record.get('loadData')) {
-      res = {};
-      Object.keys(record.get('loadData')).forEach(function(k) {
-        res[k] = data[k];
-      });
-    } else {
-      res = data;
-    }
-
-    return res;
-  },
-
-  _setPrimaryKey: function(record) {
-    var klass = record.constructor,
-        fixtures = klass.FIXTURES,
-        primaryKey = get(klass, 'primaryKey');
-
-
-    if(record.get(primaryKey)) {
-      return;
-    }
-
-    set(record, primaryKey, this._generatePrimaryKey());
-  },
-
-  _generatePrimaryKey: function() {
-    var counter = this.get("_counter");
-
-    this.set("_counter", counter + 1);
-
-    return "fixture-" + counter;
-  },
-
-  find: function(record, id) {
-    var data = this._findData(record, id);
-
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      Ember.run.later(this, function() {
-        Ember.run(record, record.load, id, data);
-        resolve(record);
-      }, 0);
-    });
-  },
-
-  findMany: function(klass, records, ids) {
-    var fixtures = klass.FIXTURES,
-        requestedData = [];
-
-    for (var i = 0, l = ids.length; i < l; i++) {
-      requestedData.push(this._findData(klass, ids[i]));
+      requestedData.push(this._findData(klass, ids[i], subgraph));
     }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {

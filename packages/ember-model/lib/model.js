@@ -67,7 +67,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   isDeleted: false,
   _dirtyAttributes: null,
   _graph: null,
-  loadGraph: null,
 
   /**
     Called when attribute is accessed.
@@ -156,17 +155,21 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return get(this, get(this.constructor, 'primaryKey'));
   },
 
-  load: function(id, hash) {
-    var loadGraph = get(this, 'loadGraph');
+  load: function(id, hash, subgraph) {
     var data = {};
-    if(loadGraph) {
+    if(subgraph) {
       if(get(this, 'isLoaded')) {
-        data = get(this, '_data');
-        set(this, 'graph', graphUnion(get(this, 'graph'), loadGraph));
+        data = get(this, '_data') || data;
+        set(this, 'graph', graphUnion(get(this, 'graph'), subgraph));
       } else {
-        set(this, 'graph', loadGraph);
+        set(this, 'graph', subgraph);
+      }
+
+      if(Object.keys(get(this, 'deferredGraph')).length === 0) {
+        set(this, 'graph', null);
       }
     }
+
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
     this.getWithDefault('_dirtyAttributes', []).clear();
@@ -213,6 +216,13 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         meta.relationshipKey = key;
       }
     }
+  },
+
+  isLoadedForGraph: function(graph) {
+    return (this.get('isLoaded') && (
+          (!graph && !this.get('isSub')) || 
+          (graph && Object.keys(graphDiff(graph, this.get('graph'))).length === 0))
+        );
   },
 
   serializeHasMany: function(key, meta) {
@@ -487,6 +497,10 @@ Ember.Model.reopenClass({
   },
 
   fetch: function(id, subgraph) {
+    if(subgraph) {
+      subgraph[get(this, 'primaryKey')] = 1;
+    }
+
     if (isNone(id)) {
       return this._findFetchAll(subgraph, true);
     } else if (Ember.isArray(id)) {
@@ -499,6 +513,10 @@ Ember.Model.reopenClass({
   },
 
   find: function(id, subgraph) {
+    if(subgraph) {
+      subgraph[get(this, 'primaryKey')] = 1;
+    }
+
     if (isNone(id)) {
       return this._findFetchAll(subgraph, false);
     } else if (Ember.isArray(id)) {
@@ -651,12 +669,8 @@ Ember.Model.reopenClass({
         return record;
       }
     }
-
-    if(!fullFetch) {
-      set(record, 'loadGraph', diffGraph);
-    }
     
-    deferredOrPromise = this._fetchById(record, id);
+    deferredOrPromise = this._fetchById(record, id, (fullFetch ? undefined : diffGraph));
 
     return isFetch ? deferredOrPromise : record;
   },
@@ -664,14 +678,17 @@ Ember.Model.reopenClass({
   _currentBatchIds: null,
   _currentBatchRecordArrays: null,
   _currentBatchDeferreds: null,
+  _currentSubgraph: null,
+  _FULL_GRAPH: '__full__',
 
   reload: function(id, container) {
     var record = this.cachedRecordForId(id, container);
     record.set('isLoaded', false);
+    record.set('graph', null);
     return this._fetchById(record, id);
   },
 
-  _fetchById: function(record, id) {
+  _fetchById: function(record, id, subgraph) {
     var adapter = get(this, 'adapter'),
         deferred;
 
@@ -681,6 +698,12 @@ Ember.Model.reopenClass({
       } else {
         this._currentBatchIds = [id];
         this._currentBatchRecordArrays = [];
+      }
+
+      if(isNone(subgraph)) {
+        this._currentSubgraph = this._FULL_GRAPH;
+      } else if(this._currentSubgraph !== this._FULL_GRAPH) {
+        this._currentSubgraph = graphUnion((this._currentSubgraph || {}), subgraph);
       }
 
       deferred = Ember.RSVP.defer();
@@ -695,7 +718,7 @@ Ember.Model.reopenClass({
 
       return deferred.promise;
     } else {
-      return adapter.find(record, id);
+      return adapter.find(record, id, subgraph);
     }
   },
 
@@ -703,30 +726,36 @@ Ember.Model.reopenClass({
     var batchIds = this._currentBatchIds,
         batchRecordArrays = this._currentBatchRecordArrays,
         batchDeferreds = this._currentBatchDeferreds,
+        batchSubgraph = this._currentSubgraph,
         self = this,
         requestIds = [],
         promise,
         i;
 
+    batchSubgraph = (batchSubgraph === this._FULL_GRAPH) ? undefined : batchSubgraph;
+
     this._currentBatchIds = null;
     this._currentBatchRecordArrays = null;
     this._currentBatchDeferreds = null;
+    this._currentSubgraph = null;
 
+    var cachedRecord;
     for (i = 0; i < batchIds.length; i++) {
-      if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
+      cachedRecord = this.cachedRecordForId(batchIds[i]);
+      if (!cachedRecord.isLoadedForGraph(batchSubgraph)) {
         requestIds.push(batchIds[i]);
       }
     }
 
     if (requestIds.length === 1) {
-      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0]);
+      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0], batchSubgraph);
     } else {
       var recordArray = Ember.RecordArray.create({_ids: batchIds, container: container});
       if (requestIds.length === 0) {
         promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); });
         recordArray.notifyLoaded();
       } else {
-        promise = get(this, 'adapter').findMany(this, recordArray, requestIds);
+        promise = get(this, 'adapter').findMany(this, recordArray, requestIds, batchSubgraph);
       }
     }
 
