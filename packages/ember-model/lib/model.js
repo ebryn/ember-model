@@ -1,5 +1,6 @@
 require('ember-model/adapter');
 require('ember-model/record_array');
+require('ember-model/computed');
 
 var get = Ember.get,
     set = Ember.set,
@@ -89,7 +90,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return !isNone(graph);
   }.property('_graph'),
 
-  graph: Ember.computed('_graph', {
+  graph: Ember.modelComputed('_graph', {
     get: function() {
       return get(this, '_graph') || this.constructor.getGraph();
     },
