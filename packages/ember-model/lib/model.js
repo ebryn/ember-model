@@ -553,9 +553,9 @@ Ember.Model.reopenClass({
 
   _findFetchQuery: function(params, subgraph, isFetch, container) {
     this._validateSubgraph(subgraph);
-    var records = Ember.RecordArray.create({modelClass: this, _query: params, container: container});
+    var records = Ember.RecordArray.create({modelClass: this, _query: params, _subgraph: subgraph, container: container});
 
-    var promise = this.adapter.findQuery(this, records, params);
+    var promise = this.adapter.findQuery(this, records, params, subgraph);
 
     return isFetch ? promise : records;
   },

@@ -102,3 +102,24 @@ test("Can .fetchMany([]) by id", function() {
   stop();
 });
 
+test("Can .fetchQuery() with subgraph", function() {
+  expect(2);
+
+  var Adapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params, subgraph) {
+      deepEqual(subgraph, {id: 1, name: 1});
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+  Model.adapter = Adapter.create();
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'Erik'}, {name: 1});
+  promise.then(function(records) {
+    start();
+    ok(records.get('isLoaded'));
+  });
+  stop();
+});
+
