@@ -71,12 +71,24 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     });
   },
 
-  findAll: function(klass, records) {
-    var fixtures = klass.FIXTURES;
+  findAll: function(klass, records, subgraph) {
+    var keys = subgraph ? Object.keys(subgraph) : null,
+        fixtures = klass.FIXTURES.map(function(data) {
+          var res;
+          if(subgraph) {
+            res = {}; 
+            for (var i = 0, l = keys.length; i < l; i++) {
+              res[keys[i]] = data[keys[i]];
+            }
+          } else {
+            res = Ember.merge({}, data);
+          }
+          return res;
+        });
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        Ember.run(records, records.load, klass, fixtures);
+        Ember.run(records, records.load, klass, fixtures, subgraph);
         resolve(records);
       }, 0);
     });

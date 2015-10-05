@@ -89,12 +89,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return !isNone(graph);
   }.property('_graph'),
 
-  graph: function(key, value, previousValue) {
-    if(arguments.length > 1) {
+  graph: Ember.computed('_graph', {
+    get: function() {
+      return get(this, '_graph') || this.constructor.getGraph();
+    },
+
+    set: function(key, value) {
       this.set('_graph', value);
+      return value;
     }
-    return get(this, '_graph') || this.constructor.getGraph();
-  }.property('_graph'),
+  }),
 
   deferredGraph: function() {
     var graph = get(this, '_graph');
@@ -629,7 +633,7 @@ Ember.Model.reopenClass({
 
     var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, container: container});
 
-    var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
+    var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records, subgraph);
 
     promise['finally'](function() {
       self._currentFindFetchAllPromise = null;

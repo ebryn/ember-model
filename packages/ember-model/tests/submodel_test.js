@@ -123,3 +123,16 @@ test("Can .fetchQuery() with subgraph", function() {
   stop();
 });
 
+test("Can .findAll() with a subgraph", function() {
+  expect(4);
+  var records = Model.findAll({name: 1});
+  records.on('didLoad', function(){
+    start();
+    strictEqual(records.get('length'), 2, "Should have all records");
+    deepEqual(records.objectAt(0).toJSON(), {id: 1, name: "Erik"});
+    ok(records.objectAt(0).get('isSub'), "Should be a sub model");
+    deepEqual(records.objectAt(0).get('deferredGraph'), {token: 1, data: 1}, "Deferred graph should be equal");
+  });
+  stop();
+});
+
