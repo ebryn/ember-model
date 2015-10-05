@@ -9,9 +9,19 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     var fixtures = klass.FIXTURES,
         idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
-        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; });
+        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; }),
+        keys,
+        res;
 
-    return data;
+    res = Ember.merge({}, data);
+    if(subgraph) {
+      keys = Object.keys(subgraph);
+      res = {};
+      for(var i = 0; i < keys.length; i++) {
+        res[keys[i]] = data[keys[i]];
+      }
+    }
+    return res;
   },
 
   _setPrimaryKey: function(record) {
@@ -55,7 +65,7 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        Ember.run(records, records.load, klass, requestedData);
+        Ember.run(records, records.load, klass, requestedData, subgraph);
         resolve(records);
       }, 0);
     });

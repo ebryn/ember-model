@@ -30,7 +30,7 @@ test("Test Model.getGraph()", function() {
   });
 });
 
-test("Can find subgraph by id", function() {
+test("Can .find() subgraph by id", function() {
   expect(14);
   var record = Ember.run(Model, Model.find, 1, {name: 1});
   ok(record, "Record was returned by find");
@@ -61,3 +61,44 @@ test("Can find subgraph by id", function() {
 
   stop();
 });
+
+test("Can batch .find() subgraphs", function() {
+  expect(2);
+
+  var Adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      ok(false, "Find was called");
+    },
+
+    findMany: function(klass, records, ids, subgraph) {
+      deepEqual(subgraph, {
+        id: 1,
+        name: 1,
+        token: 1
+      });
+
+      deepEqual(ids, [1, 2], "The correct ids were passed");
+
+      return this._super(klass, records, ids, subgraph);
+    }
+  });
+
+  Model.adapter = Adapter.create();
+
+  Ember.run(function() {
+    Model.find(1, {name: 1});
+    Model.find(2, {token: 1});
+  });
+});
+
+test("Can .fetchMany([]) by id", function() {
+  var promise = Ember.run(Model, Model.fetchMany, [1, 2], {name: 1});
+  promise.then(function(records) {
+    start();
+    ok(records.get('isLoaded'));
+    ok(records.objectAt(0).get('isSub'));
+    deepEqual(records.objectAt(0).toJSON(), {id: 1, name: 'Erik'});
+  });
+  stop();
+});
+
