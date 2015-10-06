@@ -89,16 +89,9 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return !isNone(graph);
   }.property('_graph'),
 
-  graph: Ember.computed('_graph', {
-    get: function() {
-      return get(this, '_graph') || this.constructor.getGraph();
-    },
-
-    set: function(key, value) {
-      this.set('_graph', value);
-      return value;
-    }
-  }),
+  graph: function() {
+    return get(this, '_graph') || this.constructor.getGraph();
+  }.property('_graph'),
 
   deferredGraph: function() {
     var graph = get(this, '_graph');
@@ -164,13 +157,13 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if(subgraph) {
       if(get(this, 'isLoaded')) {
         data = get(this, '_data') || data;
-        set(this, 'graph', graphUnion(get(this, 'graph'), subgraph));
+        set(this, '_graph', graphUnion(get(this, 'graph'), subgraph));
       } else {
-        set(this, 'graph', subgraph);
+        set(this, '_graph', subgraph);
       }
 
       if(Object.keys(get(this, 'deferredGraph')).length === 0) {
-        set(this, 'graph', null);
+        set(this, '_graph', null);
       }
     }
 
@@ -710,7 +703,7 @@ Ember.Model.reopenClass({
   reload: function(id, container) {
     var record = this.cachedRecordForId(id, container);
     record.set('isLoaded', false);
-    record.set('graph', null);
+    record.set('_graph', null);
     return this._fetchById(record, id);
   },
 
