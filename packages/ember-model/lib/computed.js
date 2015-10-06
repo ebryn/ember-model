@@ -10,7 +10,7 @@ try {
   supportsComputedGetterSetter = false;
 }
 
-Ember.modelComputed = function() {
+Ember.Model.computed = function() {
   var polyfillArguments = [];
   var config = arguments[arguments.length - 1];
 
