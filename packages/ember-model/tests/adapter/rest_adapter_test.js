@@ -881,3 +881,33 @@ test("buildURL() creates url from model's url, id, and url suffix", function() {
   url = adapter.buildURL(RESTModel, "123");
   equal(url, "/posts/123.json" );
 });
+
+test('_handleRejections() will resolve empty successful DELETEs', function() {
+  expect(1);
+  var resolve = function(data) {
+    ok(data === null, "resolved with null");
+  };
+  Ember.run(function() {
+    adapter._handleRejections("DELETE", {status: 200}, resolve, Ember.$.noop);
+  });
+});
+
+test('_handleRejections() will reject empty responses for other verbs', function() {
+  expect(1);
+  var reject = function(data) {
+    ok(data.status === 200, "rejected with 200 status");
+  };
+  Ember.run(function() {
+    adapter._handleRejections("PUT", {status: 200}, Ember.$.noop, reject);
+  });
+});
+
+test('_handleRejections() will reject DELETEs with unsuccessful status codes', function() {
+  expect(1);
+  var reject = function(data) {
+    ok(data.status === 403, "rejected with 403 status");
+  };
+  Ember.run(function() {
+    adapter._handleRejections("DELETE", {status: 403}, Ember.$.noop, reject);
+  });
+});
