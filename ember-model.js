@@ -191,7 +191,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-
+    
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
@@ -340,29 +340,29 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
+    added = added.map(function(record) {
       return record._reference;
     }, this);
 
     this._super(index, removed, added);
   },
 
-  _contentWillChange: function() {
-    var content = get(this, 'content');
-
-    if (content) {
-      this.arrayWillChange(content, 0, get(content, 'length'), 0);
-      content.removeArrayObserver(this);
-      this._setupOriginalContent(content);
-    }
-  }.observesBefore('content'),
-
   _contentDidChange: function() {
     var content = get(this, 'content');
+    var contentPrev = this._content;
+
+    if (contentPrev && contentPrev !== content) {
+      this.arrayWillChange(contentPrev, 0, get(contentPrev, 'length'), 0);
+      contentPrev.removeArrayObserver(this);
+      this._setupOriginalContent(content);
+    }
+
     if (content) {
       content.addArrayObserver(this);
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
+
+    this._content = content;
   }.observes('content'),
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
@@ -891,7 +891,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
-      content = Ember.EnumerableUtils.map(content, mapFunction);
+      content = content.map(mapFunction);
     }
 
     return Ember.A(content || []);
