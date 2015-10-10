@@ -66,12 +66,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    if (!dirtyAttributes.contains(name)) { dirtyAttributes.pushObject(name); }
+    if (dirtyAttributes) {
+        dirtyAttributes.addObject(name);
+    } else {
+        set(this, '_dirtyAttributes', [name]);
+    }
   },
 
   _relationshipBecameClean: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    dirtyAttributes.removeObject(name);
+    if (dirtyAttributes) { dirtyAttributes.removeObject(name); }
   },
 
   dataKey: function(key) {
