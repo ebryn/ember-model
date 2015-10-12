@@ -31,6 +31,9 @@ Ember.hasMany = function(type, options) {
       return this.getHasMany(key, type, meta, this.container);
     },
     set: function(propertyKey, newContentArray, existingArray) {
+      if (!existingArray) {
+        existingArray = this.getHasMany(options.key || propertyKey, type, meta, this.container);
+      }
       return existingArray.setObjects(newContentArray);
     }
   }).meta(meta);

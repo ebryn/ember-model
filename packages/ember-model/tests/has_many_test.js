@@ -146,6 +146,58 @@ test("when fetching an association getHasMany is called", function() {
   equal(article.get('comments'), 'foobar', "value returned from getHasMany should be returned as an association");
 });
 
+test("when setting an association that has been neither loaded or fetched getHasMany is called", function () {
+    expect(4);
+    var Comment = Ember.Model.extend({
+        token: Ember.attr(String)
+      }),
+      Article = Ember.Model.extend({
+        comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+      });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create();
+
+  article.getHasMany = function(key, type, meta) {
+    equal(key, 'comments', "key passed to getHasMany should be the same as key in hasMany options");
+    equal(type, Comment, "type of the association should be passed to getHasMany");
+    equal(meta.kind, 'hasMany', "metadata should be passed to getHasMany");
+
+    return Ember.A();
+  };
+
+  article.set('comments', Ember.A([{token: 'a'}, {token: 'b'}]));
+  deepEqual(article.get('comments'), [{token: 'a'}, {token: 'b'}], "setting the relation should have created and filled a hasManyArray");
+});
+
+test("when setting an association that has been loaded but not fetched getHasMany is called", function () {
+    expect(4);
+    var Comment = Ember.Model.extend({
+        token: Ember.attr(String)
+      }),
+      Article = Ember.Model.extend({
+        comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+      });
+
+  Comment.primaryKey = 'token';
+
+  var article = Article.create();
+
+  article.getHasMany = function(key, type, meta) {
+    equal(key, 'comments', "key passed to getHasMany should be the same as key in hasMany options");
+    equal(type, Comment, "type of the association should be passed to getHasMany");
+    equal(meta.kind, 'hasMany', "metadata should be passed to getHasMany");
+
+    return Ember.A();
+  };
+
+  Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
+
+  article.set('comments', Ember.A([{token: 'b'}, {token: 'c'}]));
+  deepEqual(article.get('comments'), [{token: 'b'}, {token: 'c'}], "setting the relation should have created and filled a hasManyArray");
+});
+
 test("toJSON uses the given relationship key", function() {
   expect(1);
 
