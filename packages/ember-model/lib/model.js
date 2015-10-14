@@ -6,6 +6,7 @@ var get = Ember.get,
     setProperties = Ember.setProperties,
     meta = Ember.meta,
     isNone = Ember.isNone,
+    cacheFor = Ember.cacheFor,
     underscore = Ember.String.underscore;
 
 function contains(array, element) {
@@ -148,8 +149,36 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return reference;
   },
 
+  getStore: function() {
+    if (this.container) {
+      return this.container.lookup('store:main');
+    }
+
+    return null;
+  },
+
   getPrimaryKey: function() {
     return get(this, get(this.constructor, 'primaryKey'));
+  },
+
+  getRelationship: function(propertyKey, subgraph) {
+    // This will override/set the computed property cache for a relationship and allow
+    // for submodel get()'s
+    var store = this.getStore(), 
+        meta = this.constructor.metaForProperty(propertyKey),
+        key = meta.options.key || propertyKey,
+        record;
+    Ember.assert("Argument `subgraph` is required", !isNone(subgraph));
+    if(meta.options.embedded) {
+      // TODO: handle submodel embedded relationships. For now just return this.get()
+      return this.get(propertyKey);
+    }
+
+    record = this.getBelongsTo(key, meta.getType(this), meta, store, subgraph);
+    if(record !== cacheFor(this, propertyKey)) {
+      this.set(propertyKey, record);
+    }
+    return record;
   },
 
   load: function(id, hash, subgraph) {

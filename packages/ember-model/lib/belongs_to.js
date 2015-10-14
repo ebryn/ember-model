@@ -3,11 +3,7 @@ var get = Ember.get,
     set = Ember.set;
 
 function storeFor(record) {
-  if (record.container) {
-    return record.container.lookup('store:main');
-  }
-
-  return null;
+  return record.getStore();
 }
 
 function getType(record) {
@@ -109,7 +105,7 @@ Ember.belongsTo = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getBelongsTo: function(key, type, meta, store) {
+  getBelongsTo: function(key, type, meta, store, subgraph) {
     var idOrAttrs = get(this, '_data.' + key),
         record;
 
@@ -124,9 +120,9 @@ Ember.Model.reopen({
       record.load(id, idOrAttrs);
     } else {
       if (store) {
-        record = store._findSync(meta.type, idOrAttrs);
+        record = store._findSync(meta.type, idOrAttrs, subgraph);
       } else {
-        record = type.find(idOrAttrs);
+        record = type.find(idOrAttrs, subgraph);
       }
     }
 
