@@ -37,7 +37,7 @@ Ember.hasMany = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getHasMany: function(key, type, meta, container) {
+  getHasMany: function(key, type, meta, container, subgraph) {
     var embedded = meta.options.embedded,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
@@ -48,7 +48,8 @@ Ember.Model.reopen({
       embedded: embedded,
       key: key,
       relationshipKey: meta.relationshipKey,
-      container: container
+      container: container,
+      subgraph: subgraph
     });
 
     this._registerHasManyArray(collection);

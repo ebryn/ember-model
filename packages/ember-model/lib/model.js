@@ -167,18 +167,36 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var store = this.getStore(), 
         meta = this.constructor.metaForProperty(propertyKey),
         key = meta.options.key || propertyKey,
-        record;
+        type,
+        record,
+        collection;
     Ember.assert("Argument `subgraph` is required", !isNone(subgraph));
+    Ember.assert("Not a relationship attribute", meta.isRelationship);
+    Ember.assert("Relationship kind not recognized: " + meta.kind, 
+      (meta.kind === 'belongsTo' || meta.kind === 'hasMany'));
+
+    type = meta.getType(this);
+
+    subgraph[get(type, 'primaryKey')] = 1;
+
+
     if(meta.options.embedded) {
       // TODO: handle submodel embedded relationships. For now just return this.get()
       return this.get(propertyKey);
     }
 
-    record = this.getBelongsTo(key, meta.getType(this), meta, store, subgraph);
-    if(record !== cacheFor(this, propertyKey)) {
-      this.set(propertyKey, record);
+    if(meta.kind === 'belongsTo') {
+      record = this.getBelongsTo(key, type, meta, store, subgraph);
+      if(record !== cacheFor(this, propertyKey)) {
+        this.set(propertyKey, record);
+      }
+      return record;
+    } else {
+      // is `hasMany` relationship kind.
+      collection = this.get(propertyKey);
+      collection.set('subgraph', subgraph);
+      return collection;
     }
-    return record;
   },
 
   load: function(id, hash, subgraph) {
@@ -534,6 +552,8 @@ Ember.Model.reopenClass({
       for(i = 0; i < relationships.length; i++) {
         this._graph[relationships[i]] = 1;
       }
+
+      this._graph[get(this, 'primaryKey')] = 1;
     }
     return this._graph;
   },
