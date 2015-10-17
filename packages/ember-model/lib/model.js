@@ -121,6 +121,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return camelizeKeys ? underscore(key) : key;
   },
 
+  isDeferredKey: function(key) {
+    return get(this, 'isSub') && !get(this, 'graph')[key];
+  },
+
+  _reloadAndGet: function(key) {
+    // TODO: reload just the deferred attributes.
+    this.reload();
+    return Ember.loadPromise(this).then(function(obj){
+      return get(obj, key);
+    });
+  },
+
   init: function() {
     this._createReference();
     if (!this._dirtyAttributes) {

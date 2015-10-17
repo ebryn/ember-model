@@ -136,3 +136,19 @@ test("Can .findAll() with a subgraph", function() {
   stop();
 });
 
+test("Accessing deferred attribute triggers reload", function() {
+  expect(2);
+  var record = Ember.run(Model, Model.find, 1, {name: 1});
+  record.one('didLoad', function() {
+    start();
+    var tokenPromise = record.get('token');
+    tokenPromise.then(function(token){
+      start();
+      equal(token, 'a', "Able to access deferred attribute after promise resolves");
+      ok(!record.get('isSub'), "No longer submodel");
+    });
+    stop();
+  });
+  stop();
+});
+

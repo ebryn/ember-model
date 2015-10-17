@@ -24,6 +24,10 @@ Ember.hasMany = function(type, options) {
 
   return Ember.Model.computed({
     get: function(propertyKey) {
+      if (this.isDeferredKey(propertyKey)) {
+        return this._reloadAndGet(propertyKey);
+      }
+      
       type = meta.getType(this);
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
