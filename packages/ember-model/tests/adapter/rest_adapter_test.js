@@ -158,7 +158,7 @@ test("findAll calls didFindAll callback after finishing", function() {
 
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
   ok(args, "didFindAll callback should have been called");
-  deepEqual(args, [RESTModel, records, data], "didFindAll callback should have been called with proper arguments.");
+  deepEqual(args, [RESTModel, records, data, undefined], "didFindAll callback should have been called with proper arguments.");
   equal(context, adapter, "context of didFindAll should have been set to adapter");
 });
 
@@ -287,7 +287,7 @@ test("find calls didFind after finishing", function() {
 
   equal(record.get('name'), data.post.name, "The data should be properly loaded");
   ok(args, "didFind callback should have been called");
-  deepEqual(args, [record, id, data], "didFind callback should have been called with proper arguments.");
+  deepEqual(args, [record, id, data, undefined], "didFind callback should have been called with proper arguments.");
   equal(context, adapter, "context of didFind should have been set to adapter");
 });
 
@@ -405,7 +405,7 @@ test("findQuery calls didFindQuery callback after finishing", function() {
 
   equal(records.get('length'), data.posts.length, "The proper number of items should have been loaded.");
   ok(args, "didFindQuery callback should have been called");
-  deepEqual(args, [RESTModel, records, params, data], "didFindQuery callback should have been called with proper arguments.");
+  deepEqual(args, [RESTModel, records, params, data, undefined], "didFindQuery callback should have been called with proper arguments.");
   equal(context, adapter, "context of didFindQuery should have been set to adapter");
 });
 

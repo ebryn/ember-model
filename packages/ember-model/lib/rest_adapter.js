@@ -3,55 +3,55 @@ require('ember-model/adapter');
 var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
-  find: function(record, id) {
-    var url = this.buildURL(record.constructor, id),
+  find: function(record, id, subgraph) {
+    var url = this.buildURL(record.constructor, id, subgraph),
         self = this;
 
     return this.ajax(url).then(function(data) {
-      self.didFind(record, id, data);
+      self.didFind(record, id, data, subgraph);
       return record;
     });
   },
 
-  didFind: function(record, id, data) {
+  didFind: function(record, id, data, subgraph) {
     var rootKey = get(record.constructor, 'rootKey'),
         dataToLoad = rootKey ? get(data, rootKey) : data;
 
-    record.load(id, dataToLoad);
+    record.load(id, dataToLoad, subgraph);
   },
 
-  findAll: function(klass, records) {
+  findAll: function(klass, records, subgraph) {
     var url = this.buildURL(klass),
         self = this;
 
     return this.ajax(url).then(function(data) {
-      self.didFindAll(klass, records, data);
+      self.didFindAll(klass, records, data, subgraph);
       return records;
     });
   },
 
-  didFindAll: function(klass, records, data) {
+  didFindAll: function(klass, records, data, subgraph) {
     var collectionKey = get(klass, 'collectionKey'),
         dataToLoad = collectionKey ? get(data, collectionKey) : data;
 
-    records.load(klass, dataToLoad);
+    records.load(klass, dataToLoad, subgraph);
   },
 
-  findQuery: function(klass, records, params) {
-    var url = this.buildURL(klass),
+  findQuery: function(klass, records, params, subgraph) {
+    var url = this.buildURL(klass, null, subgraph),
         self = this;
 
     return this.ajax(url, params).then(function(data) {
-      self.didFindQuery(klass, records, params, data);
+      self.didFindQuery(klass, records, params, data, subgraph);
       return records;
     });
   },
 
-  didFindQuery: function(klass, records, params, data) {
+  didFindQuery: function(klass, records, params, data, subgraph) {
       var collectionKey = get(klass, 'collectionKey'),
           dataToLoad = collectionKey ? get(data, collectionKey) : data;
 
-      records.load(klass, dataToLoad);
+      records.load(klass, dataToLoad, subgraph);
   },
 
   createRecord: function(record) {
@@ -103,7 +103,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     return this._ajax(url, params, (method || "GET"), settings);
   },
 
-  buildURL: function(klass, id) {
+  buildURL: function(klass, id, subgraph) {
+    // TODO: add a default way of passing the subgraph.
     var urlRoot = get(klass, 'url');
     var urlSuffix = get(klass, 'urlSuffix') || '';
     if (!urlRoot) { throw new Error('Ember.RESTAdapter requires a `url` property to be specified'); }

@@ -10,6 +10,8 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
         idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
         data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; }),
+        meta,
+        key,
         keys,
         res;
 
@@ -18,7 +20,9 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
       keys = Object.keys(subgraph);
       res = {};
       for(var i = 0; i < keys.length; i++) {
-        res[keys[i]] = data[keys[i]];
+        meta = klass.metaForProperty(keys[i]);
+        key = meta.key || keys[i];
+        res[key] = data[key];
       }
     }
     return res;
