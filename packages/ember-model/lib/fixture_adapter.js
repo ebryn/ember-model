@@ -21,7 +21,7 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
       res = {};
       for(var i = 0; i < keys.length; i++) {
         meta = klass.metaForProperty(keys[i]);
-        key = meta.key || keys[i];
+        key = (meta.options && meta.options.key) || keys[i];
         res[key] = data[key];
       }
     }

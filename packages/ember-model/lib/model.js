@@ -65,8 +65,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,
   isLoading: Ember.computed.not('isLoaded'),
   isNew: true,
-  isDeleted: false,
+  isDeleted: false, // <- in memory delete
+  isDead: false, // <- server has responded that it's deleted
   _dirtyAttributes: null,
+  _shadow: null,
   _graph: null,
 
   /**
@@ -139,6 +141,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   init: function() {
+    if (!this._shadow) {
+      set(this, '_shadow', Ember.Object.create());
+    }
+
     this._createReference();
     if (!this._dirtyAttributes) {
       set(this, '_dirtyAttributes', []);
@@ -161,6 +167,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     if (!reference.id) {
       reference.id = id;
+    }
+    // YPBUG: wtf is this? 
+    if (id == null) {
+      // Apparently it is to "avoid error message when doing find()"
+      // Thought is doesn't really matter as the find cache gets replaced if you call find()
+      this.constructor.addToRecordArrays(this);
     }
 
     return reference;
@@ -264,7 +276,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (isDescriptor(value)) {
+    if (value && typeof value === 'object' && isDescriptor(value)) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -287,7 +299,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   serializeHasMany: function(key, meta) {
-    return this.get(key).toJSON();
+    var cached = this.cacheFor(key);
+    if (cached) {
+      return cached.toJSON();
+    }
+    return this.get('_data.' + (meta.options.key || key) || []);
   },
 
   serializeBelongsTo: function(key, meta) {
@@ -917,7 +933,7 @@ Ember.Model.reopenClass({
 
 
   addToRecordArrays: function(record) {
-    if (this._findAllRecordArray) {
+    if (this._findAllRecordArray && this._findAllRecordArray.get('content')) {
       this._findAllRecordArray.addObject(record);
     }
     if (this.recordArrays) {
