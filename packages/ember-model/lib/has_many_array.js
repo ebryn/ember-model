@@ -1,5 +1,29 @@
 var get = Ember.get, set = Ember.set;
 
+var getInverseKeyFor = function(obj, type, lookForType) {
+  var relKeys = type.getRelationships();
+  for (var i = 0, l = relKeys.length; i < l; i++) {
+    var key = relKeys[i];
+    var rel = type.metaForProperty(key);
+    // TODO do we want to reverse hasMany's and belongsTo simulatiously?
+    // TODO complain when we can't decide automatically?
+    var childType = rel.getType(obj);
+    if (childType === lookForType) return key;
+  }
+  return null;
+};
+
+var getInverseKindFor = function(obj, type, lookForKey) {
+  var relKeys = type.getRelationships();
+  for (var i = 0, l = relKeys.length; i < l; i++) {
+    var key = relKeys[i];
+    if (lookForKey !== key) continue;
+    var rel = type.metaForProperty(key);
+    return rel.kind;
+  }
+  return null;
+};
+
 Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
   originalContent: null,
@@ -84,12 +108,59 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }));
   },
 
-  replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
+  ensureReverseRelationship: function(record) {
+    var inverseKey = get(this, 'inverse');
+    if (inverseKey === undefined) {
+      inverseKey = getInverseKeyFor(record, record.constructor, this.parent.constructor);
+    }
+    if (inverseKey == null) {
+      return;
+    }
+    var inverseKind = getInverseKindFor(record, record.constructor, inverseKey);
+    if (inverseKind !== 'belongsTo') {
+      // TODO warn? hard to tell if it's actually a problem...
+      return;
+    }
+    var inverseValue = record.get(inverseKey);
+    if (inverseValue) {
+      return;
+    }
+    record.set(inverseKey, this.parent);
+  },
+
+  replaceContent: function(index, removed, added, disableReverseCheck) {
+    var addedRefs = Ember.EnumerableUtils.map(added, function(record) {
       return record._reference;
     }, this);
 
-    this._super(index, removed, added);
+    // Don't allow dupes (particularly common because of shadowing)
+    var existing = get(this, 'content');
+    if (existing) {
+      addedRefs = addedRefs.filter(function(item) {
+        var found = existing.indexOf(item);
+        // either it doesn't exist or it's in the range that's about to be removed
+        return found === -1 || (found >= index && found <= index + removed);
+      });
+    }
+
+    // we add the shadow back if it's a shadow'ing add
+    var shadows = get(this, '_shadows');
+    if (shadows) {
+      shadows.removeObjects(addedRefs);
+    }
+
+    this._super(index, removed, addedRefs);
+
+    // check if we need to set the inverse
+    if (disableReverseCheck !== true) {
+      Ember.EnumerableUtils.map(added, function(record) {
+        if (record.get('isNew')) {
+          this.ensureReverseRelationship(record);
+        }
+      }, this);
+    }
+
+    return addedRefs.length;
   },
 
   _contentDidChange: function() {
@@ -109,6 +180,18 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     this._content = content;
   }.observes('content'),
+
+  pushShadowObject: function(item) {
+    item.registerParentHasManyArray(this);
+    if (!item._reference) {
+      item._createReference();
+    }
+    var added = this.replaceContent(get(this, 'content.length'), 0, [item], true);
+    if (added) {
+      get(this, '_shadows').pushObject(item._reference);
+      this.arrayDidChange(item._reference, 0, 0, 0);
+    }
+  },
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
     var content = item;
@@ -150,6 +233,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       originalContent: content.slice()
     });
     set(this, '_modifiedRecords', []);
+    set(this, '_shadows', []);
   },
 
   revert: function() {
