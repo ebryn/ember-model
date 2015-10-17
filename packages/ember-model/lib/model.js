@@ -85,6 +85,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return dirtyAttributes && dirtyAttributes.length !== 0 || false;
   }.property('_dirtyAttributes.length'),
 
+  isModified: function() {
+    // Alias for compatibility with YP
+    return get(this, 'isDirty');
+  }.property('isDirty'),
+
   isSub: function() {
     var graph = get(this, '_graph');
     return !isNone(graph);
