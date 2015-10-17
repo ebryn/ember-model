@@ -76,9 +76,18 @@ test('adding and reverting an existing record to a many array', function () {
   c.set('isNew', false);
   article.get('comments').pushObject(c);
 
-  equal(article.get('comments.length'), 2, 'should included added comment');
-  equal(article.get('isDirty'), true, 'should now be dirty');
+  equal(article.get('comments.length'), 1, 'Adding duplicate comment should be ignored');
+  equal(article.get('isDirty'), false, 'should NOT be dirty');
 
+  article.revert();
+
+  c = Comment.find(2);
+  // Why is this new by default?
+  c.set('isNew', false);
+  article.get('comments').pushObject(c);
+
+  equal(article.get('comments.length'), 2, 'Should include added comment');
+  equal(article.get('isDirty'), true, 'should be dirty');
   article.revert();
 
   equal(article.get('comments.length'), 1, 'show now go back to 1 comment');
