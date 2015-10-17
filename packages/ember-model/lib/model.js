@@ -202,7 +202,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   load: function(id, hash, subgraph) {
     var data = {};
     if(subgraph) {
-      if(get(this, 'isLoaded')) {
+      if(!get(this, 'isNew')) {
         data = get(this, '_data') || data;
         set(this, '_graph', graphUnion(get(this, 'graph'), subgraph));
       } else {
@@ -481,6 +481,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           }
         }
       }
+
+      if(!reverting) {
+        set(array, 'subgraph', null);
+      }
+
       array.load(hasManyContent);
     }
   },
@@ -703,6 +708,7 @@ Ember.Model.reopenClass({
   _findFetchById: function(id, subgraph, isFetch, container) {
     var record = this.cachedRecordForId(id, container),
         isLoaded = get(record, 'isLoaded'),
+        isNew = get(record, 'isNew'),
         adapter = get(this, 'adapter'),
         diffGraph,
         fullFetch,
@@ -713,7 +719,7 @@ Ember.Model.reopenClass({
 
     if(subgraph) {
       
-      if(isLoaded) {
+      if(!isNew) {
         diffGraph = graphDiff(subgraph, get(record, 'graph'));
       } else {
         diffGraph = subgraph;
@@ -737,7 +743,13 @@ Ember.Model.reopenClass({
         return record;
       }
     }
-    
+
+    if(diffGraph) {
+      // Add the primary key to the diffGraph.
+      diffGraph[get(this, 'primaryKey')] = 1;
+    }
+
+    record.set('isLoaded', false);
     deferredOrPromise = this._fetchById(record, id, (fullFetch ? undefined : diffGraph));
 
     return isFetch ? deferredOrPromise : record;

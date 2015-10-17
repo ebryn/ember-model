@@ -181,7 +181,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
         return record;
       }
     }
-    
+        
     return klass._findFetchById(reference.id, subgraph, false, container);
   },
 
