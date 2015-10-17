@@ -4,6 +4,8 @@ Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
   originalContent: null,
   _modifiedRecords: null,
+  _shadows: null,
+  considerChildrenInDirty: false,
 
   unloadObject: function(record) {
     var obj = get(this, 'content').findBy('clientId', record._reference.clientId);
@@ -13,15 +15,29 @@ Ember.ManyArray = Ember.RecordArray.extend({
     get(this, 'originalContent').removeObject(originalObj);
   },
 
+  nonShadowedContent: function() {
+    var shadows = get(this, '_shadows');
+    var content = get(this, 'content');
+    if (!shadows || shadows.length === 0) {
+      return content;
+    }
+    return content.filter(function(o) { return shadows.indexOf(o) === -1; });
+  }.property('content.[]', '_shadows.[]'),
+
+  // YPBUG: this was not a property in ember-models.js on YP
+  isChildrenDirty: function() {
+    return this._modifiedRecords && this._modifiedRecords.length;
+  }.property('_modifiedRecords.[]'),
+
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
-        content = get(this, 'content'),
+        content = get(this, 'nonShadowedContent'),
         contentLength = get(content, 'length');
 
     if (originalContentLength !== contentLength) { return true; }
 
-    if (this._modifiedRecords && this._modifiedRecords.length) { return true; }
+    if (get(this, 'considerChildrenInDirty') && get(this, 'isChildrenDirty')) { return true; }
 
     var isDirty = false;
 
@@ -33,21 +49,27 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
 
     return isDirty;
-  }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]'),
+  }.property('nonShadowedContent.[]', 'originalContent.[]', '_modifiedRecords.[]'),
+
+  isModified: function() {
+    // Alias for compatibility with YP
+    return get(this,'isDirty');
+  }.property('isDirty'),
 
   objectAtContent: function(idx) {
     var content = get(this, 'content');
 
-    if (!content.length) { return; }
+    // GMM add array index guard
+    if (!content.length || idx >= content.length) { return; }
     
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
     var record = this.materializeRecord(idx, this.container);
-    
     if (observerNeeded) {
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
       if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
+
       Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
       record.registerParentHasManyArray(this);
     }
@@ -132,6 +154,9 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
   revert: function() {
     this._setupOriginalContent();
+    if (get(this, 'isDeleted') && !get(this, 'isDead')) {
+      set(this, 'isDeleted', false);
+    }
   },
 
   _setupOriginalContent: function(content) {
@@ -140,6 +165,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       set(this, 'originalContent', content.slice());
     }
     set(this, '_modifiedRecords', []);
+    set(this, '_shadows', []);
   },
 
   init: function() {
@@ -149,6 +175,10 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   recordStateChanged: function(obj, keyName) {
+    if(!get(this, 'considerChildrenInDirty')) {
+      return;
+    }
+
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');    
 
     if (obj.record.get('isDirty')) {
@@ -193,6 +223,8 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 });
 
 Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
+  considerChildrenInDirty: true,
+
   create: function(attrs) {
     var klass = get(this, 'modelClass'),
         record = klass.create(attrs);

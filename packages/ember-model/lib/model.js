@@ -64,6 +64,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return dirtyAttributes && dirtyAttributes.length !== 0 || false;
   }.property('_dirtyAttributes.length'),
 
+  isModified: function() {
+    // Alias for compatibility with YP
+    return get(this, 'isDirty');
+  }.property('isDirty'),
+
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
     if (!dirtyAttributes.contains(name)) { dirtyAttributes.pushObject(name); }
