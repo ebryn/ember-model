@@ -489,9 +489,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDeleteRecord: function() {
+    // hliu This call shouldn't have an effect because we already invoked
+    // .removeFromRecordArrays() inside `deleteRecord`...
     this.constructor.removeFromRecordArrays(this);
     set(this, 'isSaving', false);
-    set(this, 'isDeleted', true);
+    set(this, 'isDead', true);
     this.trigger('didDeleteRecord');
   },
 
