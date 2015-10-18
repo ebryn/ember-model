@@ -4,14 +4,14 @@ Ember.Model.Store = Ember.Object.extend({
   container: null,
 
   modelFor: function(type) {
-    return this.container.lookupFactory('model:'+type);
+    return Ember.Model.detect(type) ? type : this.container.lookupFactory('model:'+type);
   },
 
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
         container = this.container;
 
-    if (adapter && adapter !== Ember.Model.adapter) {
+    if (adapter/* && adapter !== Ember.Model.adapter*/) {
       return adapter;
     } else {
       adapter = container.lookupFactory('adapter:'+ type) ||
@@ -62,6 +62,8 @@ Ember.onLoad('Ember.Application', function(Application) {
     name: "store",
 
     initialize: function(_, application) {
+      // YPBUG: old initialization code used deprecated methods but appears to be
+      // the same as the 0.14 tag. Using the newer 0.16 initialization code here.
       var store = application.Store || Ember.Model.Store;
       application.register('store:application', store);
       application.register('store:main', store);
