@@ -303,7 +303,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     if (cached) {
       return cached.toJSON();
     }
-    return this.get('_data.' + (meta.options.key || key) || []);
+    // YPBUG: we weren't using meta.options.key before.
+    return this.get('_data.' + ((meta.options && meta.options.key) || key) || []);
   },
 
   serializeBelongsTo: function(key, meta) {
@@ -312,6 +313,22 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       return record ? record.toJSON() : null;
     } else {
       var primaryKey = get(meta.getType(this), 'primaryKey');
+      var cached = this.cacheFor(key);
+      // GMM if you do set('assignedTo', null) for example we need to send the null to the server
+      // note if there was no cache it would be undefined hense the triple equals
+      if (cached === null) {
+        return null;
+      }
+      if (cached) {
+        return cached.get(primaryKey);
+      }
+      if(this.constructor.useBelongsToImplicitKey) {
+        return this.get('_data.' + key + '_id');
+      }
+      var implicitId = this.get('_data.' + key + '_id');
+      if(typeof implicitId !== 'undefined') {
+        return implicitId;
+      }
       return this.get(key + '.' + primaryKey);
     }
   },
@@ -333,7 +350,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   toJSON: function() {
-    var key, meta,
+    var key, meta, value,
         json = {},
         attributes = this._availablePaths(this.constructor.getAttributes()),
         relationships = this._availablePaths(this.constructor.getRelationships()),
@@ -342,12 +359,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
+      value = properties[key];
+      if(value === undefined) {
+        value = null;
+      }
       if (meta.type && meta.type.serialize) {
-        json[this.dataKey(key)] = meta.type.serialize(properties[key]);
+        json[this.dataKey(key)] = meta.type.serialize(value);
       } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
-        json[this.dataKey(key)] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+        json[this.dataKey(key)] = Ember.Model.dataTypes[meta.type].serialize(value);
       } else {
-        json[this.dataKey(key)] = properties[key];
+        json[this.dataKey(key)] = value;
       }
     }
 
@@ -360,6 +381,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         relationshipKey = meta.options.key || key;
 
         if (meta.kind === 'belongsTo') {
+          if(this.constructor.useBelongsToImplicitKey) {
+            // TODO(hliu): we should do this inside of the belongsTo() computed property
+            // based on `useBelongsToImplicitKey`
+            relationshipKey += '_id';
+          }
+          
           data = this.serializeBelongsTo(key, meta);
         } else {
           data = this.serializeHasMany(key, meta);
@@ -381,15 +408,27 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   save: function() {
     var adapter = this.constructor.adapter;
+    var self = this;
     Ember.assert("Cannot save subrecords.", !get(this, 'isSub'));
     set(this, 'isSaving', true);
-    if (get(this, 'isNew')) {
+    if (get(this, 'isDeleted')) {
+      // GMM don't do anything when the record hasn't been saved
+      if (!get(this, 'isNew')) {
+        return this.constructor.adapter.deleteRecord(this);
+      } else {
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          Ember.run.later(this, function() {
+            self.didDeleteRecord();
+            resolve(self);
+          }, 0);
+        });
+      }
+    } else if (get(this, 'isNew')) {
       return adapter.createRecord(this);
     } else if (get(this, 'isDirty')) {
       return adapter.saveRecord(this);
     } else { // noop, return a resolved promise
-      var self = this,
-          promise = new Ember.RSVP.Promise(function(resolve, reject) {
+      var promise = new Ember.RSVP.Promise(function(resolve, reject) {
             resolve(self);
           });
       set(this, 'isSaving', false);
@@ -433,6 +472,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didDeleteRecord: function() {
     this.constructor.removeFromRecordArrays(this);
     set(this, 'isDeleted', true);
+    set(this, 'isSaving', false);
     this.trigger('didDeleteRecord');
   },
 
@@ -555,6 +595,9 @@ Ember.Model.reopenClass({
   primaryKey: 'id',
 
   adapter: Ember.Adapter.create(),
+
+  // YP: automatically add `_id` to the key for belongsTo?
+  useBelongsToImplicitKey: true, 
 
   _clientIdCounter: 1,
 
