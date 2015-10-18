@@ -108,6 +108,7 @@ test("loading embedded data into a parent with deleted children deletes the chil
 
   // deletes all children and load new ones.
   post.get('comments').forEach(function(comment) {
+    comment.deleteRecord();
     comment.didDeleteRecord();
   });
   post.load(1, json);
