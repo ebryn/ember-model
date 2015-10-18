@@ -35,6 +35,11 @@ Ember.hasMany = function(type, options) {
       return this.getHasMany(key, type, meta, this.container);
     },
     set: function(propertyKey, newContentArray, existingArray) {
+      type = meta.getType(this);
+      var key = options.key || propertyKey;
+      if (!existingArray) {
+        existingArray = this.getHasMany(key, type, meta, this.container);
+      }
       return existingArray.setObjects(newContentArray);
     }
   }).meta(meta);
@@ -45,10 +50,11 @@ Ember.Model.reopen({
     var embedded = meta.options.embedded,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
+    var content = this._getHasManyContent(key, type, embedded);
     var collection = collectionClass.create({
       parent: this,
       modelClass: type,
-      content: this._getHasManyContent(key, type, embedded),
+      content: content,
       embedded: embedded,
       key: key,
       relationshipKey: meta.relationshipKey,
@@ -57,6 +63,10 @@ Ember.Model.reopen({
     });
 
     this._registerHasManyArray(collection);
+
+    if (!content || content.length === 0) {
+      collection.notifyLoaded();
+    }
 
     return collection;
   }

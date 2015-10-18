@@ -454,6 +454,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isNew', false);
 
     set(this, '_dirtyAttributes', []);
+
+    // THE FOLLOWING COMMENT IS OLD AND NO LONGER APPLIES ========================
+    // GMM moved to createRecord for backwards compat with old ember-data
+    // in theory I think it's actually better for it to work the original
+    // this.constructor.addToRecordArrays(this);
+    // ===========================================================================
+
+
+    // YPBUG: ^^^ hliu this creates test failures throughout. Also the previous comment
+    // is no longer accurate because we only .addToRecordArrays() inside of _createReference() 
+    // when the record has no id. We can safely addToRecordArrays() here because I added
+    // a no-dupe check.
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
@@ -466,13 +478,20 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   deleteRecord: function() {
-    return this.constructor.adapter.deleteRecord(this);
+    // This method only deletes a record in memory.
+    var record = this;
+    this.constructor.removeFromHasManyArrays(this);
+    this.constructor.removeFromRecordArrays(this);
+    set(this, 'isDeleted', true);
+    // To fully delete a record, we now call deleteRecord() followed by a save()
+    // so this next line isn't needed anymore:
+    // return this.constructor.adapter.deleteRecord(this);
   },
 
   didDeleteRecord: function() {
     this.constructor.removeFromRecordArrays(this);
-    set(this, 'isDeleted', true);
     set(this, 'isSaving', false);
+    set(this, 'isDeleted', true);
     this.trigger('didDeleteRecord');
   },
 
@@ -745,6 +764,7 @@ Ember.Model.reopenClass({
     if (isFetch && currentFetchPromise) {
       return currentFetchPromise;
     } else if (this._findAllRecordArray) {
+      this._findAllRecordArray.reload();
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -976,7 +996,10 @@ Ember.Model.reopenClass({
 
 
   addToRecordArrays: function(record) {
-    if (this._findAllRecordArray && this._findAllRecordArray.get('content')) {
+    // hliu prevent adding dupes with indexOf check
+    if (this._findAllRecordArray && 
+          this._findAllRecordArray.get('content') && 
+          this._findAllRecordArray.get('content').indexOf(record) === -1) {
       this._findAllRecordArray.addObject(record);
     }
     if (this.recordArrays) {

@@ -621,6 +621,7 @@ test("deleteRecord", function() {
   };
 
   Ember.run(record, record.deleteRecord);
+  record.save();
 
   ok(record.get('isDeleted'), "Record should be deleted");
 });
@@ -644,6 +645,7 @@ test("deleteRecord calls didDeleteRecord after deleting", function() {
   };
 
   Ember.run(record, record.deleteRecord);
+  Ember.run(record, record.save);
 
   ok(record.get('isDeleted'), "Record should be deleted");
   ok(args, "didDeleteRecord callback should have been called");

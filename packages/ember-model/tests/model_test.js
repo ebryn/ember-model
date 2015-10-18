@@ -329,6 +329,7 @@ test("destroying a record removes it from record arrays", function() {
     equal(records.get('length'), 1, "The record array was updated");
     var record = Model.find('a');
     record.deleteRecord();
+    record.save();
     stop();
     record.on('didDeleteRecord', function() {
       start();
@@ -437,21 +438,23 @@ test("Model#save() returns a promise", function() {
   stop();
 });
 
-test("Model#deleteRecord() returns a promise", function() {
-  expect(2);
+// hliu this is no longer true in the YP fork:
 
-  var promise = Ember.run(Model, Model.fetch, 'a');
-  promise.then(function(record) {
-    start();
-    record.deleteRecord().then(function(record2) {
-      start();
-      equal(record, record2);
-      ok(record.get('isDeleted'));
-    });
-    stop();
-  });
-  stop();
-});
+// test("Model#deleteRecord() returns a promise", function() {
+//   expect(2);
+
+//   var promise = Ember.run(Model, Model.fetch, 'a');
+//   promise.then(function(record) {
+//     start();
+//     record.deleteRecord().then(function(record2) {
+//       start();
+//       equal(record, record2);
+//       ok(record.get('isDeleted'));
+//     });
+//     stop();
+//   });
+//   stop();
+// });
 
 test("Model#save() works as expected", function() {
   expect(2);
