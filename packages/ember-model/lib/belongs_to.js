@@ -26,18 +26,52 @@ function getType(record) {
   return type;
 }
 
+
+var getInverseKeyFor = function(obj, type, lookForType) {
+  var relKeys = type.getRelationships();
+  for (var i = 0, l = relKeys.length; i < l; i++) {
+    var key = relKeys[i];
+    var rel = type.metaForProperty(key);
+    // TODO do we want to reverse hasMany's and belongsTo simulatiously?
+    // TODO complain when we can't decide automatically?
+    var childType = rel.getType(obj);
+    if (childType === lookForType) return key;
+  }
+  return null;
+};
+
+var getInverseKindFor = function(obj, type, lookForKey) {
+  var relKeys = type.getRelationships();
+  for (var i = 0, l = relKeys.length; i < l; i++) {
+    var key = relKeys[i];
+    if (lookForKey !== key) continue;
+    var rel = type.metaForProperty(key);
+    return rel.kind;
+  }
+  return null;
+};
+
 Ember.belongsTo = function(type, options) {
   options = options || {};
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
+  var inverseKey;
+  var inverseKind;
 
   return Ember.Model.computed("_data", {
     get: function(propertyKey){
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
-      var key = options.key || propertyKey,
-          self = this;
+
+      var key; 
+      if(this.constructor.useBelongsToImplicitKey) {
+        key = options.key || propertyKey + '_id';
+      } else {
+        key = options.key || propertyKey;
+      }
+      
+      var self = this;
 
       var dirtyChanged = function(sender) {
         if (sender.get('isDirty')) {
@@ -54,12 +88,53 @@ Ember.belongsTo = function(type, options) {
         value.get('isDirty'); // getter must be called before adding observer
         value.addObserver('isDirty', dirtyChanged);
       }
+
+      if (value == null) {
+        var shadow = this.get('_shadow.' + propertyKey);
+        if (shadow !== undefined) {
+          return shadow;
+        }
+      }
+
       return value;
     },
 
     set: function(propertyKey, value, oldValue){
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
+
+      var key; 
+      if(this.constructor.useBelongsToImplicitKey) {
+        key = options.key || propertyKey + '_id';
+      } else {
+        key = options.key || propertyKey;
+      }
+
+      
+
+      if(this.get('isNew') && value) {
+        if (inverseKey === undefined) {
+          if (options.inverse !== undefined) {
+            inverseKey = options.inverse;
+          } else {
+            inverseKey = getInverseKeyFor(this, type, this.constructor);
+          }
+
+          if (inverseKey) {
+            inverseKind = getInverseKindFor(this, type, inverseKey);
+          }
+        }
+
+
+        if (inverseKey && inverseKind === 'hasMany') {
+          var hasMany = value.get(inverseKey);
+          hasMany.pushShadowObject(this);
+        }
+
+        if (inverseKey && inverseKind === 'belongsTo') {
+          value.set('_shadow.' + inverseKey, this);
+        }
+      }
 
       var dirtyAttributes = get(this, '_dirtyAttributes'),
           createdDirtyAttributes = false,
