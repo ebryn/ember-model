@@ -54,7 +54,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     return this._modifiedRecords && this._modifiedRecords.length;
   }.property('_modifiedRecords.[]'),
 
-  isDirty: function() {
+  isModified: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
         content = get(this, 'nonShadowedContent'),
@@ -64,22 +64,19 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     if (get(this, 'considerChildrenInDirty') && get(this, 'isChildrenDirty')) { return true; }
 
-    var isDirty = false;
+    var isModified = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
       if (!originalContent.contains(content[i])) {
-        isDirty = true;
+        isModified = true;
         break;
       }
     }
 
-    return isDirty;
+    return isModified;
   }.property('nonShadowedContent.[]', 'originalContent.[]', '_modifiedRecords.[]'),
 
-  isModified: function() {
-    // Alias for compatibility with YP
-    return get(this,'isDirty');
-  }.property('isDirty'),
+  isDirty: Ember.computed.alias('isModified'),
 
   objectAtContent: function(idx) {
     var content = get(this, 'content');
@@ -92,10 +89,10 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     var record = this.materializeRecord(idx, this.container);
     if (observerNeeded) {
-      var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
-      if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
+      var isModifiedRecord = record.get('isModified'), isNewRecord = record.get('isNew');
+      if (isModifiedRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
 
-      Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
+      Ember.addObserver(content[idx], 'record.isModified', this, 'recordStateChanged');
       record.registerParentHasManyArray(this);
     }
 
@@ -201,27 +198,27 @@ Ember.ManyArray = Ember.RecordArray.extend({
       if (currentItem && currentItem.record) {
         this._modifiedRecords.removeObject(currentItem);
         currentItem.record.unregisterParentHasManyArray(this);
-        Ember.removeObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        Ember.removeObserver(currentItem, 'record.isModified', this, 'recordStateChanged');
       }
     }
   },
 
   arrayDidChange: function(item, idx, removedCnt, addedCnt) {
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey'),
-        isDirty = get(this, 'isDirty');
+        isModified = get(this, 'isModified');
 
     var content = item;
     for (var i = idx; i < idx+addedCnt; i++) {
       var currentItem = content[i];
       if (currentItem && currentItem.record) { 
-        var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
-        if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
-        Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        var isModifiedRecord = currentItem.record.get('isModified'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
+        if (isModifiedRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
+        Ember.addObserver(currentItem, 'record.isModified', this, 'recordStateChanged');
         currentItem.record.registerParentHasManyArray(this);
       }
     }
 
-    if (isDirty) {
+    if (isModified) {
       parent._relationshipBecameDirty(relationshipKey);
     } else {
       parent._relationshipBecameClean(relationshipKey);
@@ -266,12 +263,12 @@ Ember.ManyArray = Ember.RecordArray.extend({
 
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');    
 
-    if (obj.record.get('isDirty')) {
+    if (obj.record.get('isModified')) {
       if (this._modifiedRecords.indexOf(obj) === -1) { this._modifiedRecords.pushObject(obj); }
       parent._relationshipBecameDirty(relationshipKey);
     } else {
       if (this._modifiedRecords.indexOf(obj) > -1) { this._modifiedRecords.removeObject(obj); }
-      if (!this.get('isDirty')) {
+      if (!this.get('isModified')) {
         parent._relationshipBecameClean(relationshipKey); 
       }
     }

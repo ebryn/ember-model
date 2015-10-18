@@ -82,15 +82,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return value;
   },
 
-  isDirty: function() {
+  isModified: function() {
     var dirtyAttributes = get(this, '_dirtyAttributes');
     return dirtyAttributes && dirtyAttributes.length !== 0 || false;
   }.property('_dirtyAttributes.length'),
 
-  isModified: function() {
-    // Alias for compatibility with YP
-    return get(this, 'isDirty');
-  }.property('isDirty'),
+  isDirty: Ember.computed.alias('isModified'),
 
   isSub: function() {
     var graph = get(this, '_graph');
@@ -425,7 +422,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
     } else if (get(this, 'isNew')) {
       return adapter.createRecord(this);
-    } else if (get(this, 'isDirty')) {
+    } else if (get(this, 'isModified')) {
       return adapter.saveRecord(this);
     } else { // noop, return a resolved promise
       var promise = new Ember.RSVP.Promise(function(resolve, reject) {
@@ -474,7 +471,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didSaveRecord: function() {
     set(this, 'isSaving', false);
     this.trigger('didSaveRecord');
-    if (this.get('isDirty')) { this._copyDirtyAttributesToData(); }
+    if (this.get('isModified')) { this._copyDirtyAttributesToData(); }
   },
 
   deleteRecord: function() {
@@ -513,7 +510,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     set(this, '_dirtyAttributes', []);
-    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
+    this._resetDirtyStateInNestedObjects(this); // we need to reset isModified state to all child objects in embedded relationships
   },
 
   _resetDirtyStateInNestedObjects: function(object) {
