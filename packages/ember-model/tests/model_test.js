@@ -2,6 +2,9 @@ var Model, ModelWithoutID;
 
 module("Ember.Model", {
   setup: function() {
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: false,
+    });
     Model = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr()
@@ -19,7 +22,9 @@ module("Ember.Model", {
     ];
   },
   teardown: function() {
-
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: true,
+    });
   }
 });
 
@@ -390,7 +395,7 @@ test("record.toJSON() can use computed property as rootKey", function() {
     name: 'Tom Dale'
   });
 
-  deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
+  deepEqual(record.toJSON(), {computed: {token: null, name: 'Tom Dale'}});
 });
 
 test("Model.fetch() returns a promise", function() {

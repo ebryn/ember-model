@@ -1,4 +1,17 @@
-module("Ember.belongsTo");
+module("Ember.belongsTo", {
+  setup: function() {
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: false,
+    });
+  },
+  teardown: function() {
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: true,
+    });
+  }
+});
+
+
 
 test("it exists", function() {
   ok(Ember.belongsTo);
