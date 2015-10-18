@@ -211,7 +211,7 @@ test(".reload() returns a promise", function() {
 });
 
 test(".revert() sets the data back to its saved state", function() {
-  expect(3);
+  expect(4);
 
   var record = Ember.run(Model, Model.find, 'a');
 
@@ -219,6 +219,7 @@ test(".revert() sets the data back to its saved state", function() {
     start();
     record.set('name', 'Brian');
     ok(record.get('isDirty'));
+    ok(record.get('isModified'));
     record.revert();
 
     equal(record.get('name'), 'Erik');
