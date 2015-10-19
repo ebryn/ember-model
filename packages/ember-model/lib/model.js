@@ -228,6 +228,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   load: function(id, hash, subgraph) {
     var data = {};
     if(subgraph) {
+      subgraph = Ember.copy(subgraph, true);
       if(!get(this, 'isNew')) {
         data = get(this, '_data') || data;
         set(this, '_graph', graphUnion(get(this, 'graph'), subgraph));
@@ -659,9 +660,11 @@ Ember.Model.reopenClass({
 
   _validateSubgraph: function(subgraph) {
     if(subgraph) {
+      subgraph = Ember.copy(subgraph, true);
       subgraph[get(this, 'primaryKey')] = 1;
       this._assertIsValidSubgraph(subgraph);
     }
+    return subgraph;
   },
 
   fetch: function(id, subgraph) {
@@ -697,7 +700,7 @@ Ember.Model.reopenClass({
   },
 
   _findFetchQuery: function(params, subgraph, isFetch, container) {
-    this._validateSubgraph(subgraph);
+    subgraph = this._validateSubgraph(subgraph);
     var records = Ember.RecordArray.create({modelClass: this, _query: params, _subgraph: subgraph, container: container});
 
     var promise = this.adapter.findQuery(this, records, params, subgraph);
@@ -715,7 +718,7 @@ Ember.Model.reopenClass({
 
   _findFetchMany: function(ids, subgraph, isFetch, container) {
     Ember.assert("findFetchMany requires an array", Ember.isArray(ids));
-    this._validateSubgraph(subgraph);
+    subgraph = this._validateSubgraph(subgraph);
 
     var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container, _subgraph: subgraph}),
         deferred;
@@ -755,7 +758,7 @@ Ember.Model.reopenClass({
   },
 
   _findFetchAll: function(subgraph, isFetch, container) {
-    this._validateSubgraph(subgraph);
+    subgraph = this._validateSubgraph(subgraph);
 
     var self = this;
 
@@ -810,7 +813,7 @@ Ember.Model.reopenClass({
         deferredOrPromise;
 
     // TODO: what if diffGraph is empty? 
-    this._validateSubgraph(subgraph);
+    subgraph = this._validateSubgraph(subgraph);
 
     if(subgraph) {
       
@@ -821,7 +824,7 @@ Ember.Model.reopenClass({
       }
       
     } else {
-      diffGraph = get(record, 'deferredGraph');
+      diffGraph = Ember.copy(get(record, 'deferredGraph'), true);
       // If record wasn't a subrecord already, we can just do a full
       // fetch when a `subgraph` isn't required.
       fullFetch = !get(record, 'isSub');
