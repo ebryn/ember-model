@@ -302,7 +302,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       return cached.toJSON();
     }
     // YPBUG: we weren't using meta.options.key before.
-    return this.get('_data.' + ((meta.options && meta.options.key) || key) || []);
+    return this.get('_data.' + ((meta.options && meta.options.key) || key)) || [];
   },
 
   serializeBelongsTo: function(key, meta) {
@@ -322,10 +322,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       }
       if(this.constructor.useBelongsToImplicitKey) {
         return this.get('_data.' + key + '_id');
-      }
-      var implicitId = this.get('_data.' + key + '_id');
-      if(typeof implicitId !== 'undefined') {
-        return implicitId;
       }
       return this.get(key + '.' + primaryKey);
     }
