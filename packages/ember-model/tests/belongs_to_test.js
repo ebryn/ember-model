@@ -717,6 +717,49 @@ test("key defaults to model's property key", function() {
   deepEqual(comment.toJSON(), { article: 2 });
 });
 
+test("Can get the id without a fetch - get", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ id: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article)
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article: 2 });
+
+  equal(comment.get('article.id'), 2, "Can get the id without a fetch.");
+});
+
+test("Can get the id without a fetch - getRelationship()", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ id: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article)
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article: 2 });
+  comment.getRelationship('article', {id: 1});
+  equal(comment.get('article.id'), 2, "Can get the id without a fetch.");
+});
+
+
 test("non embedded belongsTo should return a record with a container", function() {
   var App;
   Ember.run(function() {

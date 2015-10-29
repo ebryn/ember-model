@@ -192,7 +192,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     // for submodel get()'s
     var store = this.getStore(), 
         meta = this.constructor.metaForProperty(propertyKey),
-        key = meta.options.key || propertyKey,
+        key,
         type,
         record,
         collection;
@@ -212,6 +212,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
 
     if(meta.kind === 'belongsTo') {
+      if(this.constructor.useBelongsToImplicitKey) {
+        key = meta.options.key || propertyKey + '_id';
+      } else {
+        key = meta.options.key || propertyKey;
+      }
+
       record = this.getBelongsTo(key, type, meta, store, subgraph);
       if(record !== cacheFor(this, propertyKey)) {
         this.set(propertyKey, record);

@@ -287,7 +287,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
       if (! record.container) {
         record.container = container;
       }
-
+      // TODO: what about cached records and subgraphs?
       if(Ember.isEmpty(reference.id)) {
         return record;
       }

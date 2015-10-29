@@ -882,7 +882,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     // for submodel get()'s
     var store = this.getStore(), 
         meta = this.constructor.metaForProperty(propertyKey),
-        key = meta.options.key || propertyKey,
         type,
         record,
         collection;
@@ -902,8 +901,15 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     }
 
     if(meta.kind === 'belongsTo') {
+      if(this.constructor.useBelongsToImplicitKey) {
+        key = meta.options.key || propertyKey + '_id';
+      } else {
+        key = meta.options.key || propertyKey;
+      }
+
       record = this.getBelongsTo(key, type, meta, store, subgraph);
       if(record !== cacheFor(this, propertyKey)) {
+        console.log("set cache", record);
         this.set(propertyKey, record);
       }
       return record;
@@ -1365,6 +1371,9 @@ Ember.Model.reopenClass({
   },
 
   find: function(id, subgraph) {
+    if(subgraph) {
+      console.log(this.toString(), subgraph);
+    }
     if (isNone(id)) {
       return this._findFetchAll(subgraph, false);
     } else if (Ember.isArray(id)) {
@@ -2171,8 +2180,10 @@ Ember.Model.reopen({
       record.load(id, idOrAttrs);
     } else {
       if (store) {
+        console.log("findSync", subgraph);
         record = store._findSync(meta.type, idOrAttrs, subgraph);
       } else {
+        console.log("find", subgraph);
         record = type.find(idOrAttrs, subgraph);
       }
     }
