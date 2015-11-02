@@ -74,7 +74,7 @@ Ember.belongsTo = function(type, options) {
       var self = this;
 
       var dirtyChanged = function(sender) {
-        if (sender.get('isDirty')) {
+        if (sender.get('isModified')) {
           self._relationshipBecameDirty(propertyKey);
         } else {
           self._relationshipBecameClean(propertyKey);
@@ -85,8 +85,8 @@ Ember.belongsTo = function(type, options) {
           value = this.getBelongsTo(key, type, meta, store);
       this._registerBelongsTo(meta);
       if (value !== null && meta.options.embedded) {
-        value.get('isDirty'); // getter must be called before adding observer
-        value.addObserver('isDirty', dirtyChanged);
+        value.get('isModified'); // getter must be called before adding observer
+        value.addObserver('isModified', dirtyChanged);
       }
 
       if (value == null) {
@@ -141,7 +141,7 @@ Ember.belongsTo = function(type, options) {
           self = this;
 
       var dirtyChanged = function(sender) {
-        if (sender.get('isDirty')) {
+        if (sender.get('isModified')) {
           self._relationshipBecameDirty(propertyKey);
         } else {
           self._relationshipBecameClean(propertyKey);
@@ -171,10 +171,10 @@ Ember.belongsTo = function(type, options) {
 
       if (meta.options.embedded) {
         if (oldValue) {
-          oldValue.removeObserver('isDirty', dirtyChanged);
+          oldValue.removeObserver('isModified', dirtyChanged);
         }
         if (value) {
-          value.addObserver('isDirty', dirtyChanged);
+          value.addObserver('isModified', dirtyChanged);
         }
       }
 

@@ -700,7 +700,7 @@ test("set embedded belongsTo cleans up observers", function() {
   Post.adapter = Ember.FixtureAdapter.create();
 
   function observers(obj) {
-    return Ember.meta(obj).watching['isDirty'] || 0;
+    return Ember.meta(obj).watching['isModified'] || 0;
   }
 
   var post = Post.create();

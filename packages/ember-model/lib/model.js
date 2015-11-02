@@ -339,7 +339,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   deleteRecord: function() {
     // This method only deletes a record in memory.
-    var record = this;
     this.constructor.removeFromHasManyArrays(this);
     this.constructor.removeFromRecordArrays(this);
     set(this, 'isDeleted', true);
@@ -783,7 +782,7 @@ Ember.Model.reopenClass({
         if (recordArray instanceof Ember.FilteredRecordArray) {
           recordArray.registerObserversOnRecord(record);
           recordArray.updateFilter();
-        } else {
+        } else if(recordArray.get('content').indexOf(record) === -1) {
           recordArray.addObject(record);
         }
       });
