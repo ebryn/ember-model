@@ -35,6 +35,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
         promises;
     
     set(this, 'isLoaded', false);
+    if (this.setupPromise) { this.setupPromise(); }
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
     } else if (this._query) {

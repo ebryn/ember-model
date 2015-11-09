@@ -62,8 +62,8 @@ var DebugAdapter = Ember.DataAdapter.extend({
   getRecordFilterValues: function(record) {
     return {
       isNew: record.get('isNew'),
-      isModified: record.get('isDirty') && !record.get('isNew'),
-      isClean: !record.get('isDirty')
+      isModified: record.get('isModified') && !record.get('isNew'),
+      isClean: !record.get('isModified')
     };
   },
 
@@ -71,7 +71,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
     var color = 'black';
     if (record.get('isNew')) {
       color = 'green';
-    } else if (record.get('isDirty')) {
+    } else if (record.get('isModified')) {
       color = 'blue';
     }
     return color;
@@ -79,7 +79,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
   observeRecord: function(record, recordUpdated) {
     var releaseMethods = Ember.A(), self = this,
-        keysToObserve = Ember.A(['id', 'isNew', 'isDirty']);
+        keysToObserve = Ember.A(['id', 'isNew', 'isModified']);
 
     record.constructor.getAttributes().forEach(function(key) {
       keysToObserve.push(key);

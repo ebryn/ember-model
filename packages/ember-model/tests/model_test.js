@@ -2,6 +2,9 @@ var Model, ModelWithoutID;
 
 module("Ember.Model", {
   setup: function() {
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: false,
+    });
     Model = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr()
@@ -19,7 +22,9 @@ module("Ember.Model", {
     ];
   },
   teardown: function() {
-
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: true,
+    });
   }
 });
 
@@ -206,7 +211,7 @@ test(".reload() returns a promise", function() {
 });
 
 test(".revert() sets the data back to its saved state", function() {
-  expect(3);
+  expect(4);
 
   var record = Ember.run(Model, Model.find, 'a');
 
@@ -214,6 +219,7 @@ test(".revert() sets the data back to its saved state", function() {
     start();
     record.set('name', 'Brian');
     ok(record.get('isDirty'));
+    ok(record.get('isModified'));
     record.revert();
 
     equal(record.get('name'), 'Erik');
@@ -324,6 +330,7 @@ test("destroying a record removes it from record arrays", function() {
     equal(records.get('length'), 1, "The record array was updated");
     var record = Model.find('a');
     record.deleteRecord();
+    record.save();
     stop();
     record.on('didDeleteRecord', function() {
       start();
@@ -390,7 +397,7 @@ test("record.toJSON() can use computed property as rootKey", function() {
     name: 'Tom Dale'
   });
 
-  deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
+  deepEqual(record.toJSON(), {computed: {token: null, name: 'Tom Dale'}});
 });
 
 test("Model.fetch() returns a promise", function() {
@@ -432,21 +439,23 @@ test("Model#save() returns a promise", function() {
   stop();
 });
 
-test("Model#deleteRecord() returns a promise", function() {
-  expect(2);
+// hliu this is no longer true in the YP fork:
 
-  var promise = Ember.run(Model, Model.fetch, 'a');
-  promise.then(function(record) {
-    start();
-    record.deleteRecord().then(function(record2) {
-      start();
-      equal(record, record2);
-      ok(record.get('isDeleted'));
-    });
-    stop();
-  });
-  stop();
-});
+// test("Model#deleteRecord() returns a promise", function() {
+//   expect(2);
+
+//   var promise = Ember.run(Model, Model.fetch, 'a');
+//   promise.then(function(record) {
+//     start();
+//     record.deleteRecord().then(function(record2) {
+//       start();
+//       equal(record, record2);
+//       ok(record.get('isDeleted'));
+//     });
+//     stop();
+//   });
+//   stop();
+// });
 
 test("Model#save() works as expected", function() {
   expect(2);

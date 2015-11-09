@@ -2,6 +2,9 @@ var attr = Ember.attr;
 
 module("Dirty tracking");
 
+// TODO: add tests with `considerChildrenInDirty` set to false.
+
+
 test("when no properties have changed on a model, save should noop", function() {
   var Model = Ember.Model.extend({
     name: attr()
@@ -340,15 +343,16 @@ test("modifying hasMany record should make parent dirty", function() {
   Post.adapter = Ember.FixtureAdapter.create();
   Author.adapter = Ember.FixtureAdapter.create();
 
-  var author = Author.create();
   var post = Post.create();
+  
 
+  var author = Author.create();
   Ember.run(function() {
     post.load(1, {id: 1, author_ids: [100]});
     author.load(100, {id: 100, name: 'bob'});
   });
 
-  post.get('authors');
+  post.set('authors.considerChildrenInDirty', true);
   ok(!post.get('isDirty'), "Post should be clean initially");
   author.set('name', 'billy');
   ok(post.get('isDirty'), "After changing author name, post should become dirty");
@@ -375,7 +379,7 @@ test("changing back record in hasMany array should make parent clean again", fun
     author.load(100, {id: 100, name: 'bob'});
   });
 
-  post.get('authors');
+  post.set('authors.considerChildrenInDirty', true);
   ok(!post.get('isDirty'), "Post should be clean initially");
   author.set('name', 'billy');
   ok(post.get('isDirty'), "After changing author name, post should become dirty");
@@ -455,6 +459,9 @@ test("isDirty on embedded hasMany records should be false after parent is saved"
       });
     }
   };
+
+  var comments = post.get('comments');
+  comments.considerChildrenInDirty = true;
 
   equal(post.get('isDirty'), false, "parent should not be dirty");
   equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
@@ -693,7 +700,7 @@ test("set embedded belongsTo cleans up observers", function() {
   Post.adapter = Ember.FixtureAdapter.create();
 
   function observers(obj) {
-    return Ember.meta(obj).watching['isDirty'] || 0;
+    return Ember.meta(obj).watching['isModified'] || 0;
   }
 
   var post = Post.create();
@@ -738,6 +745,9 @@ test("manipulating the content of objects in a hasMany should dirty the parent",
 
   ok(post.get('isDirty') === false, "Post should not be dirty before changing");
 
+  var comments = post.get('comments');
+  comments.considerChildrenInDirty = true;
+
   var comment1 = post.get('comments.firstObject');
 
   comment1.set('name', 'First Comment');
@@ -746,3 +756,5 @@ test("manipulating the content of objects in a hasMany should dirty the parent",
   ok(post.get('comments.isDirty') === true, "post.comments should be dirty after changing comment1's content");
   ok(post.get('isDirty') === true, "Post should be dirty after changing comment1's content");
 });
+
+

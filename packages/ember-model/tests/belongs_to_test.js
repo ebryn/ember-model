@@ -1,4 +1,17 @@
-module("Ember.belongsTo");
+module("Ember.belongsTo", {
+  setup: function() {
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: false,
+    });
+  },
+  teardown: function() {
+    Ember.Model.reopenClass({
+      useBelongsToImplicitKey: true,
+    });
+  }
+});
+
+
 
 test("it exists", function() {
   ok(Ember.belongsTo);
@@ -596,8 +609,10 @@ test("unloaded records are removed from hasMany cache", function() {
     };
 
   Company.load([compJson]);
-  var company = Company.find(1),
-      project1 = company.get('projects').objectAt(0),
+  var company = Company.find(1);
+  var projects = company.get('projects');
+  projects.set('considerChildrenInDirty', true);
+  var project1 = company.get('projects').objectAt(0),
       project2 = company.get('projects').objectAt(1),
       project3 = company.get('projects').objectAt(2);
 
@@ -607,6 +622,7 @@ test("unloaded records are removed from hasMany cache", function() {
   ok(company.get('projects.isDirty'));
 
   Project.unload(project1);
+  
   equal(company.get('projects.length'), 2);
   equal(company.get('projects.firstObject.title'), 'project two title');
   ok(!company.get('projects.isDirty'), 'removes dirtiness from unloaded relationship');

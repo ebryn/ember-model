@@ -1,9 +1,35 @@
 var get = Ember.get, set = Ember.set;
 
+var getInverseKeyFor = function(obj, type, lookForType) {
+  var relKeys = type.getRelationships();
+  for (var i = 0, l = relKeys.length; i < l; i++) {
+    var key = relKeys[i];
+    var rel = type.metaForProperty(key);
+    // TODO do we want to reverse hasMany's and belongsTo simulatiously?
+    // TODO complain when we can't decide automatically?
+    var childType = rel.getType(obj);
+    if (childType === lookForType) return key;
+  }
+  return null;
+};
+
+var getInverseKindFor = function(obj, type, lookForKey) {
+  var relKeys = type.getRelationships();
+  for (var i = 0, l = relKeys.length; i < l; i++) {
+    var key = relKeys[i];
+    if (lookForKey !== key) continue;
+    var rel = type.metaForProperty(key);
+    return rel.kind;
+  }
+  return null;
+};
+
 Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
   originalContent: null,
   _modifiedRecords: null,
+  _shadows: null,
+  considerChildrenInDirty: false,
 
   unloadObject: function(record) {
     var obj = get(this, 'content').findBy('clientId', record._reference.clientId);
@@ -13,42 +39,59 @@ Ember.ManyArray = Ember.RecordArray.extend({
     get(this, 'originalContent').removeObject(originalObj);
   },
 
-  isDirty: function() {
+  nonShadowedContent: function() {
+    var shadows = get(this, '_shadows');
+    var content = get(this, 'content');
+    if (!shadows || shadows.length === 0) {
+      return content;
+    }
+    return content.filter(function(o) { return shadows.indexOf(o) === -1; });
+  }.property('content.[]', '_shadows.[]'),
+
+  // YPBUG: this was not a property in ember-models.js on YP
+  isChildrenDirty: function() {
+    return this._modifiedRecords && this._modifiedRecords.length;
+  }.property('_modifiedRecords.[]'),
+
+  isModified: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
-        content = get(this, 'content'),
+        content = get(this, 'nonShadowedContent'),
         contentLength = get(content, 'length');
 
     if (originalContentLength !== contentLength) { return true; }
 
-    if (this._modifiedRecords && this._modifiedRecords.length) { return true; }
+    if (get(this, 'considerChildrenInDirty') && get(this, 'isChildrenDirty')) { return true; }
 
-    var isDirty = false;
+    var isModified = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
       if (!originalContent.contains(content[i])) {
-        isDirty = true;
+        isModified = true;
         break;
       }
     }
 
-    return isDirty;
-  }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]'),
+    return isModified;
+  }.property('nonShadowedContent.[]', 'originalContent.[]', '_modifiedRecords.[]'),
+
+  isDirty: Ember.computed.alias('isModified'),
 
   objectAtContent: function(idx) {
     var content = get(this, 'content');
 
-    if (!content.length) { return; }
+    // GMM add array index guard
+    if (!content.length || idx >= content.length) { return; }
     
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
     var record = this.materializeRecord(idx, this.container);
-    
     if (observerNeeded) {
-      var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
-      if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
-      Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
+      var isModifiedRecord = record.get('isModified'), isNewRecord = record.get('isNew');
+      if (isModifiedRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
+
+      Ember.addObserver(content[idx], 'record.isModified', this, 'recordStateChanged');
       record.registerParentHasManyArray(this);
     }
 
@@ -62,12 +105,59 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }));
   },
 
-  replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
+  ensureReverseRelationship: function(record) {
+    var inverseKey = get(this, 'inverse');
+    if (inverseKey === undefined) {
+      inverseKey = getInverseKeyFor(record, record.constructor, this.parent.constructor);
+    }
+    if (inverseKey == null) {
+      return;
+    }
+    var inverseKind = getInverseKindFor(record, record.constructor, inverseKey);
+    if (inverseKind !== 'belongsTo') {
+      // TODO warn? hard to tell if it's actually a problem...
+      return;
+    }
+    var inverseValue = record.get(inverseKey);
+    if (inverseValue) {
+      return;
+    }
+    record.set(inverseKey, this.parent);
+  },
+
+  replaceContent: function(index, removed, added, disableReverseCheck) {
+    var addedRefs = Ember.EnumerableUtils.map(added, function(record) {
       return record._reference;
     }, this);
 
-    this._super(index, removed, added);
+    // Don't allow dupes (particularly common because of shadowing)
+    var existing = get(this, 'content');
+    if (existing) {
+      addedRefs = addedRefs.filter(function(item) {
+        var found = existing.indexOf(item);
+        // either it doesn't exist or it's in the range that's about to be removed
+        return found === -1 || (found >= index && found <= index + removed);
+      });
+    }
+
+    // we add the shadow back if it's a shadow'ing add
+    var shadows = get(this, '_shadows');
+    if (shadows) {
+      shadows.removeObjects(addedRefs);
+    }
+
+    this._super(index, removed, addedRefs);
+
+    // check if we need to set the inverse
+    if (disableReverseCheck !== true) {
+      Ember.EnumerableUtils.map(added, function(record) {
+        if (record.get('isNew')) {
+          this.ensureReverseRelationship(record);
+        }
+      }, this);
+    }
+
+    return addedRefs.length;
   },
 
   _contentDidChange: function() {
@@ -88,6 +178,18 @@ Ember.ManyArray = Ember.RecordArray.extend({
     this._content = content;
   }.observes('content'),
 
+  pushShadowObject: function(item) {
+    item.registerParentHasManyArray(this);
+    if (!item._reference) {
+      item._createReference();
+    }
+    var added = this.replaceContent(get(this, 'content.length'), 0, [item], true);
+    if (added) {
+      get(this, '_shadows').pushObject(item._reference);
+      this.arrayDidChange(item._reference, 0, 0, 0);
+    }
+  },
+
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
     var content = item;
     for (var i = idx; i < idx+removedCnt; i++) {
@@ -95,27 +197,27 @@ Ember.ManyArray = Ember.RecordArray.extend({
       if (currentItem && currentItem.record) {
         this._modifiedRecords.removeObject(currentItem);
         currentItem.record.unregisterParentHasManyArray(this);
-        Ember.removeObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        Ember.removeObserver(currentItem, 'record.isModified', this, 'recordStateChanged');
       }
     }
   },
 
   arrayDidChange: function(item, idx, removedCnt, addedCnt) {
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey'),
-        isDirty = get(this, 'isDirty');
+        isModified = get(this, 'isModified');
 
     var content = item;
     for (var i = idx; i < idx+addedCnt; i++) {
       var currentItem = content[i];
       if (currentItem && currentItem.record) { 
-        var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
-        if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
-        Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        var isModifiedRecord = currentItem.record.get('isModified'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
+        if (isModifiedRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
+        Ember.addObserver(currentItem, 'record.isModified', this, 'recordStateChanged');
         currentItem.record.registerParentHasManyArray(this);
       }
     }
 
-    if (isDirty) {
+    if (isModified) {
       parent._relationshipBecameDirty(relationshipKey);
     } else {
       parent._relationshipBecameClean(relationshipKey);
@@ -128,10 +230,14 @@ Ember.ManyArray = Ember.RecordArray.extend({
       originalContent: content.slice()
     });
     set(this, '_modifiedRecords', []);
+    set(this, '_shadows', []);
   },
 
   revert: function() {
     this._setupOriginalContent();
+    if (get(this, 'isDeleted') && !get(this, 'isDead')) {
+      set(this, 'isDeleted', false);
+    }
   },
 
   _setupOriginalContent: function(content) {
@@ -140,6 +246,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       set(this, 'originalContent', content.slice());
     }
     set(this, '_modifiedRecords', []);
+    set(this, '_shadows', []);
   },
 
   init: function() {
@@ -149,14 +256,18 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   recordStateChanged: function(obj, keyName) {
+    if(!get(this, 'considerChildrenInDirty')) {
+      return;
+    }
+
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');    
 
-    if (obj.record.get('isDirty')) {
+    if (obj.record.get('isModified')) {
       if (this._modifiedRecords.indexOf(obj) === -1) { this._modifiedRecords.pushObject(obj); }
       parent._relationshipBecameDirty(relationshipKey);
     } else {
       if (this._modifiedRecords.indexOf(obj) > -1) { this._modifiedRecords.removeObject(obj); }
-      if (!this.get('isDirty')) {
+      if (!this.get('isModified')) {
         parent._relationshipBecameClean(relationshipKey); 
       }
     }
@@ -193,6 +304,8 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 });
 
 Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
+  considerChildrenInDirty: true,
+
   create: function(attrs) {
     var klass = get(this, 'modelClass'),
         record = klass.create(attrs);

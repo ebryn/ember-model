@@ -45,8 +45,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,
   isLoading: Ember.computed.not('isLoaded'),
   isNew: true,
-  isDeleted: false,
+  isDeleted: false, // <- in memory delete
+  isDead: false, // <- server has responded that it's deleted
   _dirtyAttributes: null,
+  _shadow: null,
 
   /**
     Called when attribute is accessed.
@@ -59,10 +61,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return value;
   },
 
-  isDirty: function() {
+  isModified: function() {
     var dirtyAttributes = get(this, '_dirtyAttributes');
     return dirtyAttributes && dirtyAttributes.length !== 0 || false;
   }.property('_dirtyAttributes.length'),
+
+  isDirty: Ember.computed.alias('isModified'),
 
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
@@ -84,6 +88,10 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   init: function() {
+    if (!this._shadow) {
+      set(this, '_shadow', Ember.Object.create());
+    }
+
     this._createReference();
     if (!this._dirtyAttributes) {
       set(this, '_dirtyAttributes', []);
@@ -106,6 +114,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     if (!reference.id) {
       reference.id = id;
+    }
+    // YPBUG: wtf is this? 
+    if (id == null) {
+      // Apparently it is to "avoid error message when doing find()"
+      // Thought is doesn't really matter as the find cache gets replaced if you call find()
+      this.constructor.addToRecordArrays(this);
     }
 
     return reference;
@@ -150,7 +164,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (isDescriptor(value)) {
+    if (value && typeof value === 'object' && isDescriptor(value)) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -166,7 +180,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   serializeHasMany: function(key, meta) {
-    return this.get(key).toJSON();
+    var cached = this.cacheFor(key);
+    if (cached) {
+      return cached.toJSON();
+    }
+    // YPBUG: we weren't using meta.options.key before.
+    return this.get('_data.' + ((meta.options && meta.options.key) || key)) || [];
   },
 
   serializeBelongsTo: function(key, meta) {
@@ -175,12 +194,24 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       return record ? record.toJSON() : null;
     } else {
       var primaryKey = get(meta.getType(this), 'primaryKey');
+      var cached = this.cacheFor(key);
+      // GMM if you do set('assignedTo', null) for example we need to send the null to the server
+      // note if there was no cache it would be undefined hense the triple equals
+      if (cached === null) {
+        return null;
+      }
+      if (cached) {
+        return cached.get(primaryKey);
+      }
+      if(this.constructor.useBelongsToImplicitKey) {
+        return this.get('_data.' + key + '_id');
+      }
       return this.get(key + '.' + primaryKey);
     }
   },
 
   toJSON: function() {
-    var key, meta,
+    var key, meta, value,
         json = {},
         attributes = this.constructor.getAttributes(),
         relationships = this.constructor.getRelationships(),
@@ -189,12 +220,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
+      value = properties[key];
+      if(value === undefined) {
+        value = null;
+      }
       if (meta.type && meta.type.serialize) {
-        json[this.dataKey(key)] = meta.type.serialize(properties[key]);
+        json[this.dataKey(key)] = meta.type.serialize(value);
       } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
-        json[this.dataKey(key)] = Ember.Model.dataTypes[meta.type].serialize(properties[key]);
+        json[this.dataKey(key)] = Ember.Model.dataTypes[meta.type].serialize(value);
       } else {
-        json[this.dataKey(key)] = properties[key];
+        json[this.dataKey(key)] = value;
       }
     }
 
@@ -207,6 +242,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         relationshipKey = meta.options.key || key;
 
         if (meta.kind === 'belongsTo') {
+          if(this.constructor.useBelongsToImplicitKey) {
+            // TODO(hliu): we should do this inside of the belongsTo() computed property
+            // based on `useBelongsToImplicitKey`
+            relationshipKey += '_id';
+          }
+          
           data = this.serializeBelongsTo(key, meta);
         } else {
           data = this.serializeHasMany(key, meta);
@@ -228,14 +269,26 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   save: function() {
     var adapter = this.constructor.adapter;
+    var self = this;
     set(this, 'isSaving', true);
-    if (get(this, 'isNew')) {
+    if (get(this, 'isDeleted')) {
+      // GMM don't do anything when the record hasn't been saved
+      if (!get(this, 'isNew')) {
+        return this.constructor.adapter.deleteRecord(this);
+      } else {
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          Ember.run.later(this, function() {
+            self.didDeleteRecord();
+            resolve(self);
+          }, 0);
+        });
+      }
+    } else if (get(this, 'isNew')) {
       return adapter.createRecord(this);
-    } else if (get(this, 'isDirty')) {
+    } else if (get(this, 'isModified')) {
       return adapter.saveRecord(this);
     } else { // noop, return a resolved promise
-      var self = this,
-          promise = new Ember.RSVP.Promise(function(resolve, reject) {
+      var promise = new Ember.RSVP.Promise(function(resolve, reject) {
             resolve(self);
           });
       set(this, 'isSaving', false);
@@ -261,6 +314,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isNew', false);
 
     set(this, '_dirtyAttributes', []);
+
+    // THE FOLLOWING COMMENT IS OLD AND NO LONGER APPLIES ========================
+    // GMM moved to createRecord for backwards compat with old ember-data
+    // in theory I think it's actually better for it to work the original
+    // this.constructor.addToRecordArrays(this);
+    // ===========================================================================
+
+
+    // YPBUG: ^^^ hliu this creates test failures throughout. Also the previous comment
+    // is no longer accurate because we only .addToRecordArrays() inside of _createReference() 
+    // when the record has no id. We can safely addToRecordArrays() here because I added
+    // a no-dupe check.
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
@@ -269,16 +334,25 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   didSaveRecord: function() {
     set(this, 'isSaving', false);
     this.trigger('didSaveRecord');
-    if (this.get('isDirty')) { this._copyDirtyAttributesToData(); }
+    if (this.get('isModified')) { this._copyDirtyAttributesToData(); }
   },
 
   deleteRecord: function() {
-    return this.constructor.adapter.deleteRecord(this);
+    // This method only deletes a record in memory.
+    this.constructor.removeFromHasManyArrays(this);
+    this.constructor.removeFromRecordArrays(this);
+    set(this, 'isDeleted', true);
+    // To fully delete a record, we now call deleteRecord() followed by a save()
+    // so this next line isn't needed anymore:
+    // return this.constructor.adapter.deleteRecord(this);
   },
 
   didDeleteRecord: function() {
+    // hliu This call shouldn't have an effect because we already invoked
+    // .removeFromRecordArrays() inside `deleteRecord`...
     this.constructor.removeFromRecordArrays(this);
-    set(this, 'isDeleted', true);
+    set(this, 'isSaving', false);
+    set(this, 'isDead', true);
     this.trigger('didDeleteRecord');
   },
 
@@ -298,7 +372,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       data[this.dataKey(key)] = this.cacheFor(key);
     }
     set(this, '_dirtyAttributes', []);
-    this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
+    this._resetDirtyStateInNestedObjects(this); // we need to reset isModified state to all child objects in embedded relationships
   },
 
   _resetDirtyStateInNestedObjects: function(object) {
@@ -396,6 +470,9 @@ Ember.Model.reopenClass({
   primaryKey: 'id',
 
   adapter: Ember.Adapter.create(),
+
+  // YP: automatically add `_id` to the key for belongsTo?
+  useBelongsToImplicitKey: true, 
 
   _clientIdCounter: 1,
 
@@ -510,6 +587,7 @@ Ember.Model.reopenClass({
     if (isFetch && currentFetchPromise) {
       return currentFetchPromise;
     } else if (this._findAllRecordArray) {
+      this._findAllRecordArray.reload();
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve) {
           resolve(self._findAllRecordArray);
@@ -693,7 +771,10 @@ Ember.Model.reopenClass({
 
 
   addToRecordArrays: function(record) {
-    if (this._findAllRecordArray) {
+    // hliu prevent adding dupes with indexOf check
+    if (this._findAllRecordArray && 
+          this._findAllRecordArray.get('content') && 
+          this._findAllRecordArray.get('content').indexOf(record) === -1) {
       this._findAllRecordArray.addObject(record);
     }
     if (this.recordArrays) {
@@ -701,7 +782,7 @@ Ember.Model.reopenClass({
         if (recordArray instanceof Ember.FilteredRecordArray) {
           recordArray.registerObserversOnRecord(record);
           recordArray.updateFilter();
-        } else {
+        } else if(recordArray.get('content').indexOf(record) === -1) {
           recordArray.addObject(record);
         }
       });
