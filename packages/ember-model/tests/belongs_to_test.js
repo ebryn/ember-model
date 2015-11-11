@@ -809,7 +809,10 @@ test("Test .getRelationship()", function() {
     ok(article.get('isSub'), "Is a submodel");
     deepEqual(article.get('deferredGraph'), {body: 1}, "deferredGraph is correct");
 
-    ok(Ember.cacheFor(comment, 'article') === article, "Is same instance");
+    ok(Ember.cacheFor(comment, 'article') == null, "Doesn't affect cache");
+
+    article = comment.get('article');
+    ok(article.get('isLoading'), "get() triggered full load");
     Ember.run(App, 'destroy');
   });
   stop();

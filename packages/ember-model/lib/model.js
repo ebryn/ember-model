@@ -187,7 +187,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return get(this, get(this.constructor, 'primaryKey'));
   },
 
-  getRelationship: function(propertyKey, subgraph) {
+getRelationship: function(propertyKey, subgraph) {
     // This will override/set the computed property cache for a relationship and allow
     // for submodel get()'s
     var store = this.getStore(), 
@@ -211,21 +211,18 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       return this.get(propertyKey);
     }
 
-    if(meta.kind === 'belongsTo') {
-      if(this.constructor.useBelongsToImplicitKey) {
+    if(this.constructor.useBelongsToImplicitKey) {
         key = meta.options.key || propertyKey + '_id';
       } else {
         key = meta.options.key || propertyKey;
       }
 
+    if(meta.kind === 'belongsTo') {
       record = this.getBelongsTo(key, type, meta, store, subgraph);
-      if(record !== cacheFor(this, propertyKey)) {
-        this.set(propertyKey, record);
-      }
       return record;
     } else {
       // is `hasMany` relationship kind.
-      collection = this.get(propertyKey);
+      collection = this.getHasMany(key, type, meta, this.container, subgraph);
       collection.set('subgraph', subgraph);
       return collection;
     }
