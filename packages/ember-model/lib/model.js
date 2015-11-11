@@ -350,7 +350,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   destroyRecord: function() {
     this.deleteRecord();
     return this.save();
-  }
+  },
 
   didDeleteRecord: function() {
     // hliu This call shouldn't have an effect because we already invoked
