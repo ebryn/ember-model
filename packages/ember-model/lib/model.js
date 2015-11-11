@@ -487,6 +487,11 @@ getRelationship: function(propertyKey, subgraph) {
     // return this.constructor.adapter.deleteRecord(this);
   },
 
+  destroyRecord: function() {
+    this.deleteRecord();
+    return this.save();
+  },
+
   didDeleteRecord: function() {
     // hliu This call shouldn't have an effect because we already invoked
     // .removeFromRecordArrays() inside `deleteRecord`...
