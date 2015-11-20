@@ -11,6 +11,12 @@ if (Ember.libraries) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 function mustImplement(message) {
   var fn = function() {
     var className = this.constructor.toString();
@@ -39,6 +45,14 @@ Ember.Adapter = Ember.Object.extend({
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get,
     set = Ember.set;
@@ -156,6 +170,12 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get,
     set = Ember.set;
 
@@ -191,7 +211,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-
+    
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
@@ -212,6 +232,14 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
+
 
 var get = Ember.get;
 
@@ -275,6 +303,12 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var get = Ember.get, set = Ember.set;
 
 Ember.ManyArray = Ember.RecordArray.extend({
@@ -316,12 +350,12 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var content = get(this, 'content');
 
     if (!content.length) { return; }
-
+    
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
     var record = this.materializeRecord(idx, this.container);
-
+    
     if (observerNeeded) {
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
       if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
@@ -347,22 +381,22 @@ Ember.ManyArray = Ember.RecordArray.extend({
     this._super(index, removed, added);
   },
 
-  _contentWillChange: function() {
-    var content = get(this, 'content');
-
-    if (content) {
-      this.arrayWillChange(content, 0, get(content, 'length'), 0);
-      content.removeArrayObserver(this);
-      this._setupOriginalContent(content);
-    }
-  }.observesBefore('content'),
-
   _contentDidChange: function() {
     var content = get(this, 'content');
+    var contentPrev = this._content;
+
+    if (contentPrev && contentPrev !== content) {
+      this.arrayWillChange(contentPrev, 0, get(contentPrev, 'length'), 0);
+      contentPrev.removeArrayObserver(this);
+      this._setupOriginalContent(content);
+    }
+
     if (content) {
       content.addArrayObserver(this);
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
+
+    this._content = content;
   }.observes('content'),
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
@@ -384,7 +418,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var content = item;
     for (var i = idx; i < idx+addedCnt; i++) {
       var currentItem = content[i];
-      if (currentItem && currentItem.record) {
+      if (currentItem && currentItem.record) { 
         var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
         if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
         Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
@@ -426,7 +460,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   recordStateChanged: function(obj, keyName) {
-    var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');
+    var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');    
 
     if (obj.record.get('isDirty')) {
       if (this._modifiedRecords.indexOf(obj) === -1) { this._modifiedRecords.pushObject(obj); }
@@ -434,7 +468,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     } else {
       if (this._modifiedRecords.indexOf(obj) > -1) { this._modifiedRecords.removeObject(obj); }
       if (!this.get('isDirty')) {
-        parent._relationshipBecameClean(relationshipKey);
+        parent._relationshipBecameClean(relationshipKey); 
       }
     }
   }
@@ -513,6 +547,20 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
+
+
+})();
+
+(function() {
+
+
+
 var get = Ember.get,
     set = Ember.set,
     setProperties = Ember.setProperties,
@@ -578,12 +626,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    if (!dirtyAttributes.contains(name)) { dirtyAttributes.pushObject(name); }
+    if (dirtyAttributes) {
+        dirtyAttributes.addObject(name);
+    } else {
+        set(this, '_dirtyAttributes', [name]);
+    }
   },
 
   _relationshipBecameClean: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    dirtyAttributes.removeObject(name);
+    if (dirtyAttributes) { dirtyAttributes.removeObject(name); }
   },
 
   dataKey: function(key) {
@@ -1357,6 +1409,12 @@ Ember.Model.reopenClass({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 var supportsComputedGetterSetter;
 
 try {
@@ -1405,6 +1463,7 @@ Ember.Model.computed = function() {
 
 (function() {
 
+
 var get = Ember.get;
 
 function getType(record) {
@@ -1437,6 +1496,9 @@ Ember.hasMany = function(type, options) {
       return this.getHasMany(key, type, meta, this.container);
     },
     set: function(propertyKey, newContentArray, existingArray) {
+      if (!existingArray) {
+        existingArray = this.getHasMany(options.key || propertyKey, type, meta, this.container);
+      }
       return existingArray.setObjects(newContentArray);
     }
   }).meta(meta);
@@ -1467,6 +1529,13 @@ Ember.Model.reopen({
 })();
 
 (function() {
+
+
+
+})();
+
+(function() {
+
 
 var get = Ember.get,
     set = Ember.set;
@@ -1608,9 +1677,16 @@ Ember.Model.reopen({
 
 (function() {
 
+
+
+})();
+
+(function() {
+
+
 var get = Ember.get,
-    set = Ember.set,
-    meta = Ember.meta;
+  set = Ember.set,
+  meta = Ember.meta;
 
 Ember.Model.dataTypes = {};
 
@@ -1714,6 +1790,14 @@ Ember.attr = function(type, options) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
+
+
 var get = Ember.get;
 
 Ember.RESTAdapter = Ember.Adapter.extend({
@@ -1804,7 +1888,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
-    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {
       self.didDeleteRecord(record, data);
     });
   },
@@ -1831,29 +1915,36 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   ajaxSettings: function(url, method) {
     return {
-      url: url,
-      type: method,
-      dataType: "json"
+      url         : url,
+      type        : method,
+      dataType    : "json"
     };
   },
 
   _ajax: function(url, params, method, settings) {
+    var self = this;
     if (!settings) {
       settings = this.ajaxSettings(url, method);
     }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
-        if (method === "GET") {
+        if (/get/i.test(settings.type)) { // GET
           settings.data = params;
-        } else {
-          settings.contentType = "application/json; charset=utf-8";
-          settings.data = JSON.stringify(params);
+        } else { // POST, PUT
+          if (/json/i.test(settings.contentType)) {
+            settings.data = JSON.stringify(params);
+          } else { // application/x-www-form-urlencoded; charset=UTF-8
+            settings.data = params;
+          }
         }
       }
 
-      settings.success = function(json) {
+      settings.success = function(json, textStatus, jqXHR) {
         Ember.run(null, resolve, json);
+        if (settings.successCallback) {
+          settings.successCallback.call(this, json, textStatus, jqXHR);
+        }
       };
 
       settings.error = function(jqXHR, textStatus, errorThrown) {
@@ -1862,12 +1953,23 @@ Ember.RESTAdapter = Ember.Adapter.extend({
           jqXHR.then = null;
         }
 
-        Ember.run(null, reject, jqXHR);
-      };
+        self._handleRejections(method, jqXHR, resolve, reject);
 
+        if (settings.errorCallback) {
+          settings.errorCallback.call(this, jqXHR, textStatus, errorThrown);
+        }
+      };
 
       Ember.$.ajax(settings);
    });
+  },
+
+  _handleRejections: function(method, jqXHR, resolve, reject) {
+    if (method === "DELETE" && jqXHR.status >= 200 && jqXHR.status < 300) {
+      Ember.run(null, resolve, null);
+    } else {
+      Ember.run(null, reject, jqXHR);
+    }
   },
 
   _loadRecordFromData: function(record, data) {
@@ -1882,6 +1984,12 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     }
   }
 });
+
+
+})();
+
+(function() {
+
 
 
 })();
@@ -1909,6 +2017,12 @@ Ember.loadPromise = function(target) {
     return deferred.promise;
   }
 };
+
+
+})();
+
+(function() {
+
 
 
 })();
@@ -2035,6 +2149,12 @@ Ember.onLoad('Ember.Application', function(Application) {
 
 (function() {
 
+
+
+})();
+
+(function() {
+
 function NIL() {}
 
 Ember.Model.Store = Ember.Object.extend({
@@ -2109,6 +2229,13 @@ Ember.onLoad('Ember.Application', function(Application) {
   });
 
 });
+
+
+})();
+
+(function() {
+
+
 
 
 })();
