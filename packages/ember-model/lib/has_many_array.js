@@ -70,22 +70,22 @@ Ember.ManyArray = Ember.RecordArray.extend({
     this._super(index, removed, added);
   },
 
-  _contentWillChange: function() {
-    var content = get(this, 'content');
-
-    if (content) {
-      this.arrayWillChange(content, 0, get(content, 'length'), 0);
-      content.removeArrayObserver(this);
-      this._setupOriginalContent(content);
-    }
-  }.observesBefore('content'),
-
   _contentDidChange: function() {
     var content = get(this, 'content');
+    var contentPrev = this._content;
+
+    if (contentPrev && contentPrev !== content) {
+      this.arrayWillChange(contentPrev, 0, get(contentPrev, 'length'), 0);
+      contentPrev.removeArrayObserver(this);
+      this._setupOriginalContent(content);
+    }
+
     if (content) {
       content.addArrayObserver(this);
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
+
+    this._content = content;
   }.observes('content'),
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {

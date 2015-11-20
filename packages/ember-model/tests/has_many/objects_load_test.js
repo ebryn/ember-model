@@ -43,7 +43,7 @@ test("loads objects based on their ids", function() {
     start();
     equal(comments.get('length'), 3, "There are 3 comments");
     ok(Ember.run(comments, comments.get, 'firstObject') instanceof Comment, "The first object is a Comment object");
-    deepEqual(Ember.run(comments, comments.mapProperty, 'text'), ['uno', 'dos', 'tres'], "The comments are loaded");
-    ok(!comments.everyProperty('isNew'), "Records should not be new");
+    deepEqual(Ember.run(comments, comments.mapBy, 'text'), ['uno', 'dos', 'tres'], "The comments are loaded");
+    ok(!comments.isEvery('isNew'), "Records should not be new");
   });
 });

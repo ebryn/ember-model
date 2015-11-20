@@ -90,7 +90,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
-    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {
       self.didDeleteRecord(record, data);
     });
   },
@@ -124,6 +124,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   _ajax: function(url, params, method, settings) {
+    var self = this;
     if (!settings) {
       settings = this.ajaxSettings(url, method);
     }
@@ -154,7 +155,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
           jqXHR.then = null;
         }
 
-        Ember.run(null, reject, jqXHR);
+        self._handleRejections(method, jqXHR, resolve, reject);
 
         if (settings.errorCallback) {
           settings.errorCallback.call(this, jqXHR, textStatus, errorThrown);
@@ -163,6 +164,14 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
       Ember.$.ajax(settings);
    });
+  },
+
+  _handleRejections: function(method, jqXHR, resolve, reject) {
+    if (method === "DELETE" && jqXHR.status >= 200 && jqXHR.status < 300) {
+      Ember.run(null, resolve, null);
+    } else {
+      Ember.run(null, reject, jqXHR);
+    }
   },
 
   _loadRecordFromData: function(record, data) {

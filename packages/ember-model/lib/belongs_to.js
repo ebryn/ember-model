@@ -1,3 +1,4 @@
+require('ember-model/computed');
 var get = Ember.get,
     set = Ember.set;
 
@@ -30,7 +31,7 @@ Ember.belongsTo = function(type, options) {
 
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
 
-  return Ember.computed("_data", {
+  return Ember.Model.computed("_data", {
     get: function(propertyKey){
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
