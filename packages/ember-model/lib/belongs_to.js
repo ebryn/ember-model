@@ -102,6 +102,10 @@ Ember.belongsTo = function(type, options) {
     set: function(propertyKey, value, oldValue){
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
+      
+      if(value) {
+        Ember.assert("Cannot call set() with a subrecord.", !value.get('isSub'));
+      }
 
       var key; 
       if(this.constructor.useBelongsToImplicitKey) {

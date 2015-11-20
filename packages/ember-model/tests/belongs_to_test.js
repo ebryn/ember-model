@@ -818,36 +818,36 @@ test("Test .getRelationship()", function() {
   stop();
 });
 
-test("Test submodel set()", function() {
-  var App;
-  Ember.run(function() {
-    App = Ember.Application.create({});
-  });
-  App.Article = Ember.Model.extend({
-    id: Ember.attr(String),
-    title: Ember.attr(String),
-    body: Ember.attr(String),
-  });
+// test("Test submodel set()", function() {
+//   var App;
+//   Ember.run(function() {
+//     App = Ember.Application.create({});
+//   });
+//   App.Article = Ember.Model.extend({
+//     id: Ember.attr(String),
+//     title: Ember.attr(String),
+//     body: Ember.attr(String),
+//   });
 
-  App.Article.adapter = Ember.FixtureAdapter.create();
-  App.Article.FIXTURES = [{ id: 'first-article', title: 'Hello world', body: 'Foo'}];
+//   App.Article.adapter = Ember.FixtureAdapter.create();
+//   App.Article.FIXTURES = [{ id: 'first-article', title: 'Hello world', body: 'Foo'}];
 
-  App.Comment = Ember.Model.extend({
-    article: Ember.belongsTo('article', { key: 'article_slug' })
-  });
+//   App.Comment = Ember.Model.extend({
+//     article: Ember.belongsTo('article', { key: 'article_slug' })
+//   });
 
-  var comment = App.Comment.create({container: App.__container__});
-  var article = Ember.run(App.Article, App.Article.find, 'first-article', {title: 1});
-  article.one('didLoad', function() {
-    start();
-    comment.set('article', article);
-    strictEqual(comment.get('article'), article);
-    comment.set('_data', {});
-    equal(comment.get('article'), null);
-    Ember.run(App, 'destroy');
-  });
-  stop();
-});
+//   var comment = App.Comment.create({container: App.__container__});
+//   var article = Ember.run(App.Article, App.Article.find, 'first-article', {title: 1});
+//   article.one('didLoad', function() {
+//     start();
+//     comment.set('article', article);
+//     strictEqual(comment.get('article'), article);
+//     comment.set('_data', {});
+//     equal(comment.get('article'), null);
+//     Ember.run(App, 'destroy');
+//   });
+//   stop();
+// });
 
 
 test("Test reload() and submodels", function() {
