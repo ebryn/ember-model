@@ -717,6 +717,49 @@ test("key defaults to model's property key", function() {
   deepEqual(comment.toJSON(), { article: 2 });
 });
 
+test("Can get the id without a fetch - get", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ id: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article)
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article: 2 });
+
+  equal(comment.get('article.id'), 2, "Can get the id without a fetch.");
+});
+
+test("Can get the id without a fetch - getRelationship()", function() {
+  expect(1);
+
+  var Article = Ember.Model.extend({
+    id: Ember.attr()
+  });
+
+  Article.adapter = Ember.FixtureAdapter.create();
+  Article.FIXTURES = [{ id: 2 }];
+
+  var Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article)
+  });
+
+  var comment = Comment.create();
+
+  Ember.run(comment, comment.load, 1, { article: 2 });
+  comment.getRelationship('article', {id: 1});
+  equal(comment.get('article.id'), 2, "Can get the id without a fetch.");
+});
+
+
 test("non embedded belongsTo should return a record with a container", function() {
   var App;
   Ember.run(function() {
@@ -738,3 +781,116 @@ test("non embedded belongsTo should return a record with a container", function(
   ok(article.get('container'));
   Ember.run(App, 'destroy');
 });
+
+
+test("Test .getRelationship()", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+  App.Article = Ember.Model.extend({
+    id: Ember.attr(String),
+    title: Ember.attr(String),
+    body: Ember.attr(String),
+  });
+  App.Comment = Ember.Model.extend({
+    article: Ember.belongsTo('article', { key: 'article_slug' })
+  });
+
+  App.Article.adapter = Ember.FixtureAdapter.create();
+  App.Article.FIXTURES = [{ id: 'first-article', title: 'Hello world', body: 'Foo'}];
+
+  var comment = App.Comment.create({container: App.__container__});
+  Ember.run(comment, comment.load, 1, { article_slug: 'first-article' });
+  var article = Ember.run(comment, comment.getRelationship, 'article', {title:1});
+  article.one('didLoad', function() {
+    start();
+    equal(article.get('title'), 'Hello world', "Can fetch attribute");
+    ok(article.get('isSub'), "Is a submodel");
+    deepEqual(article.get('deferredGraph'), {body: 1}, "deferredGraph is correct");
+
+    ok(Ember.cacheFor(comment, 'article') == null, "Doesn't affect cache");
+
+    article = comment.get('article');
+    ok(article.get('isLoading'), "get() triggered full load");
+    Ember.run(App, 'destroy');
+  });
+  stop();
+});
+
+// test("Test submodel set()", function() {
+//   var App;
+//   Ember.run(function() {
+//     App = Ember.Application.create({});
+//   });
+//   App.Article = Ember.Model.extend({
+//     id: Ember.attr(String),
+//     title: Ember.attr(String),
+//     body: Ember.attr(String),
+//   });
+
+//   App.Article.adapter = Ember.FixtureAdapter.create();
+//   App.Article.FIXTURES = [{ id: 'first-article', title: 'Hello world', body: 'Foo'}];
+
+//   App.Comment = Ember.Model.extend({
+//     article: Ember.belongsTo('article', { key: 'article_slug' })
+//   });
+
+//   var comment = App.Comment.create({container: App.__container__});
+//   var article = Ember.run(App.Article, App.Article.find, 'first-article', {title: 1});
+//   article.one('didLoad', function() {
+//     start();
+//     comment.set('article', article);
+//     strictEqual(comment.get('article'), article);
+//     comment.set('_data', {});
+//     equal(comment.get('article'), null);
+//     Ember.run(App, 'destroy');
+//   });
+//   stop();
+// });
+
+
+test("Test reload() and submodels", function() {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+  });
+  App.Article = Ember.Model.extend({
+    id: Ember.attr(String),
+    title: Ember.attr(String),
+    body: Ember.attr(String),
+  });
+  App.Comment = Ember.Model.extend({
+    id: Ember.attr(),
+    article: Ember.belongsTo('article', { key: 'article_slug' })
+  });
+
+  App.Comment.adapter = Ember.FixtureAdapter.create();
+  App.Comment.FIXTURES = [{id: 1, article_slug: 'first-article'}];
+
+  App.Article.adapter = Ember.FixtureAdapter.create();
+  App.Article.FIXTURES = [{ id: 'first-article', title: 'Hello world', body: 'Foo'}];
+
+  var comment = App.Comment.create({container: App.__container__});
+  Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
+
+  var article = Ember.run(comment, comment.getRelationship, 'article', {title: 1});
+  article.one('didLoad', function() {
+    start();
+    ok(article.get('isSub'), "Article is a submodel");
+    comment.reload();
+    comment.on('didLoad', function(){
+      start();
+      article = comment.get('article');
+      article.on('didLoad', function() {
+        start();
+        ok(!article.get('isSub', "Article is now a full model"));
+        Ember.run(App, 'destroy');
+      });
+      stop();
+    });
+    stop();
+  });
+  stop();
+});
+

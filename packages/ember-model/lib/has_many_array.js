@@ -28,6 +28,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
   originalContent: null,
   _modifiedRecords: null,
+  subgraph: null,
   _shadows: null,
   considerChildrenInDirty: false,
 
@@ -278,6 +279,7 @@ Ember.HasManyArray = Ember.ManyArray.extend({
   materializeRecord: function(idx, container) {
     var klass = get(this, 'modelClass'),
         content = get(this, 'content'),
+        subgraph = get(this, 'subgraph'),
         reference = content.objectAt(idx),
         record = reference.record;
 
@@ -285,9 +287,13 @@ Ember.HasManyArray = Ember.ManyArray.extend({
       if (! record.container) {
         record.container = container;
       }
-      return record;
+      // TODO: what about cached records and subgraphs?
+      if(Ember.isEmpty(reference.id)) {
+        return record;
+      }
     }
-    return klass._findFetchById(reference.id, false, container);
+
+    return klass._findFetchById(reference.id, subgraph, false, container);
   },
 
   toJSON: function() {

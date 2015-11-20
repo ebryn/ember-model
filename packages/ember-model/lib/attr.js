@@ -55,6 +55,10 @@ function serialize(value, type) {
 Ember.attr = function(type, options) {
   return Ember.Model.computed("_data", {
     get: function(key){
+      if (this.isDeferredKey(key)) {
+        return this._reloadAndGet(key);
+      }
+
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),
           dataValue = data && get(data, dataKey);
