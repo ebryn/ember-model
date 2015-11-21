@@ -103,3 +103,60 @@ Ember.attr = function(type, options) {
     }
   }).meta({isAttribute: true, type: type, options: options});
 };
+
+Ember.polymorphicAttr = function(options) {
+  var defaultType = 'raw';
+  return Ember.Model.computed(['_data', 'type'], {
+    get: function(key) {
+      var _type = get(this, 'type');
+      var _meta = this.constructor.metaForProperty(key);
+      _meta.type = _type;
+
+      var data = get(this, '_data'),
+          dataKey = this.dataKey(key),
+          dataValue = data && get(data, dataKey);
+
+      if (dataValue==null && options && options.defaultValue!=null) {
+        return Ember.copy(options.defaultValue);
+      }
+
+      return this.getAttr(key, deserialize(dataValue, _type));
+    },
+    set: function(key, value) {
+      var _type = get(this, 'type');
+
+      var data = get(this, '_data'),
+          dataKey = this.dataKey(key),
+          dataValue = data && get(data, dataKey),
+          beingCreated = meta(this).proto === this,
+          dirtyAttributes = get(this, '_dirtyAttributes'),
+          createdDirtyAttributes = false;
+
+      if (!dirtyAttributes) {
+        dirtyAttributes = [];
+        createdDirtyAttributes = true;
+      }
+
+      if (beingCreated) {
+        if (!data) {
+          data = {};
+          set(this, '_data', data);
+        }
+        dataValue = data[dataKey] = value;
+      }
+
+      if (dataValue !== serialize(value, _type)) {
+        dirtyAttributes.pushObject(key);
+      }
+      else {
+        dirtyAttributes.removeObject(key);
+      }
+
+      if (createdDirtyAttributes) {
+        set(this, '_dirtyAttributes', dirtyAttributes);
+      }
+
+      return value;
+    }
+  }).meta({isAttribute: true, type: defaultType});
+};
