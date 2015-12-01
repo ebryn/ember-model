@@ -59,15 +59,15 @@ Ember.Model.Store = Ember.Object.extend({
 Ember.onLoad('Ember.Application', function(Application) {
 
   Application.initializer({
-    name: "store",
+    name: "emstore",
 
     initialize: function(_, application) {
-      var store = application.Store || Ember.Model.Store;
-      application.register('store:application', store);
-      application.register('store:main', store);
+      var emstore = application.Store || Ember.Model.Store;
+      application.register('emstore:application', emstore);
+      application.register('emstore:main', emstore);
 
-      application.inject('route', 'store', 'store:main');
-      application.inject('controller', 'store', 'store:main');
+      application.inject('route', 'emstore', 'emstore:main');
+      application.inject('controller', 'emstore', 'emstore:main');
     }
   });
 

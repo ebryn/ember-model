@@ -8,9 +8,9 @@ function getType(record) {
     this.type = get(Ember.lookup, this.type);
 
     if (!this.type) {
-      var store = record.container.lookup('store:main');
-      this.type = store.modelFor(type);
-      this.type.reopenClass({ adapter: store.adapterFor(type) });
+      var emstore = record.container.lookup('emstore:main');
+      this.type = emstore.modelFor(type);
+      this.type.reopenClass({ adapter: emstore.adapterFor(type) });
     }
   }
 

@@ -1,11 +1,11 @@
-var TestModel, EmbeddedModel, UUIDModel, store, registry, container, App;
+var TestModel, EmbeddedModel, UUIDModel, emstore, registry, container, App;
 
 module("Ember.Model.Store", {
   setup: function() {
     registry = new Ember.Registry();
     container = registry.container();
 
-    store = Ember.Model.Store.create({container: container});
+    emstore = Ember.Model.Store.create({container: container});
     TestModel = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr(),
@@ -64,26 +64,26 @@ module("Ember.Model.Store", {
     registry.register('model:test', TestModel);
     registry.register('model:embedded', EmbeddedModel);
     registry.register('model:uuid', UUIDModel);
-    registry.register('store:main', Ember.Model.Store);
+    registry.register('emstore:main', Ember.Model.Store);
   }
 });
 
-test("store.createRecord(type) returns a record with a container", function() {
-  var record = Ember.run(store, store.createRecord, 'test');
+test("emstore.createRecord(type) returns a record with a container", function() {
+  var record = Ember.run(emstore, emstore.createRecord, 'test');
   equal(record.container, container);
   equal(record.container, container);
 });
 
-test("store.createRecord(type) with properties", function() {
+test("emstore.createRecord(type) with properties", function() {
   expect(2);
-  var record = Ember.run(store, store.createRecord, 'test', {token: 'c', name: 'Andrew'});
+  var record = Ember.run(emstore, emstore.createRecord, 'test', {token: 'c', name: 'Andrew'});
   equal(record.get('token'), 'c');
   equal(record.get('name'), 'Andrew');
 });
 
 test("model.load(hashes) returns a existing record with correct container", function() {
-  var model = store.modelFor('uuid'),
-      record = Ember.run(store, store.createRecord, 'uuid');
+  var model = emstore.modelFor('uuid'),
+      record = Ember.run(emstore, emstore.createRecord, 'uuid');
 
   equal(model, UUIDModel);
   equal(record.container, container);
@@ -108,9 +108,9 @@ test("model.load(hashes) returns a existing record with correct container", func
   equal(record.get('container'), container);
 });
 
-test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
+test("emstore.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
   expect(4);
-  var promise = Ember.run(store, store.find, 'test', 'a');
+  var promise = Ember.run(emstore, emstore.find, 'test', 'a');
   promise.then(function(record) {
     start();
     ok(record.get('container'));
@@ -123,10 +123,10 @@ test("store.find(type) returns a record with hasMany and belongsTo that should a
   stop();
 });
 
-test("store.find(type, id) returns a promise and loads a container for the record", function() {
+test("emstore.find(type, id) returns a promise and loads a container for the record", function() {
   expect(2);
 
-  var promise = Ember.run(store, store.find, 'test','a');
+  var promise = Ember.run(emstore, emstore.find, 'test','a');
   promise.then(function(record) {
     start();
     ok(record.get('isLoaded'));
@@ -135,10 +135,10 @@ test("store.find(type, id) returns a promise and loads a container for the recor
   stop();
 });
 
-test("store.find(type) returns a promise and loads a container for each record", function() {
+test("emstore.find(type) returns a promise and loads a container for each record", function() {
   expect(5);
 
-  var promise = Ember.run(store, store.find, 'test');
+  var promise = Ember.run(emstore, emstore.find, 'test');
   promise.then(function(records) {
     start();
     equal(records.content.length, 2);
@@ -150,10 +150,10 @@ test("store.find(type) returns a promise and loads a container for each record",
   stop();
 });
 
-test("store.find(type, Array) returns a promise and loads a container for each record", function() {
+test("emstore.find(type, Array) returns a promise and loads a container for each record", function() {
   expect(5);
 
-  var promise = Ember.run(store, store.find, 'test', ['a','b']);
+  var promise = Ember.run(emstore, emstore.find, 'test', ['a','b']);
   promise.then(function(records) {
     start();
     equal(records.content.length, 2);
@@ -165,45 +165,45 @@ test("store.find(type, Array) returns a promise and loads a container for each r
   stop();
 });
 
-test("store.adapterFor(type) returns klass.adapter first", function() {
-  var adapter = Ember.run(store, store.adapterFor, 'test');
+test("emstore.adapterFor(type) returns klass.adapter first", function() {
+  var adapter = Ember.run(emstore, emstore.adapterFor, 'test');
   equal(adapter.constructor, Ember.FixtureAdapter);
 });
 
-test("store.adapterFor(type) returns type adapter if no klass.adapter", function() {
+test("emstore.adapterFor(type) returns type adapter if no klass.adapter", function() {
   TestModel.adapter = undefined;
   registry.register('adapter:test', Ember.FixtureAdapter);
   registry.register('adapter:application', null);
-  var adapter = Ember.run(store, store.adapterFor, 'test');
+  var adapter = Ember.run(emstore, emstore.adapterFor, 'test');
   ok(adapter instanceof Ember.FixtureAdapter);
 });
 
-test("store.adapterFor(type) returns application adapter if no klass.adapter or type adapter", function() {
+test("emstore.adapterFor(type) returns application adapter if no klass.adapter or type adapter", function() {
   TestModel.adapter = undefined;
   registry.register('adapter:test', null);
   registry.register('adapter:application', Ember.FixtureAdapter);
-  var adapter = Ember.run(store, store.adapterFor, 'test');
+  var adapter = Ember.run(emstore, emstore.adapterFor, 'test');
   ok(adapter instanceof Ember.FixtureAdapter);
 });
 
-test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
+test("emstore.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
 
   TestModel.adapter = undefined;
   registry.register('adapter:test', null);
   registry.register('adapter:application', null);
   registry.register('adapter:REST',  Ember.RESTAdapter);
-  var adapter = Ember.run(store, store.adapterFor, 'test');
+  var adapter = Ember.run(emstore, emstore.adapterFor, 'test');
   ok(adapter instanceof Ember.RESTAdapter);
 });
 
-test("store.find(type) records use application adapter if no klass.adapter or type adapter", function() {
+test("emstore.find(type) records use application adapter if no klass.adapter or type adapter", function() {
   expect(3);
   TestModel.adapter = undefined;
   EmbeddedModel.adapter = undefined;
   registry.register('adapter:test', null);
   registry.register('adapter:application', Ember.FixtureAdapter);
 
-  var promise = Ember.run(store, store.find, 'test','a');
+  var promise = Ember.run(emstore, emstore.find, 'test','a');
 
   promise.then(function(record) {
     start();
@@ -215,7 +215,7 @@ test("store.find(type) records use application adapter if no klass.adapter or ty
   stop();
 });
 
-test("Registering a custom store on application works", function() {
+test("Registering a custom emstore on application works", function() {
   Ember.run(function() {
     var CustomStore = Ember.Model.Store.extend({ custom: true });
     App = Ember.Application.create({
@@ -225,11 +225,11 @@ test("Registering a custom store on application works", function() {
   });
 
   container = App.__container__;
-  ok(container.lookup('store:application'));
-  ok(container.lookup('store:main').get('custom'));
+  ok(container.lookup('emstore:application'));
+  ok(container.lookup('emstore:main').get('custom'));
 
   var testRoute = container.lookup('route:test');
-  ok(testRoute.get('store.custom'));
+  ok(testRoute.get('emstore.custom'));
 
   Ember.run(App, 'destroy');
 });
