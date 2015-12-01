@@ -2022,10 +2022,10 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
 Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
-    name: "data-adapter",
+    name: "em-data-adapter",
 
     initialize: function(container, application) {
-      application.register('data-adapter:main', DebugAdapter);
+      application.register('em-data-adapter:main', DebugAdapter);
     }
   });
 });
