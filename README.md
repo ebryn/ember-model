@@ -68,7 +68,7 @@ export default Comment;
 
 ```javascript
 // create example
-var newUser = this.store.createRecord('user', {name: "Erik"});
+var newUser = this.emstore.createRecord('user', {name: "Erik"});
 newUser.save(); // POST to /users
 
 // hasMany example
@@ -78,7 +78,7 @@ comments.save(); // POST to /comments
 
 // find & update example
 
-this.store.find('user', 1).then(user => { // GET /users/1
+this.emstore.find('user', 1).then(user => { // GET /users/1
   user.set('name', 'Kris');
   user.get('isDirty'); // => true
   user.save(); // PUT /users/1
