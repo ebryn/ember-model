@@ -578,9 +578,7 @@ test("toJSON includes embedded relationships", function() {
 
   var json = Ember.run(article, article.toJSON);
 
-  var map = Ember.EnumerableUtils.map;
-
-  deepEqual(map(json.comments, function(c) { return c.text; }), ['uno', 'dos', 'tres'], "JSON should contain serialized records from hasMany relationship");
+  deepEqual(json.comments.map(function(c) { return c.text; }), ['uno', 'dos', 'tres'], "JSON should contain serialized records from hasMany relationship");
   equal(json.author.name, 'drogus', "JSON should contain serialized record from belongsTo relationship");
 });
 

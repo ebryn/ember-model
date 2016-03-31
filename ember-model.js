@@ -1,6 +1,6 @@
 (function() {
 
-var VERSION = '0.0.16';
+var VERSION = '0.0.17';
 
 if (Ember.libraries) {
   Ember.libraries.register('Ember Model', VERSION);
@@ -191,7 +191,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-
+    
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
@@ -340,29 +340,29 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
+    added = added.map(function(record) {
       return record._reference;
-    }, this);
+    });
 
     this._super(index, removed, added);
   },
 
-  _contentWillChange: function() {
-    var content = get(this, 'content');
-
-    if (content) {
-      this.arrayWillChange(content, 0, get(content, 'length'), 0);
-      content.removeArrayObserver(this);
-      this._setupOriginalContent(content);
-    }
-  }.observesBefore('content'),
-
   _contentDidChange: function() {
     var content = get(this, 'content');
+    var contentPrev = this._content;
+
+    if (contentPrev && contentPrev !== content) {
+      this.arrayWillChange(contentPrev, 0, get(contentPrev, 'length'), 0);
+      contentPrev.removeArrayObserver(this);
+      this._setupOriginalContent(content);
+    }
+
     if (content) {
       content.addArrayObserver(this);
       this.arrayDidChange(content, 0, 0, get(content, 'length'));
     }
+
+    this._content = content;
   }.observes('content'),
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
@@ -578,12 +578,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    if (!dirtyAttributes.contains(name)) { dirtyAttributes.pushObject(name); }
+    if (dirtyAttributes) {
+        dirtyAttributes.addObject(name);
+    } else {
+        set(this, '_dirtyAttributes', [name]);
+    }
   },
 
   _relationshipBecameClean: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    dirtyAttributes.removeObject(name);
+    if (dirtyAttributes) { dirtyAttributes.removeObject(name); }
   },
 
   dataKey: function(key) {
@@ -891,7 +895,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
-      content = Ember.EnumerableUtils.map(content, mapFunction);
+      content = content.map(mapFunction);
     }
 
     return Ember.A(content || []);
@@ -1437,6 +1441,9 @@ Ember.hasMany = function(type, options) {
       return this.getHasMany(key, type, meta, this.container);
     },
     set: function(propertyKey, newContentArray, existingArray) {
+      if (!existingArray) {
+        existingArray = this.getHasMany(options.key || propertyKey, type, meta, this.container);
+      }
       return existingArray.setObjects(newContentArray);
     }
   }).meta(meta);
@@ -1548,9 +1555,7 @@ Ember.belongsTo = function(type, options) {
       }
 
       if (value) {
-        Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
-                    [value.constructor, type]),
-                    value instanceof type);
+        Ember.assert('Attempted to set property of type: ' + value.constructor + ' with a value of type: ' + type, value instanceof type);
       }
 
       if (oldValue !== value) {
@@ -1804,7 +1809,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         url = this.buildURL(record.constructor, get(record, primaryKey)),
         self = this;
 
-    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {
       self.didDeleteRecord(record, data);
     });
   },
@@ -1838,6 +1843,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   },
 
   _ajax: function(url, params, method, settings) {
+    var self = this;
     if (!settings) {
       settings = this.ajaxSettings(url, method);
     }
@@ -1862,12 +1868,20 @@ Ember.RESTAdapter = Ember.Adapter.extend({
           jqXHR.then = null;
         }
 
-        Ember.run(null, reject, jqXHR);
+        self._handleRejections(method, jqXHR, resolve, reject);
       };
 
 
       Ember.$.ajax(settings);
    });
+  },
+
+  _handleRejections: function(method, jqXHR, resolve, reject) {
+    if (method === "DELETE" && jqXHR.status >= 200 && jqXHR.status < 300) {
+      Ember.run(null, resolve, null);
+    } else {
+      Ember.run(null, reject, jqXHR);
+    }
   },
 
   _loadRecordFromData: function(record, data) {
