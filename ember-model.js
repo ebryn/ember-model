@@ -634,7 +634,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   load: function(id, hash) {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
-    set(this, '_data', Ember.merge(data, hash));
+    set(this, '_data', Ember.assign(data, hash));
     this.getWithDefault('_dirtyAttributes', []).clear();
 
     this._reloadHasManys();
@@ -2038,7 +2038,8 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "data-adapter",
 
-    initialize: function(container, application) {
+    initialize: function() {
+      var application = arguments[1] || arguments[0];
       application.register('data-adapter:main', DebugAdapter);
     }
   });
@@ -2076,7 +2077,7 @@ Ember.Model.Store = Ember.Object.extend({
   createRecord: function(type, props) {
     var klass = this.modelFor(type);
     klass.reopenClass({adapter: this.adapterFor(type)});
-    return klass.create(Ember.merge({container: this.container}, props));
+    return klass.create(Ember.assign({container: this.container}, props));
   },
 
   find: function(type, id) {
@@ -2112,7 +2113,8 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "store",
 
-    initialize: function(_, application) {
+    initialize: function() {
+      var application = arguments[1] || arguments[0];
       var store = application.Store || Ember.Model.Store;
       application.register('store:application', store);
       application.register('store:main', store);
