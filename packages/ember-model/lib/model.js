@@ -122,7 +122,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   load: function(id, hash) {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
-    set(this, '_data', Ember.merge(data, hash));
+    set(this, '_data', Ember.assign(data, hash));
     this.getWithDefault('_dirtyAttributes', []).clear();
 
     this._reloadHasManys();
@@ -383,7 +383,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
-      content = Ember.EnumerableUtils.map(content, mapFunction);
+      content = content.map(mapFunction);
     }
 
     return Ember.A(content || []);
