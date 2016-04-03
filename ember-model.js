@@ -1859,7 +1859,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
             settings.data = params;
           }
         }
-      }    return new Ember.RSVP.Promise(function(resolve, reject) {
+      }
 
       settings.success = function(json, textStatus, jqXHR) {
         Ember.run(null, resolve, json);
