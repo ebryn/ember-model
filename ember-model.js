@@ -634,7 +634,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   load: function(id, hash) {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
-    set(this, '_data', Ember.assign(data, hash));
+    set(this, '_data', Ember.merge(data, hash));
     this.getWithDefault('_dirtyAttributes', []).clear();
 
     this._reloadHasManys();
@@ -1614,8 +1614,8 @@ Ember.Model.reopen({
 (function() {
 
 var get = Ember.get,
-    set = Ember.set,
-    meta = Ember.meta;
+  set = Ember.set,
+  meta = Ember.meta;
 
 Ember.Model.dataTypes = {};
 
@@ -1836,9 +1836,9 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
   ajaxSettings: function(url, method) {
     return {
-      url: url,
-      type: method,
-      dataType: "json"
+      url         : url,
+      type        : method,
+      dataType    : "json"
     };
   },
 
@@ -1875,7 +1875,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         }
 
         self._handleRejections(method, jqXHR, resolve, reject);
-        
+
         
         if (settings.errorCallback) {
           settings.errorCallback.call(this, jqXHR, textStatus, errorThrown);
@@ -2088,7 +2088,7 @@ Ember.Model.Store = Ember.Object.extend({
   createRecord: function(type, props) {
     var klass = this.modelFor(type);
     klass.reopenClass({adapter: this.adapterFor(type)});
-    return klass.create(Ember.assign({container: this.container}, props));
+    return klass.create(Ember.merge({container: this.container}, props));
   },
 
   find: function(type, id) {
