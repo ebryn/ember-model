@@ -123,10 +123,19 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   load: function(content) {
-    Ember.setProperties(this, {
-      content: content,
-      originalContent: content.slice()
-    });
+    var currentContent = get(this, 'content');
+    var mustUpdateCollection = content.length !== currentContent.length;
+    for (var i = 0, l = content.length; i < l && !mustUpdateCollection; i++) {
+      var existingItem = currentContent[i];
+      var newItem = content[i];
+      mustUpdateCollection = newItem !== existingItem;
+    }
+    if (mustUpdateCollection) {
+      Ember.setProperties(this, {
+        content: content,
+        originalContent: content.slice()
+        });
+    }
     set(this, '_modifiedRecords', []);
   },
 
