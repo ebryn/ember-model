@@ -49,6 +49,7 @@ Ember.Model.reopen({
       modelClass: type,
       content: this._getHasManyContent(key, type, embedded),
       embedded: embedded,
+      ordered: !!meta.options.ordered,
       key: key,
       relationshipKey: meta.relationshipKey,
       container: container
