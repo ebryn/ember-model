@@ -13,7 +13,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     get(this, 'originalContent').removeObject(originalObj);
   },
 
-  isDirty: function() {
+  isDirty: Ember.computed('content.[]', 'originalContent.[]', '_modifiedRecords.[]', function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
         content = get(this, 'content'),
@@ -33,7 +33,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
 
     return isDirty;
-  }.property('content.[]', 'originalContent.[]', '_modifiedRecords.[]'),
+  }),
 
   objectAtContent: function(idx) {
     var content = get(this, 'content');
@@ -70,7 +70,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     this._super(index, removed, added);
   },
 
-  _contentDidChange: function() {
+  _contentDidChange: Ember.observer('content', function() {
     var content = get(this, 'content');
     var contentPrev = this._content;
 
@@ -86,7 +86,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
 
     this._content = content;
-  }.observes('content'),
+  }),
 
   arrayWillChange: function(item, idx, removedCnt, addedCnt) {
     var content = item;
@@ -125,9 +125,9 @@ Ember.ManyArray = Ember.RecordArray.extend({
   load: function(content) {
     Ember.setProperties(this, {
       content: content,
-      originalContent: content.slice()
+      originalContent: Ember.A(content.slice())
     });
-    set(this, '_modifiedRecords', []);
+    set(this, '_modifiedRecords', Ember.A([]));
   },
 
   revert: function() {
@@ -137,9 +137,9 @@ Ember.ManyArray = Ember.RecordArray.extend({
   _setupOriginalContent: function(content) {
     content = content || get(this, 'content');
     if (content) {
-      set(this, 'originalContent', content.slice());
+      set(this, 'originalContent', Ember.A(content.slice()));
     }
-    set(this, '_modifiedRecords', []);
+    set(this, '_modifiedRecords', Ember.A([]));
   },
 
   init: function() {

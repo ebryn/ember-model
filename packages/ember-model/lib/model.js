@@ -59,17 +59,17 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return value;
   },
 
-  isDirty: function() {
+  isDirty: Ember.computed('_dirtyAttributes.length', function() {
     var dirtyAttributes = get(this, '_dirtyAttributes');
     return dirtyAttributes && dirtyAttributes.length !== 0 || false;
-  }.property('_dirtyAttributes.length'),
+  }),
 
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
     if (dirtyAttributes) {
         dirtyAttributes.addObject(name);
     } else {
-        set(this, '_dirtyAttributes', [name]);
+        set(this, '_dirtyAttributes', Ember.A([name]));
     }
   },
 
@@ -90,7 +90,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   init: function() {
     this._createReference();
     if (!this._dirtyAttributes) {
-      set(this, '_dirtyAttributes', []);
+      set(this, '_dirtyAttributes', Ember.A([]));
     }
     this._super();
   },
@@ -123,7 +123,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
-    this.getWithDefault('_dirtyAttributes', []).clear();
+    this.getWithDefault('_dirtyAttributes', Ember.A([])).clear();
 
     this._reloadHasManys();
 
@@ -248,12 +248,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   reload: function() {
-    this.getWithDefault('_dirtyAttributes', []).clear();
+    this.getWithDefault('_dirtyAttributes', Ember.A([])).clear();
     return this.constructor.reload(this.get(get(this.constructor, 'primaryKey')), this.container);
   },
 
   revert: function() {
-    this.getWithDefault('_dirtyAttributes', []).clear();
+    this.getWithDefault('_dirtyAttributes', Ember.A([])).clear();
     this.notifyPropertyChange('_data');
     this._reloadHasManys(true);
   },
@@ -264,7 +264,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isNew', false);
 
-    set(this, '_dirtyAttributes', []);
+    set(this, '_dirtyAttributes', Ember.A([]));
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
@@ -301,7 +301,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       key = dirtyAttributes[i];
       data[this.dataKey(key)] = this.cacheFor(key);
     }
-    set(this, '_dirtyAttributes', []);
+    set(this, '_dirtyAttributes', Ember.A([]));
     this._resetDirtyStateInNestedObjects(this); // we need to reset isDirty state to all child objects in embedded relationships
   },
 

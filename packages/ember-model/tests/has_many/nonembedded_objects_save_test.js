@@ -29,7 +29,7 @@ test("new records should remain after parent is saved", function() {
         resolve(json);
     });
   };
-  
+
   var article = Article.create({
     title: 'bar'
   });
@@ -77,7 +77,7 @@ test("saving child objects", function() {
   });
   Article.adapter = Ember.RESTAdapter.create();
   Article.url = '/articles';
-  
+
   var article = Article.create();
   var comment = Comment.create();
 
@@ -87,8 +87,10 @@ test("saving child objects", function() {
   var promise = Ember.run(comments, comments.save);
   promise.then(function(records) {
     start();
-    var comment = records.get("firstObject");
+    var comment = records[0];
     equal(comment.get("id"), 2, "Data from the response is loaded");
+  }).catch(function(error) {
+    console.error(error);
   });
   stop();
 });
