@@ -1,7 +1,7 @@
 require('ember-model/computed');
 var get = Ember.get,
-    set = Ember.set,
-    meta = Ember.meta;
+  set = Ember.set,
+  meta = Ember.meta;
 
 Ember.Model.dataTypes = {};
 
