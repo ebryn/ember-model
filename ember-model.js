@@ -336,7 +336,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     // TODO: loop over dirty records only
     return Ember.RSVP.all(this.map(function(record) {
       return record.save();
-    }));
+    })).then(Ember.A);
   },
 
   replaceContent: function(index, removed, added) {
