@@ -1419,9 +1419,9 @@ function getType(record) {
     this.type = get(Ember.lookup, this.type);
 
     if (!this.type) {
-      var store = record.container.lookup('store:main');
-      this.type = store.modelFor(type);
-      this.type.reopenClass({ adapter: store.adapterFor(type) });
+      var emstore = record.container.lookup('emstore:main');
+      this.type = emstore.modelFor(type);
+      this.type.reopenClass({ adapter: emstore.adapterFor(type) });
     }
   }
 
@@ -1481,7 +1481,7 @@ var get = Ember.get,
 
 function storeFor(record) {
   if (record.container) {
-    return record.container.lookup('store:main');
+    return record.container.lookup('emstore:main');
   }
 
   return null;
@@ -1494,9 +1494,9 @@ function getType(record) {
     type = Ember.get(Ember.lookup, this.type);
 
     if (!type) {
-      var store = storeFor(record);
-      type = store.modelFor(this.type);
-      type.reopenClass({ adapter: store.adapterFor(this.type) });
+      var emstore = storeFor(record);
+      type = emstore.modelFor(this.type);
+      type.reopenClass({ adapter: emstore.adapterFor(this.type) });
     }
   }
 
@@ -1524,8 +1524,8 @@ Ember.belongsTo = function(type, options) {
         }
       };
 
-      var store = storeFor(this),
-          value = this.getBelongsTo(key, type, meta, store);
+      var emstore = storeFor(this),
+          value = this.getBelongsTo(key, type, meta, emstore);
       this._registerBelongsTo(meta);
       if (value !== null && meta.options.embedded) {
         value.get('isDirty'); // getter must be called before adding observer
@@ -1584,7 +1584,7 @@ Ember.belongsTo = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getBelongsTo: function(key, type, meta, store) {
+  getBelongsTo: function(key, type, meta, emstore) {
     var idOrAttrs = get(this, '_data.' + key),
         record;
 
@@ -1598,8 +1598,8 @@ Ember.Model.reopen({
       record = type.create({ isLoaded: false, id: id, container: this.container });
       record.load(id, idOrAttrs);
     } else {
-      if (store) {
-        record = store._findSync(meta.type, idOrAttrs);
+      if (emstore) {
+        record = emstore._findSync(meta.type, idOrAttrs);
       } else {
         record = type.find(idOrAttrs);
       }
@@ -2037,11 +2037,11 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
 Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
-    name: "data-adapter",
+    name: "em-data-adapter",
 
     initialize: function() {
       var application = arguments[1] || arguments[0];
-      application.register('data-adapter:main', DebugAdapter);
+      application.register('em-data-adapter:main', DebugAdapter);
     }
   });
 });
@@ -2112,16 +2112,16 @@ Ember.Model.Store = Ember.Object.extend({
 Ember.onLoad('Ember.Application', function(Application) {
 
   Application.initializer({
-    name: "store",
+    name: "emstore",
 
     initialize: function() {
       var application = arguments[1] || arguments[0];
-      var store = application.Store || Ember.Model.Store;
-      application.register('store:application', store);
-      application.register('store:main', store);
+      var emstore = application.Store || Ember.Model.Store;
+      application.register('emstore:application', emstore);
+      application.register('emstore:main', emstore);
 
-      application.inject('route', 'store', 'store:main');
-      application.inject('controller', 'store', 'store:main');
+      application.inject('route', 'emstore', 'emstore:main');
+      application.inject('controller', 'emstore', 'emstore:main');
     }
   });
 
