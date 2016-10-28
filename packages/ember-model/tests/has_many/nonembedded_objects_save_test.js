@@ -87,7 +87,7 @@ test("saving child objects", function() {
   var promise = Ember.run(comments, comments.save);
   promise.then(function(records) {
     start();
-    var comment = records[0];
+    var comment = records.get('firstObject');
     equal(comment.get("id"), 2, "Data from the response is loaded");
   }).catch(function(error) {
     console.error(error);
