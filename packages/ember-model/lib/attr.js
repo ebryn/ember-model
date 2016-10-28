@@ -73,7 +73,7 @@ Ember.attr = function(type, options) {
           dirtyAttributes = get(this, '_dirtyAttributes'),
           createdDirtyAttributes = false;
       if (!dirtyAttributes) {
-        dirtyAttributes = [];
+        dirtyAttributes = Ember.A([]);
         createdDirtyAttributes = true;
       }
 

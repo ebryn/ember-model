@@ -66,10 +66,10 @@ test("isLoaded observers have all the updated properties", function() {
   });
 
   var Foo = Model.extend({
-    isLoadedDidChange: (function() {
+    isLoadedDidChange: Ember.observer('isLoaded', function() {
       ok(this.get('isLoaded'));
       ok(!this.get('isNew'), "loaded model should not be new");
-    }).observes('isLoaded')
+    })
   });
 
   Foo.reopenClass({
