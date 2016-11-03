@@ -303,7 +303,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var isDirty = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
-      if (!originalContent.contains(content[i])) {
+      if (!originalContent.includes(content[i])) {
         isDirty = true;
         break;
       }
@@ -1555,9 +1555,7 @@ Ember.belongsTo = function(type, options) {
       }
 
       if (value) {
-        Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
-                    [value.constructor, type]),
-                    value instanceof type);
+        Ember.assert('Attempted to set property of type: ' + value.constructor + ' with a value of type: ' + type, value instanceof type);
       }
 
       if (oldValue !== value) {
@@ -2040,7 +2038,7 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "em-data-adapter",
 
-    initialize: function(container, application) {
+    initialize: function(application) {
       application.register('em-data-adapter:main', DebugAdapter);
     }
   });
@@ -2114,7 +2112,7 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "emstore",
 
-    initialize: function(_, application) {
+    initialize: function(application) {
       var emstore = application.Store || Ember.Model.Store;
       application.register('emstore:application', emstore);
       application.register('emstore:main', emstore);

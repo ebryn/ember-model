@@ -61,7 +61,7 @@ Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
     name: "emstore",
 
-    initialize: function(_, application) {
+    initialize: function(application) {
       var emstore = application.Store || Ember.Model.Store;
       application.register('emstore:application', emstore);
       application.register('emstore:main', emstore);
