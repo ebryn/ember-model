@@ -28,12 +28,12 @@ Ember.Model.Store = Ember.Object.extend({
     return klass.create(Ember.merge({container: this.container}, props));
   },
 
-  find: function(type, id, subgraph) {
+  find: function(type, id) {
     if (arguments.length === 1) { id = NIL; }
-    return this._find(type, id, subgraph, true);
+    return this._find(type, id, true);
   },
 
-  _find: function(type, id, subgraph, async) {
+  _find: function(type, id, async) {
     var klass = this.modelFor(type);
 
     // if (!klass.adapter) {
@@ -41,18 +41,18 @@ Ember.Model.Store = Ember.Object.extend({
     // }
 
     if (id === NIL) {
-      return klass._findFetchAll(subgraph, async, this.container);
+      return klass._findFetchAll(async, this.container);
     } else if (Ember.isArray(id)) {
-      return klass._findFetchMany(id, subgraph, async, this.container);
+      return klass._findFetchMany(id, async, this.container);
     } else if (typeof id === 'object') {
-      return klass._findFetchQuery(id, subgraph, async, this.container);
+      return klass._findFetchQuery(id, async, this.container);
     } else {
-      return klass._findFetchById(id, subgraph, async, this.container);
+      return klass._findFetchById(id, async, this.container);
     }
   },
 
-  _findSync: function(type, id, subgraph) {
-    return this._find(type, id, subgraph, false);
+  _findSync: function(type, id) {
+    return this._find(type, id, false);
   }
 });
 

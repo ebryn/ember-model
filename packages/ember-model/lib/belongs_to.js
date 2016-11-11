@@ -3,7 +3,11 @@ var get = Ember.get,
     set = Ember.set;
 
 function storeFor(record) {
-  return record.getStore();
+  if (record.container) {
+    return record.container.lookup('store:main');
+  }
+
+  return null;
 }
 
 function getType(record) {
@@ -56,10 +60,6 @@ Ember.belongsTo = function(type, options) {
 
   return Ember.Model.computed("_data", {
     get: function(propertyKey){
-      if (this.isDeferredKey(propertyKey)) {
-        return this._reloadAndGet(propertyKey);
-      }
-
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
@@ -102,10 +102,6 @@ Ember.belongsTo = function(type, options) {
     set: function(propertyKey, value, oldValue){
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
-      
-      if(value) {
-        Ember.assert("Cannot call set() with a subrecord.", !value.get('isSub'));
-      }
 
       var key; 
       if(this.constructor.useBelongsToImplicitKey) {
@@ -188,7 +184,7 @@ Ember.belongsTo = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getBelongsTo: function(key, type, meta, store, subgraph) {
+  getBelongsTo: function(key, type, meta, store) {
     var idOrAttrs = get(this, '_data.' + key),
         record;
 
@@ -203,9 +199,9 @@ Ember.Model.reopen({
       record.load(id, idOrAttrs);
     } else {
       if (store) {
-        record = store._findSync(meta.type, idOrAttrs, subgraph);
+        record = store._findSync(meta.type, idOrAttrs);
       } else {
-        record = type.find(idOrAttrs, subgraph);
+        record = type.find(idOrAttrs);
       }
     }
 
