@@ -40,6 +40,7 @@ function isDescriptor(value) {
 }
 
 Ember.run.queues.push('data');
+Ember.run.queues.push('save-data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,

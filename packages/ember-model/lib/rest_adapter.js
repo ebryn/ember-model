@@ -54,11 +54,54 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       records.load(klass, dataToLoad);
   },
 
+	_clientRequestId: 0,
+	_pendingModRequests: [],
+	_pendingModDeferreds: {},
+	_pushModRequest: function(url, body, method, noBatch) {
+		if (noBatch) {
+			return this.ajax(url, body, method);
+		}
+		var deferred = Ember.RSVP.defer();
+		var clientId = this._clientRequestId++;
+		var mod = {
+			"method": method,
+			"url": url,
+			"body": body,
+			"clientId": clientId,
+		};
+		this._pendingModRequests.push(mod);
+		this._pendingModDeferreds[clientId] = deferred;
+		Ember.run.scheduleOnce('save-data', this, this._executeModRequests);
+		return deferred.promise;
+	},
+	_executeModRequests: function() {
+		var mods = this._pendingModRequests;
+		var deferreds = this._pendingModDeferreds;
+		this._pendingModRequests = [];
+		this._pendingModDeferreds = {};
+		this.ajax("/api/batch", { "requests": mods }, "POST").then(function(data) {
+			var results = data.results;
+			for (var i = 0, l = results.length; i < l; i++) {
+				var result = results[i];
+				var deferred = deferreds[result.clientId];
+				var status = result.statusCode;
+				
+				if (status && !(status >= 200 && status < 300 || status === 304)) {
+					deferred.reject({ "responseText": JSON.stringify(result.data), "status": status });
+				}
+				else {
+					deferred.resolve(result.data);
+				}
+			}
+		});
+	},
+
   createRecord: function(record) {
     var url = this.buildURL(record.constructor),
+        noBatch = get(record.constructor, 'noBatch') || false,
         self = this;
 
-    return this.ajax(url, record.toJSON(), "POST").then(function(data) {
+    return this._pushModRequest(url, record.toJSON(), "POST", noBatch).then(function(data) {
       self.didCreateRecord(record, data);
       return record;
     });
@@ -72,9 +115,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   saveRecord: function(record) {
     var primaryKey = get(record.constructor, 'primaryKey'),
         url = this.buildURL(record.constructor, get(record, primaryKey)),
+        noBatch = get(record.constructor, 'noBatch') || false,
         self = this;
 
-    return this.ajax(url, record.toJSON(), "PUT").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this._pushModRequest(url, record.toJSON(), "PUT", noBatch).then(function(data) {  // TODO: Some APIs may or may not return data
       self.didSaveRecord(record, data);
       return record;
     });
@@ -88,9 +132,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
   deleteRecord: function(record) {
     var primaryKey = get(record.constructor, 'primaryKey'),
         url = this.buildURL(record.constructor, get(record, primaryKey)),
+        noBatch = get(record.constructor, 'noBatch') || false,
         self = this;
 
-    return this.ajax(url, record.toJSON(), "DELETE").then(function(data) {  // TODO: Some APIs may or may not return data
+    return this._pushModRequest(url, record.toJSON(), "DELETE", noBatch).then(function(data) {  // TODO: Some APIs may or may not return data
       self.didDeleteRecord(record, data);
     });
   },
