@@ -24,10 +24,6 @@ Ember.hasMany = function(type, options) {
 
   return Ember.Model.computed({
     get: function(propertyKey) {
-      if (this.isDeferredKey(propertyKey)) {
-        return this._reloadAndGet(propertyKey);
-      }
-      
       type = meta.getType(this);
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
@@ -46,7 +42,7 @@ Ember.hasMany = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getHasMany: function(key, type, meta, container, subgraph) {
+  getHasMany: function(key, type, meta, container) {
     var embedded = meta.options.embedded,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
@@ -58,8 +54,7 @@ Ember.Model.reopen({
       embedded: embedded,
       key: key,
       relationshipKey: meta.relationshipKey,
-      container: container,
-      subgraph: subgraph
+      container: container
     });
 
     this._registerHasManyArray(collection);

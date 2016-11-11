@@ -5,8 +5,6 @@ var get = Ember.get,
     set = Ember.set,
     setProperties = Ember.setProperties,
     meta = Ember.meta,
-    isNone = Ember.isNone,
-    cacheFor = Ember.cacheFor,
     underscore = Ember.String.underscore;
 
 function contains(array, element) {
@@ -41,24 +39,6 @@ function isDescriptor(value) {
   return value && typeof value === 'object' && value.isDescriptor;
 }
 
-function graphDiff(a, b) {
-  var res = {};
-  var aKeys = Object.keys(a);
-  for(var i = 0, l = aKeys.length; i < l; i++) {
-    if(!b.hasOwnProperty(aKeys[i])) {
-      res[aKeys[i]] = 1;
-    }
-  }
-  return res;
-}
-
-function graphUnion(a, b) {
-  var res = {};
-  Ember.merge(res, a);
-  Ember.merge(res, b);
-  return res;
-}
-
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -69,7 +49,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   isDead: false, // <- server has responded that it's deleted
   _dirtyAttributes: null,
   _shadow: null,
-  _graph: null,
 
   /**
     Called when attribute is accessed.
@@ -89,23 +68,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   isDirty: Ember.computed.alias('isModified'),
 
-  isSub: function() {
-    var graph = get(this, '_graph');
-    return !isNone(graph);
-  }.property('_graph'),
-
-  graph: function() {
-    return get(this, '_graph') || this.constructor.getGraph();
-  }.property('_graph'),
-
-  deferredGraph: function() {
-    var graph = get(this, '_graph');
-    if(isNone(graph)) {
-      return {};
-    }
-    return graphDiff(this.constructor.getGraph(), graph);
-  }.property('_graph'),
-
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
     if (!dirtyAttributes.contains(name)) { dirtyAttributes.pushObject(name); }
@@ -123,18 +85,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       return camelizeKeys ? underscore(meta.options.key) : meta.options.key;
     }
     return camelizeKeys ? underscore(key) : key;
-  },
-
-  isDeferredKey: function(key) {
-    return get(this, 'isSub') && !get(this, 'graph')[key];
-  },
-
-  _reloadAndGet: function(key) {
-    // TODO: reload just the deferred attributes.
-    this.reload();
-    return Ember.loadPromise(this).then(function(obj){
-      return get(obj, key);
-    });
   },
 
   init: function() {
@@ -175,75 +125,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     return reference;
   },
 
-  getStore: function() {
-    if (this.container) {
-      return this.container.lookup('store:main');
-    }
-
-    return null;
-  },
-
   getPrimaryKey: function() {
     return get(this, get(this.constructor, 'primaryKey'));
   },
 
-getRelationship: function(propertyKey, subgraph) {
-    // This will override/set the computed property cache for a relationship and allow
-    // for submodel get()'s
-    var store = this.getStore(), 
-        meta = this.constructor.metaForProperty(propertyKey),
-        key,
-        type,
-        record,
-        collection;
-    Ember.assert("Argument `subgraph` is required", !isNone(subgraph));
-    Ember.assert("Not a relationship attribute", meta.isRelationship);
-    Ember.assert("Relationship kind not recognized: " + meta.kind, 
-      (meta.kind === 'belongsTo' || meta.kind === 'hasMany'));
-
-    type = meta.getType(this);
-
-    subgraph[get(type, 'primaryKey')] = 1;
-
-
-    if(meta.options.embedded) {
-      // TODO: handle submodel embedded relationships. For now just return this.get()
-      return this.get(propertyKey);
-    }
-
-    if(this.constructor.useBelongsToImplicitKey) {
-        key = meta.options.key || propertyKey + '_id';
-      } else {
-        key = meta.options.key || propertyKey;
-      }
-
-    if(meta.kind === 'belongsTo') {
-      record = this.getBelongsTo(key, type, meta, store, subgraph);
-      return record;
-    } else {
-      // is `hasMany` relationship kind.
-      collection = this.getHasMany(key, type, meta, this.container, subgraph);
-      collection.set('subgraph', subgraph);
-      return collection;
-    }
-  },
-
-  load: function(id, hash, subgraph) {
+  load: function(id, hash) {
     var data = {};
-    if(subgraph) {
-      subgraph = Ember.copy(subgraph, true);
-      if(!get(this, 'isNew')) {
-        data = get(this, '_data') || data;
-        set(this, '_graph', graphUnion(get(this, 'graph'), subgraph));
-      } else {
-        set(this, '_graph', subgraph);
-      }
-
-      if(Object.keys(get(this, 'deferredGraph')).length === 0) {
-        set(this, '_graph', null);
-      }
-    }
-
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
     this.getWithDefault('_dirtyAttributes', []).clear();
@@ -292,13 +179,6 @@ getRelationship: function(propertyKey, subgraph) {
     }
   },
 
-  isLoadedForGraph: function(graph) {
-    return (this.get('isLoaded') && (
-          (!graph && !this.get('isSub')) || 
-          (graph && Object.keys(graphDiff(graph, this.get('graph'))).length === 0))
-        );
-  },
-
   serializeHasMany: function(key, meta) {
     var cached = this.cacheFor(key);
     if (cached) {
@@ -330,27 +210,11 @@ getRelationship: function(propertyKey, subgraph) {
     }
   },
 
-  _availablePaths: function(paths) {
-    if(!get(this, 'isSub')) {
-      return paths;
-    }
-
-    var res = [], 
-        graph = get(this, 'graph');
-
-    for(var i = 0, l = paths.length; i < l; i++) {
-      if(graph.hasOwnProperty(paths[i])) {
-        res.push(paths[i]);
-      }
-    }
-    return res;
-  },
-
   toJSON: function() {
     var key, meta, value,
         json = {},
-        attributes = this._availablePaths(this.constructor.getAttributes()),
-        relationships = this._availablePaths(this.constructor.getRelationships()),
+        attributes = this.constructor.getAttributes(),
+        relationships = this.constructor.getRelationships(),
         properties = attributes ? this.getProperties(attributes) : {},
         rootKey = get(this.constructor, 'rootKey');
 
@@ -406,9 +270,6 @@ getRelationship: function(propertyKey, subgraph) {
   save: function() {
     var adapter = this.constructor.adapter;
     var self = this;
-
-    Ember.assert("Cannot save subrecords.", !get(this, 'isSub'));
-
     set(this, 'isSaving', true);
     if (get(this, 'isDeleted')) {
       // GMM don't do anything when the record hasn't been saved
@@ -478,7 +339,6 @@ getRelationship: function(propertyKey, subgraph) {
 
   deleteRecord: function() {
     // This method only deletes a record in memory.
-
     this.constructor.removeFromHasManyArrays(this);
     this.constructor.removeFromRecordArrays(this);
     set(this, 'isDeleted', true);
@@ -579,11 +439,6 @@ getRelationship: function(propertyKey, subgraph) {
           }
         }
       }
-
-      if(!reverting) {
-        set(array, 'subgraph', null);
-      }
-
       array.load(hasManyContent);
     }
   },
@@ -644,89 +499,58 @@ Ember.Model.reopenClass({
     return relationships;
   },
 
-  getGraph: function() {
-    var attributes, relationships, i;
-    if(!this._graph) {
-      this._graph = {};
-      attributes = this.getAttributes();
-      relationships = this.getRelationships();
-
-      for(i = 0; i < attributes.length; i++) {
-        this._graph[attributes[i]] = 1;
-      }
-
-      for(i = 0; i < relationships.length; i++) {
-        this._graph[relationships[i]] = 1;
-      }
-
-      this._graph[get(this, 'primaryKey')] = 1;
-    }
-    return this._graph;
-  },
-
-  _validateSubgraph: function(subgraph) {
-    if(subgraph) {
-      subgraph = Ember.copy(subgraph, true);
-      subgraph[get(this, 'primaryKey')] = 1;
-      this._assertIsValidSubgraph(subgraph);
-    }
-    return subgraph;
-  },
-
-  fetch: function(id, subgraph) {
-    if (isNone(id)) {
-      return this._findFetchAll(subgraph, true);
+  fetch: function(id) {
+    if (!arguments.length) {
+      return this._findFetchAll(true);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, subgraph, true);
+      return this._findFetchMany(id, true);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, subgraph, true);
+      return this._findFetchQuery(id, true);
     } else {
-      return this._findFetchById(id, subgraph, true);
+      return this._findFetchById(id, true);
     }
   },
 
-  find: function(id, subgraph) {
-    if (isNone(id)) {
-      return this._findFetchAll(subgraph, false);
+  find: function(id) {
+    if (!arguments.length) {
+      return this._findFetchAll(false);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, subgraph, false);
+      return this._findFetchMany(id, false);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, subgraph, false);
+      return this._findFetchQuery(id, false);
     } else {
-      return this._findFetchById(id, subgraph, false);
+      return this._findFetchById(id, false);
     }
   },
 
-  findQuery: function(params, subgraph) {
-    return this._findFetchQuery(params, subgraph, false);
+  findQuery: function(params) {
+    return this._findFetchQuery(params, false);
   },
 
-  fetchQuery: function(params, subgraph) {
-    return this._findFetchQuery(params, subgraph, true);
+  fetchQuery: function(params) {
+    return this._findFetchQuery(params, true);
   },
 
-  _findFetchQuery: function(params, subgraph, isFetch, container) {
-    subgraph = this._validateSubgraph(subgraph);
-    var records = Ember.RecordArray.create({modelClass: this, _query: params, _subgraph: subgraph, container: container});
+  _findFetchQuery: function(params, isFetch, container) {
+    var records = Ember.RecordArray.create({modelClass: this, _query: params, container: container});
 
-    var promise = this.adapter.findQuery(this, records, params, subgraph);
+    var promise = this.adapter.findQuery(this, records, params);
 
     return isFetch ? promise : records;
   },
 
-  findMany: function(ids, subgraph) {
-    return this._findFetchMany(ids, subgraph, false);
+  findMany: function(ids) {
+    return this._findFetchMany(ids, false);
   },
 
-  fetchMany: function(ids, subgraph) {
-    return this._findFetchMany(ids, subgraph, true);
+  fetchMany: function(ids) {
+    return this._findFetchMany(ids, true);
   },
 
-  _findFetchMany: function(ids, subgraph, isFetch, container) {
+  _findFetchMany: function(ids, isFetch, container) {
     Ember.assert("findFetchMany requires an array", Ember.isArray(ids));
-    subgraph = this._validateSubgraph(subgraph);
 
-    var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container, _subgraph: subgraph}),
+    var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container}),
         deferred;
 
     if (!this.recordArrays) { this.recordArrays = []; }
@@ -739,8 +563,6 @@ Ember.Model.reopenClass({
       this._currentBatchIds = concatUnique([], ids);
       this._currentBatchRecordArrays = [records];
     }
-
-    this._updateCurrentBatchSubgraph(subgraph);
 
     if (isFetch) {
       deferred = Ember.RSVP.defer();
@@ -755,17 +577,15 @@ Ember.Model.reopenClass({
     return isFetch ? deferred.promise : records;
   },
 
-  findAll: function(subgraph) {
-    return this._findFetchAll(subgraph, false);
+  findAll: function() {
+    return this._findFetchAll(false);
   },
 
-  fetchAll: function(subgraph) {
-    return this._findFetchAll(subgraph, true);
+  fetchAll: function() {
+    return this._findFetchAll(true);
   },
 
-  _findFetchAll: function(subgraph, isFetch, container) {
-    subgraph = this._validateSubgraph(subgraph);
-
+  _findFetchAll: function(isFetch, container) {
     var self = this;
 
     var currentFetchPromise = this._currentFindFetchAllPromise;
@@ -784,7 +604,7 @@ Ember.Model.reopenClass({
 
     var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, container: container});
 
-    var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records, subgraph);
+    var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
 
     promise['finally'](function() {
       self._currentFindFetchAllPromise = null;
@@ -801,44 +621,21 @@ Ember.Model.reopenClass({
     return isFetch ? promise : records;
   },
 
-  findById: function(id, subgraph) {
-    return this._findFetchById(id, subgraph, false);
+  findById: function(id) {
+    return this._findFetchById(id, false);
   },
 
-  fetchById: function(id, subgraph) {
-    return this._findFetchById(id, subgraph, true);
+  fetchById: function(id) {
+    return this._findFetchById(id, true);
   },
 
-  _findFetchById: function(id, subgraph, isFetch, container) {
+  _findFetchById: function(id, isFetch, container) {
     var record = this.cachedRecordForId(id, container),
         isLoaded = get(record, 'isLoaded'),
-        isNew = get(record, 'isNew'),
         adapter = get(this, 'adapter'),
-        diffGraph,
-        fullFetch,
         deferredOrPromise;
 
-    // TODO: what if diffGraph is empty? 
-    subgraph = this._validateSubgraph(subgraph);
-
-    if(subgraph) {
-      
-      if(!isNew) {
-        diffGraph = graphDiff(subgraph, get(record, 'graph'));
-      } else {
-        diffGraph = subgraph;
-      }
-      
-    } else {
-      diffGraph = Ember.copy(get(record, 'deferredGraph'), true);
-      // If record wasn't a subrecord already, we can just do a full
-      // fetch when a `subgraph` isn't required.
-      fullFetch = !get(record, 'isSub');
-    }
-    
-    if (isLoaded && Object.keys(diffGraph).length === 0) {
-      // If diffGraph is an empty object, it means the requested
-      // `subgraph` is a subgraph of the record's loaded graph.
+    if (isLoaded) {
       if (isFetch) {
         return new Ember.RSVP.Promise(function(resolve, reject) {
           resolve(record);
@@ -848,13 +645,7 @@ Ember.Model.reopenClass({
       }
     }
 
-    if(diffGraph) {
-      // Add the primary key to the diffGraph.
-      diffGraph[get(this, 'primaryKey')] = 1;
-    }
-
-    record.set('isLoaded', false);
-    deferredOrPromise = this._fetchById(record, id, (fullFetch ? undefined : diffGraph));
+    deferredOrPromise = this._fetchById(record, id);
 
     return isFetch ? deferredOrPromise : record;
   },
@@ -862,25 +653,14 @@ Ember.Model.reopenClass({
   _currentBatchIds: null,
   _currentBatchRecordArrays: null,
   _currentBatchDeferreds: null,
-  _currentBatchSubgraph: null,
-  _FULL_GRAPH: '__full__',
 
   reload: function(id, container) {
     var record = this.cachedRecordForId(id, container);
     record.set('isLoaded', false);
-    record.set('_graph', null);
     return this._fetchById(record, id);
   },
 
-  _updateCurrentBatchSubgraph: function(subgraph) {
-    if(isNone(subgraph)) {
-      this._currentBatchSubgraph = this._FULL_GRAPH;
-    } else if(this._currentBatchSubgraph !== this._FULL_GRAPH) {
-      this._currentBatchSubgraph = graphUnion((this._currentBatchSubgraph || {}), subgraph);
-    }
-  },
-
-  _fetchById: function(record, id, subgraph) {
+  _fetchById: function(record, id) {
     var adapter = get(this, 'adapter'),
         deferred;
 
@@ -891,8 +671,6 @@ Ember.Model.reopenClass({
         this._currentBatchIds = [id];
         this._currentBatchRecordArrays = [];
       }
-
-      this._updateCurrentBatchSubgraph(subgraph);
 
       deferred = Ember.RSVP.defer();
 
@@ -906,7 +684,7 @@ Ember.Model.reopenClass({
 
       return deferred.promise;
     } else {
-      return adapter.find(record, id, subgraph);
+      return adapter.find(record, id);
     }
   },
 
@@ -914,36 +692,30 @@ Ember.Model.reopenClass({
     var batchIds = this._currentBatchIds,
         batchRecordArrays = this._currentBatchRecordArrays,
         batchDeferreds = this._currentBatchDeferreds,
-        batchSubgraph = this._currentBatchSubgraph,
         self = this,
         requestIds = [],
         promise,
         i;
 
-    batchSubgraph = (batchSubgraph === this._FULL_GRAPH) ? undefined : batchSubgraph;
-
     this._currentBatchIds = null;
     this._currentBatchRecordArrays = null;
     this._currentBatchDeferreds = null;
-    this._currentBatchSubgraph = null;
 
-    var cachedRecord;
     for (i = 0; i < batchIds.length; i++) {
-      cachedRecord = this.cachedRecordForId(batchIds[i]);
-      if (!cachedRecord.isLoadedForGraph(batchSubgraph)) {
+      if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
         requestIds.push(batchIds[i]);
       }
     }
 
     if (requestIds.length === 1) {
-      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0], batchSubgraph);
+      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0]);
     } else {
       var recordArray = Ember.RecordArray.create({_ids: batchIds, container: container});
       if (requestIds.length === 0) {
         promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); });
         recordArray.notifyLoaded();
       } else {
-        promise = get(this, 'adapter').findMany(this, recordArray, requestIds, batchSubgraph);
+        promise = get(this, 'adapter').findMany(this, recordArray, requestIds);
       }
     }
 
@@ -1065,7 +837,7 @@ Ember.Model.reopenClass({
   },
 
   // FIXME
-  findFromCacheOrLoad: function(data, subgraph, container) {
+  findFromCacheOrLoad: function(data, container) {
     var record;
     if (!data[get(this, 'primaryKey')]) {
       record = this.create({isLoaded: false, container: container});
@@ -1073,7 +845,7 @@ Ember.Model.reopenClass({
       record = this.cachedRecordForId(data[get(this, 'primaryKey')], container);
     }
     // set(record, 'data', data);
-    record.load(data[get(this, 'primaryKey')], data, subgraph);
+    record.load(data[get(this, 'primaryKey')], data);
     return record;
   },
 
@@ -1110,13 +882,6 @@ Ember.Model.reopenClass({
       } else {
         this.sideloadedData[primaryKey] = hash;
       }
-    }
-  },
-
-  _assertIsValidSubgraph: function(subgraph) {
-    var diff = graphDiff(subgraph, this.getGraph());
-    if (Object.keys(diff).length) {
-      Ember.assert('The following graph is not a valid subgraph of ' + this.toString() + ': ' + JSON.stringify(diff), false);
     }
   },
 
