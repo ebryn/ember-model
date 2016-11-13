@@ -421,27 +421,23 @@ Ember.Model.reopenClass({
     return relationships;
   },
 
-  fetch: function(id) {
-    if (!arguments.length) {
-      return this._findFetchAll(true);
-    } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, true);
-    } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, true);
-    } else {
-      return this._findFetchById(id, true);
-    }
+  find: function(id) {
+    return this._findFetch(id, false);
   },
 
-  find: function(id) {
+  fetch: function(id) {
+    return this._findFetch(id, true);
+  },
+
+  _findFetch: function(id, isFetch) {
     if (!arguments.length) {
-      return this._findFetchAll(false);
+      return this._findFetchAll(isFetch);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, false);
+      return this._findFetchMany(id, isFetch);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, false);
+      return this._findFetchQuery(id, isFetch);
     } else {
-      return this._findFetchById(id, false);
+      return this._findFetchById(id, isFetch);
     }
   },
 
