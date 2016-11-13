@@ -422,11 +422,11 @@ Ember.Model.reopenClass({
   },
 
   find: function(id) {
-    return _findFetch(id, false);
+    return this._findFetch(id, false);
   },
 
   fetch: function(id) {
-    return _findFetch(id, true);
+    return this._findFetch(id, true);
   },
 
   _findFetch: function(id, isFetch) {
