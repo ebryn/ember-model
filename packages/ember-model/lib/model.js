@@ -439,7 +439,7 @@ Ember.Model.reopenClass({
     } else {
       return this._findFetchById(id, isFetch);
     }
-  }
+  },
 
   findQuery: function(params) {
     return this._findFetchQuery(params, false);
