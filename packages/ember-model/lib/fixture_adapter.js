@@ -5,13 +5,23 @@ var get = Ember.get,
 
 Ember.FixtureAdapter = Ember.Adapter.extend({
   _counter: 0,
-  _findData: function(klass, id) {
+  _findData: function(klass, id, subgraph) {
     var fixtures = klass.FIXTURES,
         idAsString = id.toString(),
         primaryKey = get(klass, 'primaryKey'),
-        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; });
+        data = Ember.A(fixtures).find(function(el) { return (el[primaryKey]).toString() === idAsString; }),
+        keys,
+        res;
 
-    return data;
+    res = Ember.merge({}, data);
+    if(subgraph) {
+      keys = Object.keys(subgraph);
+      res = {};
+      for(var i = 0; i < keys.length; i++) {
+        res[keys[i]] = data[keys[i]];
+      }
+    }
+    return res;
   },
 
   _setPrimaryKey: function(record) {
@@ -35,39 +45,50 @@ Ember.FixtureAdapter = Ember.Adapter.extend({
     return "fixture-" + counter;
   },
 
-  find: function(record, id) {
-    var data = this._findData(record.constructor, id);
-
+  find: function(record, id, subgraph) {
+    var data = this._findData(record.constructor, id, subgraph);
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        Ember.run(record, record.load, id, data);
+        Ember.run(record, record.load, id, data, subgraph);
         resolve(record);
       }, 0);
     });
   },
 
-  findMany: function(klass, records, ids) {
+  findMany: function(klass, records, ids, subgraph) {
     var fixtures = klass.FIXTURES,
         requestedData = [];
 
     for (var i = 0, l = ids.length; i < l; i++) {
-      requestedData.push(this._findData(klass, ids[i]));
+      requestedData.push(this._findData(klass, ids[i], subgraph));
     }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        Ember.run(records, records.load, klass, requestedData);
+        Ember.run(records, records.load, klass, requestedData, subgraph);
         resolve(records);
       }, 0);
     });
   },
 
-  findAll: function(klass, records) {
-    var fixtures = klass.FIXTURES;
+  findAll: function(klass, records, subgraph) {
+    var keys = subgraph ? Object.keys(subgraph) : null,
+        fixtures = klass.FIXTURES.map(function(data) {
+          var res;
+          if(subgraph) {
+            res = {}; 
+            for (var i = 0, l = keys.length; i < l; i++) {
+              res[keys[i]] = data[keys[i]];
+            }
+          } else {
+            res = Ember.merge({}, data);
+          }
+          return res;
+        });
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.run.later(this, function() {
-        Ember.run(records, records.load, klass, fixtures);
+        Ember.run(records, records.load, klass, fixtures, subgraph);
         resolve(records);
       }, 0);
     });

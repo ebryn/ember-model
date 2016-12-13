@@ -5,8 +5,8 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
   isLoaded: false,
   isLoading: Ember.computed.not('isLoaded'),
 
-  load: function(klass, data) {
-    set(this, 'content', this.materializeData(klass, data));
+  load: function(klass, data, subgraph) {
+    set(this, 'content', this.materializeData(klass, data, subgraph));
     this.notifyLoaded();
   },
 
@@ -22,10 +22,10 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     this.trigger('didLoad');
   },
 
-  materializeData: function(klass, data) {
+  materializeData: function(klass, data, subgraph) {
     var self = this;
     return Ember.A(data.map(function(el) {
-      return klass.findFromCacheOrLoad(el, self.container); // FIXME
+      return klass.findFromCacheOrLoad(el, subgraph, self.container); // FIXME
     }));
   },
 
