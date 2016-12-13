@@ -191,7 +191,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-    
+
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
@@ -652,7 +652,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           relationshipType = Ember.get(Ember.lookup, relationshipType) || this.container.lookupFactory('model:'+ relationshipType);
         }
 
-        relationshipData = data[relationshipKey];
+        relationshipData = data[relationshipKey] ? data[relationshipKey] : data[relationshipMeta.options.key];
         if (relationshipData) {
           relationshipType.load(relationshipData);
         }
