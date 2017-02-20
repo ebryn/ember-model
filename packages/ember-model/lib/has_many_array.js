@@ -26,7 +26,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var isDirty = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
-      if (!originalContent.contains(content[i])) {
+      if (!originalContent.includes(content[i])) {
         isDirty = true;
         break;
       }

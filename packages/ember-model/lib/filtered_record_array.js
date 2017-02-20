@@ -36,7 +36,7 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
   updateFilterForRecord: function(record) {
     var results = get(this, 'content');
-    if (this.filterFunction(record) && !results.contains(record)) {
+    if (this.filterFunction(record) && !results.includes(record)) {
       results.pushObject(record);
     }
   },

@@ -335,7 +335,7 @@ test("should be able to set nonembedded relationship to null", function() {
   });
 
   equal(post.get('author'), null);
-  deepEqual(post.toJSON(), {id: 1, author_id: null});
+  deepEqual(post.toJSON(), {id: 1, author_id: undefined});
 });
 
 test("materializing the relationship should should not dirty the record", function() {
