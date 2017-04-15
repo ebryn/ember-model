@@ -911,3 +911,18 @@ test('_handleRejections() will reject DELETEs with unsuccessful status codes', f
     adapter._handleRejections("DELETE", {status: 403}, Ember.$.noop, reject);
   });
 });
+
+test("arrays work as expected", function() {
+  expect(1);
+
+  var record = Ember.run(RESTModel, RESTModel.create, {id: 1, names: Ember.A(), isNew: false});
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess({id: 1, names: ['Bill']});
+  };
+
+  Ember.run(record, record.save);
+
+  equal(record.get('names.firstObject'), 'Bill');
+  equal(record.get('data.names.firstObject'), 'Bill');
+});
