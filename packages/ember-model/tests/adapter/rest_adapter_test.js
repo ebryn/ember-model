@@ -503,6 +503,33 @@ test("saveRecord", function() {
   ok(!record.get('isDirty'), "Record should not be dirty");
 });
 
+asyncTest("saveRecord passes hasMany ids to the server", function() {
+  expect(1);
+  var CommentModel, PostModel;
+  PostModel = Ember.Model.extend({
+    title: Ember.attr(),
+    comments: Ember.hasMany(CommentModel, {key:'comment_ids'})
+  });
+  PostModel.url = "/posts";
+  PostModel.adapter = Ember.RESTAdapter.create();
+  CommentModel = Ember.Model.extend({
+    title: Ember.attr(),
+    post: Ember.belongsTo(PostModel, {key:'post_id'})
+  });
+  CommentModel.url = "/posts";
+  CommentModel.adapter = Ember.RESTAdapter.create();
+
+  var modelData = {id: 1, title: "Hello world", comment_ids: [1,2]};
+
+  var record = Ember.run(PostModel, PostModel.create, modelData);
+
+  PostModel.adapter._ajax = function(url, params, method) {
+    delete modelData.id;
+    deepEqual(params, modelData, 'The data passed to the server matches what the model was initialised with');
+  };
+  Ember.run(record, record.save);
+});
+
 test("saveRecord calls didSaveRecord after saving record", function() {
   expect(5);
 
