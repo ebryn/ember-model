@@ -187,6 +187,34 @@ test("findById", function() {
   deepEqual(record.get('_data'), data.post, "The data should be properly loaded");
 });
 
+test("Model.find([id]) works as expected", function() {
+  expect(1);
+
+  var data = {
+        post: {
+          id: 1,
+          name: "Test Title"
+        }
+      },
+      record, records, promise;
+
+  adapter._ajax = function(url, params, method) {
+    return ajaxSuccess(data);
+  };
+
+  record = Ember.run(RESTModel, RESTModel.find, 1);
+  records = Ember.run(RESTModel, RESTModel.find, [1]);
+
+  promise = Ember.run(Ember.RSVP, Ember.RSVP.all, [records, record]);
+
+  Ember.run(promise, promise.then, function() {
+    start();
+    equal(records.get("firstObject"), record);
+  });
+
+  stop();
+});
+
 test("findById loads the full JSON payload when rootKey isn't specified", function() {
   expect(1);
 
