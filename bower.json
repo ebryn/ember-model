@@ -3,7 +3,7 @@
   "version": "0.0.18",
   "main": "ember-model.js",
   "dependencies": {
-    "ember": "2.0.3"
+    "ember": "2.8.3"
   },
   "devDependencies": {
     "qunit": "~1.11"
@@ -14,6 +14,6 @@
     "components"
   ],
   "resolutions": {
-    "ember": "2.0.3"
+    "ember": "2.8.3"
   }
 }

@@ -249,7 +249,7 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
   updateFilterForRecord: function(record) {
     var results = get(this, 'content');
-    if (this.filterFunction(record) && !results.contains(record)) {
+    if (this.filterFunction(record) && !results.includes(record)) {
       results.pushObject(record);
     }
   },
@@ -270,6 +270,7 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
     }
   }
 });
+
 
 })();
 
@@ -303,7 +304,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var isDirty = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
-      if (!originalContent.contains(content[i])) {
+      if (!originalContent.includes(content[i])) {
         isDirty = true;
         break;
       }
