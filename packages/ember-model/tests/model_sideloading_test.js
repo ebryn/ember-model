@@ -29,6 +29,60 @@ test("data can be sideloaded without materializing records", function() {
   strictEqual(record.get('name'), "Erik", "Record name retained successfully");
 });
 
+test("find should return materialized sideloaded data", function() {
+  expect(3);
+
+  var Model = Ember.Model.extend({
+    id: attr(),
+    name: attr(),
+    camelCase: attr()
+  });
+
+  Model.adapter = {
+    findAll: function(record, id) {
+      ok(false, "Adapter#findAll shouldn't be called for records with sideloaded data");
+    }
+  };
+
+  Model.load([{id: 1, name: "Erik", camel_case: "Dromedary"}]);
+
+  var records;
+  Ember.run(function() {
+    records = Model.find();
+  });
+
+  ok(records.objectAt(0).get('isLoaded'), "Record should be loaded immediately");
+  strictEqual(records.objectAt(0).get('id'), 1, "Record ID retained successfully");
+  strictEqual(records.objectAt(0).get('name'), "Erik", "Record name retained successfully");
+});
+
+test("find with array of ids should return materialized sideloaded data", function() {
+  expect(3);
+
+  var Model = Ember.Model.extend({
+    id: attr(),
+    name: attr(),
+    camelCase: attr()
+  });
+
+  Model.adapter = {
+    find: function(record, id) {
+      ok(false, "Adapter#find shouldn't be called for records with sideloaded data");
+    }
+  };
+
+  Model.load([{id: 1, name: "Erik", camel_case: "Dromedary"}],[{id: 2, name: "Bryn", camel_case: "Dromedary2"}]);
+
+  var records;
+  Ember.run(function() {
+    records = Model.find([1,2]);
+  });
+
+  ok(records.objectAt(0).get('isLoaded'), "Record should be loaded immediately");
+  strictEqual(records.objectAt(0).get('id'), 1, "Record ID retained successfully");
+  strictEqual(records.objectAt(0).get('name'), "Erik", "Record name retained successfully");
+});
+
 test("sideloading works with camelized attributes", function() {
   expect(1);
 
