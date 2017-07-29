@@ -189,10 +189,16 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         attributes = this.constructor.getAttributes(),
         relationships = this.constructor.getRelationships(),
         properties = attributes ? this.getProperties(attributes) : {},
-        rootKey = get(this.constructor, 'rootKey');
+        rootKey = get(this.constructor, 'rootKey'),
+        isNew = get(this, 'isNew');
 
     for (key in properties) {
       meta = this.constructor.metaForProperty(key);
+      if (meta.options) {
+        if (meta.options.save === false || (meta.options.update === false && ! isNew)) {
+          continue;
+        }
+      }
       if (meta.type && meta.type.serialize) {
         json[this.dataKey(key)] = meta.type.serialize(properties[key]);
       } else if (meta.type && Ember.Model.dataTypes[meta.type]) {
@@ -208,6 +214,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       for(var i = 0; i < relationships.length; i++) {
         key = relationships[i];
         meta = this.constructor.metaForProperty(key);
+        if (meta.options) {
+          if (meta.options.save === false || (meta.options.update === false && ! isNew)) {
+            continue;
+          }
+        }
         relationshipKey = meta.options.key || key;
 
         if (meta.kind === 'belongsTo') {

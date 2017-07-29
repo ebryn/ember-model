@@ -493,6 +493,67 @@ test("Model#create() works as expected", function() {
   stop();
 });
 
+test("attribute 'save' option works as expected", function() {
+  expect(6);
+
+  var SaveableModel = Model.extend({
+    dontSave: Ember.attr('string', {save: false}),
+    canSave: Ember.attr('string', {save: true})
+  });
+
+  var record = SaveableModel.create({name: 'Yehuda', dontSave: 'BAD', canSave: 'OK'}),
+      json;
+
+  SaveableModel.adapter = Ember.FixtureAdapter.create();
+  SaveableModel.FIXTURES = [];
+  json = record.toJSON();
+  ok(! json.dontSave, "The JSON omits non-saveable attributes on create");
+  equal(json.canSave, 'OK', "The JSON includes explicitly savable attributes on create");
+  equal(json.name, 'Yehuda', "The JSON includes implicitly savable attributes on create");
+  record.save().then(function() {
+    start();
+    record.set('dontSave', 'Bar');
+    record.set('canSave', 'OK');
+    record.save().then(function() {
+      start();
+      json = record.toJSON();
+      ok(! json.dontSave, "The JSON omits non-saveable attributes on update");
+      equal(json.canSave, 'OK', "The JSON includes explicitly saveable attributes on update");
+      equal(json.name, 'Yehuda', "The JSON includes implicitly saveable attributes on update");
+    });
+    stop();
+  });
+  stop();
+});
+
+test("attribute 'update' option works as expected", function() {
+  expect(6);
+
+  var UpdateableModel = Model.extend({
+    dontUpdate: Ember.attr('string', {update: false}),
+    canUpdate: Ember.attr('string', {save: true})
+  });
+
+  UpdateableModel.adapter = Ember.FixtureAdapter.create();
+  UpdateableModel.FIXTURES = [];
+
+  var record = UpdateableModel.create({name: 'Yehuda', dontUpdate: 'CREATE', canUpdate: 'OK'}),
+      json;
+
+  json = record.toJSON();
+  equal(json.dontUpdate, 'CREATE', "The JSON includes non-updateable attributes on create.");
+  equal(json.canUpdate, 'OK', "The JSON includes explicitly updateable attributes on create");
+  equal(json.name, 'Yehuda', "The JSON includes implicitly updateable attributes on create");
+  record.save().then(function(record2) {
+    start();
+    json = record.toJSON();
+    ok(! json.dontUpdate, "The JSON omits non-updateable attributes on update.");
+    equal(json.canUpdate, 'OK', "The JSON includes explicitly updateable attributes on update");
+    equal(json.name, 'Yehuda', "The JSON includes implicitly updateable attributes on update");
+  });
+  stop();
+});
+
 test(".getAttributes() returns the model's attributes", function() {
   var attr = Ember.attr,
       BaseModel = Ember.Model.extend({
