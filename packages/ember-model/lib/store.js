@@ -1,7 +1,7 @@
 function NIL() {}
 
 Ember.Model.Store = Ember.Object.extend({
-  container: null,
+  //container: null, //NOTE: GJ: see https://github.com/emberjs/ember.js/issues/15322#issuecomment-334132107
 
   modelFor: function(type) {
     return this.container.lookupFactory('model:'+type);
