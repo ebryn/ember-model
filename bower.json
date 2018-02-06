@@ -12,8 +12,5 @@
     "**/.*",
     "node_modules",
     "components"
-  ],
-  "resolutions": {
-    "ember": "2.8.3"
-  }
+  ]
 }
