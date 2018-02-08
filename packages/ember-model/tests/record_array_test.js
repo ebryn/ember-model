@@ -1,50 +1,53 @@
-// var Model, container;
-//
-// function ajaxSuccess(data) {
-//   return new Ember.RSVP.Promise(function(resolve, reject) {
-//     resolve(data);
-//   });
-// }
-//
-// module("Ember.RecordArray", {
-//   setup: function() {
-//     Model = Ember.Model.extend({
-//       id: Ember.attr(),
-//       name: Ember.attr()
-//     });
-//     Model.adapter = Ember.FixtureAdapter.create();
-//     Model.FIXTURES = [
-//       {id: 1, name: 'Erik'},
-//       {id: 2, name: 'Stefan'},
-//       {id: 3, name: 'Kris'}
-//     ];
-//     container = new Ember.Registry().container();
-//   },
-//   teardown: function() { }
-// });
-//
-// test("load creates records with container when container exists", function() {
-//   var records = Ember.RecordArray.create({modelClass: Model, container: container});
-//   Ember.run(records, records.load, Model, Model.FIXTURES);
-//   records.forEach(function(record){
-//     ok(record.get('isLoaded'));
-//     ok(record.get('container'));
-//   });
-// });
-//
-// test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function() {
-//   var records = Ember.run(Model, Model.find, [1,2,3]);
-//
-//   deepEqual(records.get('_ids'), [1,2,3]);
-//   equal(records.get('length'), 0);
-//   ok(!records.get('isLoaded'));
-//   stop();
-//
-//   records.one('didLoad', function() {
-//     start();
-//     equal(records.get('length'), 3);
-//   });
-// });
+var Model, container;
+
+function ajaxSuccess(data) {
+  return new Ember.RSVP.Promise(function(resolve, reject) {
+    resolve(data);
+  });
+}
+
+QUnit.module("Ember.RecordArray", {
+  beforeEach: function() {
+    Model = Ember.Model.extend({
+      id: Ember.attr(),
+      name: Ember.attr()
+    });
+    Model.adapter = Ember.FixtureAdapter.create();
+    Model.FIXTURES = [
+      {id: 1, name: 'Erik'},
+      {id: 2, name: 'Stefan'},
+      {id: 3, name: 'Kris'}
+    ];
+    container = new Ember.Registry().container();
+  }
+});
+
+QUnit.test("load creates records with container when container exists", function(assert) {
+  assert.expect(6);
+  var records = Ember.RecordArray.create({ modelClass: Model });
+  Ember.setOwner(records, container);
+  Ember.run(records, records.load, Model, Model.FIXTURES);
+  records.forEach(function(record){
+    assert.ok(record.get('isLoaded'));
+    assert.ok(record.get('container'));
+  });
+});
+
+QUnit.test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function(assert) {
+  assert.expect(4);
+  var done = assert.async();
+
+  var records = Ember.run(Model, Model.find, [1,2,3]);
+
+  assert.deepEqual(records.get('_ids'), [1,2,3]);
+  assert.equal(records.get('length'), 0);
+  assert.ok(!records.get('isLoaded'));
+
+  records.one('didLoad', function() {
+    assert.equal(records.get('length'), 3);
+    done();
+  });
+});
 //
 // test("findAll RecordArray implements reload", function() {
 //   expect(4);

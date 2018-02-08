@@ -1,42 +1,39 @@
-// var Model, ModelWithoutID;
-//
-// module("Ember.Model", {
-//   setup: function() {
-//     Model = Ember.Model.extend({
-//       token: Ember.attr(),
-//       name: Ember.attr()
-//     });
-//     Model.primaryKey = 'token';
-//     Model.adapter = Ember.FixtureAdapter.create();
-//     Model.FIXTURES = [
-//       {token: 'a', name: 'Erik'}
-//     ];
-//     ModelWithoutID = Model.extend();
-//     ModelWithoutID.adapter = Ember.FixtureAdapter.create();
-//     ModelWithoutID.FIXTURES = [
-//       {name: 'Erik'},
-//       {name: 'Alex'}
-//     ];
-//   },
-//   teardown: function() {
-//
-//   }
-// });
-//
-// test("creates reference when creating record", function() {
-//   expect(4);
-//
-//   var nextClientId = Model._clientIdCounter,
-//       model = Model.create({ token: 'abc123' }),
-//       reference = model._reference,
-//       nextModel = Model.create();
-//
-//   equal(reference.clientId, nextClientId, "client id should be set for each new record");
-//   notEqual(nextModel._reference.clientId, reference.clientId, "client id should be unique");
-//   equal(reference.id, 'abc123', "reference should keep record's id");
-//   equal(reference.record, model, "reference should keep a reference to a model");
-// });
-//
+var Model, ModelWithoutID;
+
+QUnit.module("Ember.Model", {
+  beforeEach: function() {
+    Model = Ember.Model.extend({
+      token: Ember.attr(),
+      name: Ember.attr()
+    });
+    Model.primaryKey = 'token';
+    Model.adapter = Ember.FixtureAdapter.create();
+    Model.FIXTURES = [
+      {token: 'a', name: 'Erik'}
+    ];
+    ModelWithoutID = Model.extend();
+    ModelWithoutID.adapter = Ember.FixtureAdapter.create();
+    ModelWithoutID.FIXTURES = [
+      {name: 'Erik'},
+      {name: 'Alex'}
+    ];
+  }
+});
+
+QUnit.test("creates reference when creating record", function(assert) {
+  assert.expect(4);
+
+  var nextClientId = Model._clientIdCounter,
+      model = Model.create({ token: 'abc123' }),
+      reference = model._reference,
+      nextModel = Model.create();
+
+  assert.equal(reference.clientId, nextClientId, "client id should be set for each new record");
+  assert.notEqual(nextModel._reference.clientId, reference.clientId, "client id should be unique");
+  assert.equal(reference.id, 'abc123', "reference should keep record's id");
+  assert.equal(reference.record, model, "reference should keep a reference to a model");
+});
+
 // test("updates reference and cache when primary key changes", function() {
 //   expect(7);
 //
