@@ -28,7 +28,8 @@ Ember.hasMany = function(type, options) {
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
       var key = options.key || propertyKey;
-      return this.getHasMany(key, type, meta, this.container);
+      var owner = Ember.getOwner(this);
+      return this.getHasMany(key, type, meta, owner);
     },
     set: function(propertyKey, newContentArray, existingArray) {
       if (!existingArray) {
@@ -51,9 +52,11 @@ Ember.Model.reopen({
       embedded: embedded,
       key: key,
       relationshipKey: meta.relationshipKey,
-      container: container
+      container: container //TODO: GJ: zap
     });
 
+    //TODO: GJ: can we set the owner automatically?
+    Ember.setOwner(collection, container);
     this._registerHasManyArray(collection);
 
     return collection;

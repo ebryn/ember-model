@@ -1,11 +1,22 @@
-var TestModel, EmbeddedModel, UUIDModel, store, registry, container, App;
+var TestModel, EmbeddedModel, UUIDModel, store, registry, owner, container, App;
 
-module("Ember.Model.Store", {
-  setup: function() {
+//TODO: extract for easy use in other tests
+var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
+
+QUnit.module("Ember.Model.Store", {
+  beforeEach: function() {
     registry = new Ember.Registry();
-    container = registry.container();
+    owner = Owner.create({
+      __registry__: registry
+    });
+    container = registry.container({
+      owner: owner
+    });
+    owner.__container__ = container;
 
-    store = Ember.Model.Store.create({container: container});
+    store = Ember.Model.Store.create();
+    Ember.setOwner(store, container);
+
     TestModel = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr(),
@@ -65,171 +76,179 @@ module("Ember.Model.Store", {
     registry.register('model:embedded', EmbeddedModel);
     registry.register('model:uuid', UUIDModel);
     registry.register('store:main', Ember.Model.Store);
+
+    //TEMP: GJ: remove this?
+    // Ember.Model.Store.prototype.container = container;
   }
 });
 
-test("store.createRecord(type) returns a record with a container", function() {
+QUnit.test("store.createRecord(type) returns a record with an owner", function(assert) {
   var record = Ember.run(store, store.createRecord, 'test');
-  equal(record.container, container);
-  equal(record.container, container);
+  assert.equal(Ember.getOwner(record), container);
 });
+//
+QUnit.test("store.createRecord(type) with properties", function(assert) {
+  assert.expect(2);
 
-test("store.createRecord(type) with properties", function() {
-  expect(2);
   var record = Ember.run(store, store.createRecord, 'test', {token: 'c', name: 'Andrew'});
-  equal(record.get('token'), 'c');
-  equal(record.get('name'), 'Andrew');
+  assert.equal(record.get('token'), 'c');
+  assert.equal(record.get('name'), 'Andrew');
 });
-
-test("model.load(hashes) returns a existing record with correct container", function() {
+//
+QUnit.test("model.load(hashes) returns a existing record with correct container", function(assert) {
   var model = store.modelFor('uuid'),
       record = Ember.run(store, store.createRecord, 'uuid');
 
-  equal(model, UUIDModel);
-  equal(record.container, container);
+  assert.equal(model, UUIDModel);
+  assert.equal(Ember.getOwner(record), container);
 
-  ok(record.set('token', 'c'));
+  assert.ok(record.set('token', 'c'));
 
-  equal(record.get('id'), 1234);
-  equal(record.get('token'), 'c');
+  assert.equal(record.get('id'), 1234);
+  assert.equal(record.get('token'), 'c');
 
   model.load({id: 1234, token: 'd', name: 'Andrew'});
 
-  equal(record.get('id'), 1234);
-  equal(record.get('token'), 'd');
-  equal(record.get('name'), 'Andrew');
-  equal(record.get('container'), container);
+  assert.equal(record.get('id'), 1234);
+  assert.equal(record.get('token'), 'd');
+  assert.equal(record.get('name'), 'Andrew');
+  assert.equal(Ember.getOwner(record), container);
 
   model.load({id: 1234, name: 'Peter'}, container);
 
-  equal(record.get('id'), 1234);
-  equal(record.get('token'), undefined);
-  equal(record.get('name'), 'Peter');
-  equal(record.get('container'), container);
+  assert.equal(record.get('id'), 1234);
+  assert.equal(record.get('token'), undefined);
+  assert.equal(record.get('name'), 'Peter');
+  assert.equal(Ember.getOwner(record), container);
 });
+//
+QUnit.test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function(assert) {
+  assert.expect(4);
+  var done = assert.async();
 
-test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
-  expect(4);
   var promise = Ember.run(store, store.find, 'test', 'a');
+
   promise.then(function(record) {
-    start();
-    ok(record.get('container'));
-    ok(record.get('embeddedBelongsTo').get('container'));
+    assert.equal(Ember.getOwner(record), container);
+
+    assert.equal(Ember.getOwner(record.get('embeddedBelongsTo')), container);
 
     record.get('embeddedHasmany').forEach(function(embeddedBelongsToRecord) {
-      ok(embeddedBelongsToRecord.get('container'));
+      assert.equal(Ember.getOwner(embeddedBelongsToRecord), container);
     });
+    done();
   });
-  stop();
 });
 
-test("store.find(type, id) returns a promise and loads a container for the record", function() {
-  expect(2);
-
-  var promise = Ember.run(store, store.find, 'test','a');
-  promise.then(function(record) {
-    start();
-    ok(record.get('isLoaded'));
-    ok(record.get('container'));
-  });
-  stop();
-});
-
-test("store.find(type) returns a promise and loads a container for each record", function() {
-  expect(5);
-
-  var promise = Ember.run(store, store.find, 'test');
-  promise.then(function(records) {
-    start();
-    equal(records.content.length, 2);
-    records.forEach(function(record){
-      ok(record.get('isLoaded'));
-      ok(record.get('container'));
-    });
-  });
-  stop();
-});
-
-test("store.find(type, Array) returns a promise and loads a container for each record", function() {
-  expect(5);
-
-  var promise = Ember.run(store, store.find, 'test', ['a','b']);
-  promise.then(function(records) {
-    start();
-    equal(records.content.length, 2);
-    records.forEach(function(record){
-      ok(record.get('isLoaded'));
-      ok(record.get('container'));
-    });
-  });
-  stop();
-});
-
-test("store.adapterFor(type) returns klass.adapter first", function() {
-  var adapter = Ember.run(store, store.adapterFor, 'test');
-  equal(adapter.constructor, Ember.FixtureAdapter);
-});
-
-test("store.adapterFor(type) returns type adapter if no klass.adapter", function() {
-  TestModel.adapter = undefined;
-  registry.register('adapter:test', Ember.FixtureAdapter);
-  registry.register('adapter:application', null);
-  var adapter = Ember.run(store, store.adapterFor, 'test');
-  ok(adapter instanceof Ember.FixtureAdapter);
-});
-
-test("store.adapterFor(type) returns application adapter if no klass.adapter or type adapter", function() {
-  TestModel.adapter = undefined;
-  registry.register('adapter:test', null);
-  registry.register('adapter:application', Ember.FixtureAdapter);
-  var adapter = Ember.run(store, store.adapterFor, 'test');
-  ok(adapter instanceof Ember.FixtureAdapter);
-});
-
-test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
-
-  TestModel.adapter = undefined;
-  registry.register('adapter:test', null);
-  registry.register('adapter:application', null);
-  registry.register('adapter:REST',  Ember.RESTAdapter);
-  var adapter = Ember.run(store, store.adapterFor, 'test');
-  ok(adapter instanceof Ember.RESTAdapter);
-});
-
-test("store.find(type) records use application adapter if no klass.adapter or type adapter", function() {
-  expect(3);
-  TestModel.adapter = undefined;
-  EmbeddedModel.adapter = undefined;
-  registry.register('adapter:test', null);
-  registry.register('adapter:application', Ember.FixtureAdapter);
-
-  var promise = Ember.run(store, store.find, 'test','a');
-
-  promise.then(function(record) {
-    start();
-    ok(record.get('constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for record is application adapter');
-    ok(record.get('embeddedBelongsTo.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for belongsTo record is application adapter');
-    ok(record.get('embeddedHasmany.firstObject.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for hasMany record is application adapter');
-  });
-
-  stop();
-});
-
-test("Registering a custom store on application works", function() {
-  Ember.run(function() {
-    var CustomStore = Ember.Model.Store.extend({ custom: true });
-    App = Ember.Application.create({
-      TestRoute: Ember.Route.extend(),
-      Store: CustomStore
-    });
-  });
-
-  container = App.__container__;
-  ok(container.lookup('store:application'));
-  ok(container.lookup('store:main').get('custom'));
-
-  var testRoute = container.lookup('route:test');
-  ok(testRoute.get('store.custom'));
-
-  Ember.run(App, 'destroy');
-});
+// QUnit.test("store.find(type, id) returns a promise and loads a container for the record", function(assert) {
+//   assert.expect(2);
+//   var done = assert.async();
+//
+//   var promise = Ember.run(store, store.find, 'test', 'a');
+//   promise.then(function(record) {
+//     start();
+//     ok(record.get('isLoaded'));
+//     equal(Ember.getOwner(record), container);
+//
+//     done();
+//   });
+// });
+// //
+// // test("store.find(type) returns a promise and loads a container for each record", function() {
+// //   expect(5);
+// //
+// //   var promise = Ember.run(store, store.find, 'test');
+// //   promise.then(function(records) {
+// //     start();
+// //     equal(records.content.length, 2);
+// //     records.forEach(function(record){
+// //       ok(record.get('isLoaded'));
+// //       ok(record.get('container'));
+// //     });
+// //   });
+// //   stop();
+// // });
+// //
+// // test("store.find(type, Array) returns a promise and loads a container for each record", function() {
+// //   expect(5);
+// //
+// //   var promise = Ember.run(store, store.find, 'test', ['a','b']);
+// //   promise.then(function(records) {
+// //     start();
+// //     equal(records.content.length, 2);
+// //     records.forEach(function(record){
+// //       ok(record.get('isLoaded'));
+// //       ok(record.get('container'));
+// //     });
+// //   });
+// //   stop();
+// // });
+// //
+// // test("store.adapterFor(type) returns klass.adapter first", function() {
+// //   var adapter = Ember.run(store, store.adapterFor, 'test');
+// //   equal(adapter.constructor, Ember.FixtureAdapter);
+// // });
+// //
+// // test("store.adapterFor(type) returns type adapter if no klass.adapter", function() {
+// //   TestModel.adapter = undefined;
+// //   registry.register('adapter:test', Ember.FixtureAdapter);
+// //   registry.register('adapter:application', null);
+// //   var adapter = Ember.run(store, store.adapterFor, 'test');
+// //   ok(adapter instanceof Ember.FixtureAdapter);
+// // });
+// //
+// // test("store.adapterFor(type) returns application adapter if no klass.adapter or type adapter", function() {
+// //   TestModel.adapter = undefined;
+// //   registry.register('adapter:test', null);
+// //   registry.register('adapter:application', Ember.FixtureAdapter);
+// //   var adapter = Ember.run(store, store.adapterFor, 'test');
+// //   ok(adapter instanceof Ember.FixtureAdapter);
+// // });
+// //
+// // test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
+// //
+// //   TestModel.adapter = undefined;
+// //   registry.register('adapter:test', null);
+// //   registry.register('adapter:application', null);
+// //   registry.register('adapter:REST',  Ember.RESTAdapter);
+// //   var adapter = Ember.run(store, store.adapterFor, 'test');
+// //   ok(adapter instanceof Ember.RESTAdapter);
+// // });
+// //
+// // test("store.find(type) records use application adapter if no klass.adapter or type adapter", function() {
+// //   expect(3);
+// //   TestModel.adapter = undefined;
+// //   EmbeddedModel.adapter = undefined;
+// //   registry.register('adapter:test', null);
+// //   registry.register('adapter:application', Ember.FixtureAdapter);
+// //
+// //   var promise = Ember.run(store, store.find, 'test','a');
+// //
+// //   promise.then(function(record) {
+// //     start();
+// //     ok(record.get('constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for record is application adapter');
+// //     ok(record.get('embeddedBelongsTo.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for belongsTo record is application adapter');
+// //     ok(record.get('embeddedHasmany.firstObject.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for hasMany record is application adapter');
+// //   });
+// //
+// //   stop();
+// // });
+// //
+// // test("Registering a custom store on application works", function() {
+// //   Ember.run(function() {
+// //     var CustomStore = Ember.Model.Store.extend({ custom: true });
+// //     App = Ember.Application.create({
+// //       TestRoute: Ember.Route.extend(),
+// //       Store: CustomStore
+// //     });
+// //   });
+// //
+// //   container = App.__container__;
+// //   ok(container.lookup('store:application'));
+// //   ok(container.lookup('store:main').get('custom'));
+// //
+// //   var testRoute = container.lookup('route:test');
+// //   ok(testRoute.get('store.custom'));
+// //
+// //   Ember.run(App, 'destroy');
+// // });

@@ -39,6 +39,17 @@ function isDescriptor(value) {
   return value && typeof value === 'object' && value.isDescriptor;
 }
 
+function getContainer(context) { //TODO: GJ: make backwards compatible?
+  if (context.container2) {
+    return context.container2;
+  }
+
+  var owner = Ember.getOwner(context);
+  if(owner) {
+    return owner.__container__; //TODO: GJ: a better thing to return (that has `lookupFactory` and friends)?
+  }
+}
+
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
@@ -523,7 +534,8 @@ Ember.Model.reopenClass({
       }
     }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, container: container});
+    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
+    Ember.setOwner(records, container);
 
     var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
 
@@ -550,7 +562,7 @@ Ember.Model.reopenClass({
     return this._findFetchById(id, true);
   },
 
-  _findFetchById: function(id, isFetch, container) {
+  _findFetchById: function(id, isFetch, container) { //todo: rename to container
     var record = this.cachedRecordForId(id, container),
         isLoaded = get(record, 'isLoaded'),
         adapter = get(this, 'adapter'),
@@ -663,9 +675,11 @@ Ember.Model.reopenClass({
   getCachedReferenceRecord: function(id, container){
     var ref = this._getReferenceById(id);
     if(ref && ref.record) {
-      if (! ref.record.container) {
-        ref.record.container = container;
+      var owner = Ember.getOwner(ref.record);
+      if (!owner) { //TODO: GJ: do we need this?
+        Ember.setOwner(ref.record, container);
       }
+
       return ref.record;
     }
     return undefined;

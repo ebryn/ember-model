@@ -3,7 +3,7 @@ function config(name) {
 }
 
 module.exports = function(grunt) {
-  
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('bower.json'),
 
@@ -31,8 +31,8 @@ module.exports = function(grunt) {
   grunt.task.renameTask('release', 'publish');
 
   // load local tasks
-  grunt.task.loadTasks('./tasks');   
-  
+  grunt.task.loadTasks('./tasks');
+
   grunt.registerTask('develop', ['jshint:development', 'neuter', 'build_test_runner_file', 'connect:test', 'watch']);
   grunt.registerTask('build', ['jshint:all', 'neuter', 'production']);
 

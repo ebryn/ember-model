@@ -3,6 +3,12 @@ var get = Ember.get,
     set = Ember.set;
 
 function storeFor(record) {
+  var owner = Ember.getOwner(record);
+
+  if (owner) {
+    return owner.lookup('store:main');
+  }
+
   if (record.container) {
     return record.container.lookup('store:main');
   }
@@ -32,7 +38,7 @@ Ember.belongsTo = function(type, options) {
   var meta = { type: type, isRelationship: true, options: options, kind: 'belongsTo', getType: getType};
 
   return Ember.Model.computed("_data", {
-    get: function(propertyKey){
+    get: function(propertyKey) {
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
@@ -47,8 +53,8 @@ Ember.belongsTo = function(type, options) {
         }
       };
 
-      var store = storeFor(this),
-          value = this.getBelongsTo(key, type, meta, store);
+      var store = storeFor(this);
+      var value = this.getBelongsTo(key, type, meta, store);
       this._registerBelongsTo(meta);
       if (value !== null && meta.options.embedded) {
         value.get('isDirty'); // getter must be called before adding observer
@@ -118,7 +124,10 @@ Ember.Model.reopen({
     if (meta.options.embedded) {
       var primaryKey = get(type, 'primaryKey'),
         id = idOrAttrs[primaryKey];
-      record = type.create({ isLoaded: false, id: id, container: this.container });
+      record = type.create({ isLoaded: false, id: id });
+      //TODO: GJ: can we set the owner automatically?
+      var owner = Ember.getOwner(this);
+      Ember.setOwner(record, owner);
       record.load(id, idOrAttrs);
     } else {
       if (store) {
