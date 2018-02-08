@@ -191,7 +191,7 @@ QUnit.test("store.adapterFor(type) returns klass.adapter first", function(assert
 QUnit.test("store.adapterFor(type) returns type adapter if no klass.adapter", function(assert) {
   TestModel.adapter = undefined;
   registry.register('adapter:test', Ember.FixtureAdapter);
-  registry.register('adapter:application', null);
+  registry.unregister('adapter:application');
   var adapter = Ember.run(store, store.adapterFor, 'test');
   assert.ok(adapter instanceof Ember.FixtureAdapter);
 });
@@ -204,16 +204,15 @@ QUnit.test("store.adapterFor(type) returns application adapter if no klass.adapt
   assert.ok(adapter instanceof Ember.FixtureAdapter);
   assert.ok(true);
 });
-//
-// test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function() {
-//
-//   TestModel.adapter = undefined;
-//   registry.register('adapter:test', null);
-//   registry.register('adapter:application', null);
-//   registry.register('adapter:REST',  Ember.RESTAdapter);
-//   var adapter = Ember.run(store, store.adapterFor, 'test');
-//   ok(adapter instanceof Ember.RESTAdapter);
-// });
+
+QUnit.test("store.adapterFor(type) defaults to RESTAdapter if no adapter specified", function(assert) {
+  TestModel.adapter = undefined;
+  registry.unregister('adapter:test');
+  registry.unregister('adapter:application');
+  registry.register('adapter:REST', Ember.RESTAdapter);
+  var adapter = Ember.run(store, store.adapterFor, 'test');
+  assert.ok(adapter instanceof Ember.RESTAdapter);
+});
 // //
 // // test("store.find(type) records use application adapter if no klass.adapter or type adapter", function() {
 // //   expect(3);
