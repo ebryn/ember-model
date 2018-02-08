@@ -483,8 +483,10 @@ Ember.Model.reopenClass({
   _findFetchMany: function(ids, isFetch, container) {
     Ember.assert("findFetchMany requires an array", Ember.isArray(ids));
 
-    var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container}),
+    var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container}), //TODO: zap container
         deferred;
+
+    Ember.setOwner(records, container);
 
     if (!this.recordArrays) { this.recordArrays = []; }
     this.recordArrays.push(records);
@@ -781,8 +783,10 @@ Ember.Model.reopenClass({
     } else {
       record = this.cachedRecordForId(data[get(this, 'primaryKey')], container);
     }
-    // set(record, 'data', data);
+    // debugger;
     record.load(data[get(this, 'primaryKey')], data);
+    Ember.setOwner(record, container);
+
     return record;
   },
 

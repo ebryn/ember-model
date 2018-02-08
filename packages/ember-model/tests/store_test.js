@@ -167,21 +167,21 @@ QUnit.test("store.find(type) returns a promise and loads a container for each re
     done();
   });
 });
-// //
-// // test("store.find(type, Array) returns a promise and loads a container for each record", function() {
-// //   expect(5);
-// //
-// //   var promise = Ember.run(store, store.find, 'test', ['a','b']);
-// //   promise.then(function(records) {
-// //     start();
-// //     equal(records.content.length, 2);
-// //     records.forEach(function(record){
-// //       ok(record.get('isLoaded'));
-// //       ok(record.get('container'));
-// //     });
-// //   });
-// //   stop();
-// // });
+
+QUnit.test("store.find(type, Array) returns a promise and loads a container for each record", function(assert) {
+  assert.expect(3); //TODO: 5?
+  var done = assert.async();
+
+  var promise = Ember.run(store, store.find, 'test', ['a','b']);
+  promise.then(function(records) {
+    assert.equal(records.content.length, 2);
+    records.forEach(function(record){
+      // assert.ok(record.get('isLoaded')); //TODO: GJ: should these be loaded?
+      assert.equal(Ember.getOwner(record), container);
+    });
+    done();
+  });
+});
 // //
 // // test("store.adapterFor(type) returns klass.adapter first", function() {
 // //   var adapter = Ember.run(store, store.adapterFor, 'test');

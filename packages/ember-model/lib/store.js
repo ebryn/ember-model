@@ -47,6 +47,8 @@ Ember.Model.Store = Ember.Service.extend({
 
     var owner = Ember.getOwner(this);
 
+    // debugger;
+
     if (id === NIL) {
       return klass._findFetchAll(isAsync, owner);
     } else if (Ember.isArray(id)) {
@@ -54,7 +56,6 @@ Ember.Model.Store = Ember.Service.extend({
     } else if (typeof id === 'object') {
       return klass._findFetchQuery(id, isAsync, owner);
     } else {
-      // debugger;
       return klass._findFetchById(id, isAsync, owner);
     }
   },
