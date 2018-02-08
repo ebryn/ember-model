@@ -613,7 +613,8 @@ Ember.Model.reopenClass({
       if (!this._currentBatchDeferreds) { this._currentBatchDeferreds = []; }
       this._currentBatchDeferreds.push(deferred);
 
-      Ember.run.scheduleOnce('data', this, this._executeBatch, record.container);
+      var owner = Ember.getOwner(record);
+      Ember.run.scheduleOnce('data', this, this._executeBatch, owner);
 
       return deferred.promise;
     } else {
@@ -621,7 +622,8 @@ Ember.Model.reopenClass({
     }
   },
 
-  _executeBatch: function(container) {
+  _executeBatch: function(owner) {
+    // debugger;
     var batchIds = this._currentBatchIds,
         batchRecordArrays = this._currentBatchRecordArrays,
         batchDeferreds = this._currentBatchDeferreds,
@@ -641,9 +643,10 @@ Ember.Model.reopenClass({
     }
 
     if (requestIds.length === 1) {
-      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0]);
+      promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], owner), requestIds[0]);
     } else {
-      var recordArray = Ember.RecordArray.create({_ids: batchIds, container: container});
+      var recordArray = Ember.RecordArray.create({_ids: batchIds, container: owner }); //TODO: GJ: remove container
+      Ember.setOwner(recordArray, owner);
       if (requestIds.length === 0) {
         promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); });
         recordArray.notifyLoaded();
@@ -685,10 +688,10 @@ Ember.Model.reopenClass({
     return undefined;
   },
 
-  cachedRecordForId: function(id, container) {
+  cachedRecordForId: function(id, owner) {
     var record;
     if (!this.transient) {
-      record = this.getCachedReferenceRecord(id, container);
+      record = this.getCachedReferenceRecord(id, owner);
     }
 
     if (!record) {
@@ -696,8 +699,10 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
 
       attrs[primaryKey] = id;
-      attrs.container = container;
+      attrs.container = owner; //TODO: GJ: zap
       record = this.create(attrs);
+      Ember.setOwner(record, owner);
+
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {

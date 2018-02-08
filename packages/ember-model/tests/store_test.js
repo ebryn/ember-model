@@ -133,38 +133,40 @@ QUnit.test("store.find(type) returns a record with hasMany and belongsTo that sh
     record.get('embeddedHasmany').forEach(function(embeddedBelongsToRecord) {
       assert.equal(Ember.getOwner(embeddedBelongsToRecord), container);
     });
+
     done();
   });
 });
 
-// QUnit.test("store.find(type, id) returns a promise and loads a container for the record", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(store, store.find, 'test', 'a');
-//   promise.then(function(record) {
-//     start();
-//     ok(record.get('isLoaded'));
-//     equal(Ember.getOwner(record), container);
-//
-//     done();
-//   });
-// });
-// //
-// // test("store.find(type) returns a promise and loads a container for each record", function() {
-// //   expect(5);
-// //
-// //   var promise = Ember.run(store, store.find, 'test');
-// //   promise.then(function(records) {
-// //     start();
-// //     equal(records.content.length, 2);
-// //     records.forEach(function(record){
-// //       ok(record.get('isLoaded'));
-// //       ok(record.get('container'));
-// //     });
-// //   });
-// //   stop();
-// // });
+QUnit.test("store.find(type, id) returns a promise and loads a container for the record", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var promise = Ember.run(store, store.find, 'test', 'a');
+  promise.then(function(record) {
+    assert.ok(record.get('isLoaded'));
+    assert.equal(Ember.getOwner(record), container);
+
+    done();
+  });
+});
+
+QUnit.test("store.find(type) returns a promise and loads a container for each record", function(assert) {
+  assert.expect(5);
+  var done = assert.async();
+
+  var promise = Ember.run(store, store.find, 'test');
+  promise.then(function(records) {
+    assert.equal(records.content.length, 2);
+
+    records.forEach(function(record){
+      assert.ok(record.get('isLoaded'));
+      assert.equal(Ember.getOwner(record), container);
+    });
+
+    done();
+  });
+});
 // //
 // // test("store.find(type, Array) returns a promise and loads a container for each record", function() {
 // //   expect(5);

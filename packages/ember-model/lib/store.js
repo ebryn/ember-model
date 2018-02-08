@@ -33,6 +33,7 @@ Ember.Model.Store = Ember.Service.extend({
   },
 
   find: function(type, id) {
+    // debugger;
     if (arguments.length === 1) { id = NIL; }
     return this._find(type, id, true);
   },
@@ -53,6 +54,7 @@ Ember.Model.Store = Ember.Service.extend({
     } else if (typeof id === 'object') {
       return klass._findFetchQuery(id, isAsync, owner);
     } else {
+      // debugger;
       return klass._findFetchById(id, isAsync, owner);
     }
   },
