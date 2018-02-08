@@ -213,41 +213,41 @@ QUnit.test("store.adapterFor(type) defaults to RESTAdapter if no adapter specifi
   var adapter = Ember.run(store, store.adapterFor, 'test');
   assert.ok(adapter instanceof Ember.RESTAdapter);
 });
-// //
-// // test("store.find(type) records use application adapter if no klass.adapter or type adapter", function() {
-// //   expect(3);
-// //   TestModel.adapter = undefined;
-// //   EmbeddedModel.adapter = undefined;
-// //   registry.register('adapter:test', null);
-// //   registry.register('adapter:application', Ember.FixtureAdapter);
-// //
-// //   var promise = Ember.run(store, store.find, 'test','a');
-// //
-// //   promise.then(function(record) {
-// //     start();
-// //     ok(record.get('constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for record is application adapter');
-// //     ok(record.get('embeddedBelongsTo.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for belongsTo record is application adapter');
-// //     ok(record.get('embeddedHasmany.firstObject.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for hasMany record is application adapter');
-// //   });
-// //
-// //   stop();
-// // });
-// //
-// // test("Registering a custom store on application works", function() {
-// //   Ember.run(function() {
-// //     var CustomStore = Ember.Model.Store.extend({ custom: true });
-// //     App = Ember.Application.create({
-// //       TestRoute: Ember.Route.extend(),
-// //       Store: CustomStore
-// //     });
-// //   });
-// //
-// //   container = App.__container__;
-// //   ok(container.lookup('store:application'));
-// //   ok(container.lookup('store:main').get('custom'));
-// //
-// //   var testRoute = container.lookup('route:test');
-// //   ok(testRoute.get('store.custom'));
-// //
-// //   Ember.run(App, 'destroy');
-// // });
+
+QUnit.test("store.find(type) records use application adapter if no klass.adapter or type adapter", function(assert) {
+  assert.expect(3);
+  var done = assert.async();
+
+  TestModel.adapter = undefined;
+  EmbeddedModel.adapter = undefined;
+  registry.unregister('adapter:test');
+  registry.register('adapter:application', Ember.FixtureAdapter);
+
+  var promise = Ember.run(store, store.find, 'test','a');
+
+  promise.then(function(record) {
+    assert.ok(record.get('constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for record is application adapter');
+    assert.ok(record.get('embeddedBelongsTo.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for belongsTo record is application adapter');
+    assert.ok(record.get('embeddedHasmany.firstObject.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for hasMany record is application adapter');
+    done();
+  });
+});
+
+QUnit.test("Registering a custom store on application works", function(assert) {
+  Ember.run(function() {
+    var CustomStore = Ember.Model.Store.extend({ custom: true });
+    App = Ember.Application.create({
+      TestRoute: Ember.Route.extend(),
+      Store: CustomStore
+    });
+  });
+
+  container = App.__container__;
+  assert.ok(container.lookup('store:application'));
+  assert.ok(container.lookup('store:main').get('custom'));
+
+  var testRoute = container.lookup('route:test');
+  assert.ok(testRoute.get('store.custom'));
+
+  Ember.run(App, 'destroy');
+});
