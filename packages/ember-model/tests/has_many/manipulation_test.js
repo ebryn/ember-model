@@ -2,6 +2,92 @@ var attr = Ember.attr;
 
 module("Ember.HasManyArray - manipulation");
 
+
+test('objectAtContent returns the element in the given index', function() {
+   var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 2, 'has two elements');
+  equal(article.get('comments').objectAt(1).get('id'), 2, 'returns the right element');
+});
+
+
+test('objectAtContent returns undefined when there\'s no content', function() {
+   var json = {
+    id: 1,
+    title: 'foo',
+    comments: []
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 0, 'has no elements');
+  equal(article.get('comments').objectAt(1), undefined, 'returns undefined');
+});
+
+
+test('objectAtContent returns undefined for an out of bounds index', function() {
+   var json = {
+    id: 1,
+    title: 'foo',
+    comments: [1]
+  };
+
+  var Comment = Ember.Model.extend({
+    text: attr()
+  });
+
+  var Article = Ember.Model.extend({
+    title: attr(),
+
+    comments: Ember.hasMany(Comment, { key: 'comments' })
+  });
+
+  Comment.adapter = Ember.FixtureAdapter.create();
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'}
+  ];
+
+  var article = Article.create();
+  Ember.run(article, article.load, json.id, json);
+
+  equal(article.get('comments.length'), 1, 'has one element');
+  equal(article.get('comments').objectAt(1), undefined, 'returns undefined');
+});
+
 test("pushing record without an id adds a reference to the content", function() {
   var json = {
     id: 1,
