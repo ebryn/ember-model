@@ -76,9 +76,6 @@ QUnit.module("Ember.Model.Store", {
     registry.register('model:embedded', EmbeddedModel);
     registry.register('model:uuid', UUIDModel);
     registry.register('store:main', Ember.Model.Store);
-
-    //TEMP: GJ: remove this?
-    // Ember.Model.Store.prototype.container = container;
   }
 });
 
@@ -86,7 +83,7 @@ QUnit.test("store.createRecord(type) returns a record with an owner", function(a
   var record = Ember.run(store, store.createRecord, 'test');
   assert.equal(Ember.getOwner(record), container);
 });
-//
+
 QUnit.test("store.createRecord(type) with properties", function(assert) {
   assert.expect(2);
 
@@ -94,7 +91,7 @@ QUnit.test("store.createRecord(type) with properties", function(assert) {
   assert.equal(record.get('token'), 'c');
   assert.equal(record.get('name'), 'Andrew');
 });
-//
+
 QUnit.test("model.load(hashes) returns a existing record with correct container", function(assert) {
   var model = store.modelFor('uuid'),
       record = Ember.run(store, store.createRecord, 'uuid');
@@ -121,7 +118,7 @@ QUnit.test("model.load(hashes) returns a existing record with correct container"
   assert.equal(record.get('name'), 'Peter');
   assert.equal(Ember.getOwner(record), container);
 });
-//
+
 QUnit.test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function(assert) {
   assert.expect(4);
   var done = assert.async();

@@ -12,9 +12,9 @@ Ember.Model.Store = Ember.Service.extend({
     if (adapter && adapter !== Ember.Model.adapter) {
       return adapter;
     } else {
-      adapter = owner.lookupFactory('adapter:' + type) ||
-        owner.lookupFactory('adapter:application') ||
-        owner.lookupFactory('adapter:REST');
+      adapter = owner.factoryFor('adapter:' + type) ||
+        owner.factoryFor('adapter:application') ||
+        owner.factoryFor('adapter:REST');
 
       return adapter ? adapter.create() : adapter;
     }
