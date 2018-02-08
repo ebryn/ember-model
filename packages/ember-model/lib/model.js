@@ -39,17 +39,6 @@ function isDescriptor(value) {
   return value && typeof value === 'object' && value.isDescriptor;
 }
 
-function getContainer(context) { //TODO: GJ: make backwards compatible?
-  if (context.container2) {
-    return context.container2;
-  }
-
-  var owner = Ember.getOwner(context);
-  if(owner) {
-    return owner.__container__; //TODO: GJ: a better thing to return (that has `lookupFactory` and friends)?
-  }
-}
-
 Ember.run.queues.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {

@@ -9,10 +9,6 @@ function storeFor(record) {
     return owner.lookup('store:main');
   }
 
-  if (record.container) {
-    return record.container.lookup('store:main');
-  }
-
   return null;
 }
 

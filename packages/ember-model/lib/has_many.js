@@ -51,11 +51,9 @@ Ember.Model.reopen({
       content: this._getHasManyContent(key, type, embedded),
       embedded: embedded,
       key: key,
-      relationshipKey: meta.relationshipKey,
-      container: container //TODO: GJ: zap
+      relationshipKey: meta.relationshipKey
     });
 
-    //TODO: GJ: can we set the owner automatically?
     Ember.setOwner(collection, container);
     this._registerHasManyArray(collection);
 
