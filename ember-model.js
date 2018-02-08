@@ -191,7 +191,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-    
+
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
@@ -316,7 +316,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   objectAtContent: function(idx) {
     var content = get(this, 'content');
 
-    if (!content.length) { return; }
+    if (!content.length || idx >= content.length) { return; }
 
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
