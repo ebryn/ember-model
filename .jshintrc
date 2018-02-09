@@ -1,5 +1,5 @@
 {
-    "predef": [
+    "predef": [ //TODO: GJ: remove some of these
         "define",
         "console",
         "Ember",
@@ -22,9 +22,9 @@
         "ok",
         "strictEqual",
         "module",
-        "expect",
         "minispade",
-        "expectAssertion"
+        "expectAssertion",
+        "QUnit"
     ],
 
     "node" : false,

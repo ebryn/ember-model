@@ -3,10 +3,10 @@
   "version": "0.0.18",
   "main": "ember-model.js",
   "dependencies": {
-    "ember": "2.8.3"
+    "ember": "2.12.0"
   },
   "devDependencies": {
-    "qunit": "~1.11"
+    "qunit": "~2.5"
   },
   "ignore": [
     "**/.*",

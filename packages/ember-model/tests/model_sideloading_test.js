@@ -1,9 +1,9 @@
 var attr = Ember.attr;
 
-module("Ember.Model sideloading");
+QUnit.module("Ember.Model sideloading");
 
-test("data can be sideloaded without materializing records", function() {
-  expect(3);
+QUnit.test("data can be sideloaded without materializing records", function(assert) {
+  assert.expect(3);
 
   var Model = Ember.Model.extend({
     id: attr(),
@@ -13,7 +13,7 @@ test("data can be sideloaded without materializing records", function() {
 
   Model.adapter = {
     find: function(record, id) {
-      ok(false, "Adapter#find shouldn't be called for records with sideloaded data");
+      assert.ok(false, "Adapter#find shouldn't be called for records with sideloaded data");
     }
   };
 
@@ -24,13 +24,13 @@ test("data can be sideloaded without materializing records", function() {
     record = Model.find(1);
   });
 
-  ok(record.get('isLoaded'), "Record should be loaded immediately");
-  strictEqual(record.get('id'), 1, "Record ID retained successfully");
-  strictEqual(record.get('name'), "Erik", "Record name retained successfully");
+  assert.ok(record.get('isLoaded'), "Record should be loaded immediately");
+  assert.strictEqual(record.get('id'), 1, "Record ID retained successfully");
+  assert.strictEqual(record.get('name'), "Erik", "Record name retained successfully");
 });
 
-test("sideloading works with camelized attributes", function() {
-  expect(1);
+QUnit.test("sideloading works with camelized attributes", function(assert) {
+  assert.expect(1);
 
   var Model = Ember.Model.extend({
     camelCase: attr()
@@ -44,11 +44,11 @@ test("sideloading works with camelized attributes", function() {
     record = Model.find(1);
   });
 
-  strictEqual(record.get('camelCase'), "Dromedary", "camel cased attributes retained correctly");
+  assert.strictEqual(record.get('camelCase'), "Dromedary", "camel cased attributes retained correctly");
 });
 
-test("sideloading clears sideload and record cache", function() {
-  expect(6);
+QUnit.test("sideloading clears sideload and record cache", function(assert) {
+  assert.expect(6);
 
   var Model = Ember.Model.extend({
     id: attr(),
@@ -58,7 +58,7 @@ test("sideloading clears sideload and record cache", function() {
 
   Model.adapter = {
     find: function(record, id) {
-      ok(false, "Adapter#find shouldn't be called for records with sideloaded data");
+      assert.ok(false, "Adapter#find shouldn't be called for records with sideloaded data");
     }
   };
 
@@ -69,10 +69,10 @@ test("sideloading clears sideload and record cache", function() {
     record = Model.find(1);
   });
 
-  ok(record.get('isLoaded'), "Record should be loaded immediately");
-  strictEqual(record.get('id'), 1, "Record ID retained successfully");
-  strictEqual(record.get('name'), "Erik", "Record name retained successfully");
-  strictEqual(record.get('worth'), 123456789, "Record worth retained successfully");
+  assert.ok(record.get('isLoaded'), "Record should be loaded immediately");
+  assert.strictEqual(record.get('id'), 1, "Record ID retained successfully");
+  assert.strictEqual(record.get('name'), "Erik", "Record name retained successfully");
+  assert.strictEqual(record.get('worth'), 123456789, "Record worth retained successfully");
 
   Model.load([{id: 1, name: "Erik", worth: 987654321}]);
 
@@ -80,7 +80,7 @@ test("sideloading clears sideload and record cache", function() {
     record = Model.find(1);
   });
 
-  strictEqual(record.get('name'), "Erik", "Record name retained successfully");
-  strictEqual(record.get('worth'), 987654321, "Record worth retained successfully");
+  assert.strictEqual(record.get('name'), "Erik", "Record name retained successfully");
+  assert.strictEqual(record.get('worth'), 987654321, "Record worth retained successfully");
 
 });

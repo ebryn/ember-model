@@ -1,9 +1,9 @@
 var attr = Ember.attr;
 
-module("Ember.attr");
+QUnit.module("Ember.attr");
 
-test("getAttr hook is called when attribute is fetched", function() {
-  expect(2);
+QUnit.test("getAttr hook is called when attribute is fetched", function(assert) {
+  assert.expect(2);
 
   var Page = Ember.Model.extend({
     title: attr()
@@ -12,7 +12,7 @@ test("getAttr hook is called when attribute is fetched", function() {
   var page = Page.create();
 
   page.getAttr = function(key, value) {
-    equal(key, 'title', 'getAttr should be called with key as a first argument');
+    assert.equal(key, 'title', 'getAttr should be called with key as a first argument');
     return value.toUpperCase();
   };
 
@@ -21,10 +21,10 @@ test("getAttr hook is called when attribute is fetched", function() {
   });
 
   var title = page.get('title');
-  equal(title, 'TEH ARTICLE', 'the value of the attr should be a value returned from getAttr hook');
+  assert.equal(title, 'TEH ARTICLE', 'the value of the attr should be a value returned from getAttr hook');
 });
 
-test("attr should not change null to object", function() {
+QUnit.test("attr should not change null to object", function(assert) {
   var Page = Ember.Model.extend({
     author: attr()
   });
@@ -35,10 +35,10 @@ test("attr should not change null to object", function() {
   });
 
   var author = page.get('author');
-  equal(author, null, "author should be set to null");
+  assert.equal(author, null, "author should be set to null");
 });
 
-test("attr should deserialize when type has a deserialize method", function() {
+QUnit.test("attr should deserialize when type has a deserialize method", function(assert) {
   var Time = {
     deserialize: function(string) {
       var array = string.split(":");
@@ -59,11 +59,11 @@ test("attr should deserialize when type has a deserialize method", function() {
   });
 
   var time = post.get('time');
-  ok(time.hour === 11, "Hour should be 11");
-  ok(time.min === 39, "Minute should be 39");
+  assert.ok(time.hour === 11, "Hour should be 11");
+  assert.ok(time.min === 39, "Minute should be 39");
 });
 
-test("attr should serialize when type has a serialize method", function() {
+QUnit.test("attr should serialize when type has a serialize method", function(assert) {
   var Time = {
     serialize: function(obj) {
       return obj.hour + ":" + obj.min;
@@ -79,11 +79,11 @@ test("attr should serialize when type has a serialize method", function() {
   });
 
   var json = post.toJSON();
-  equal(json.time, '10:11', "Serialized time should be 10:11");
+  assert.equal(json.time, '10:11', "Serialized time should be 10:11");
 });
 
-test("attr should know how to serialize some built in objects", function() {
-  expect(7);
+QUnit.test("attr should know how to serialize some built in objects", function(assert) {
+  assert.expect(7);
 
   var Post = Ember.Model.extend({
     date:           attr(Date),
@@ -101,19 +101,19 @@ test("attr should know how to serialize some built in objects", function() {
   });
 
   var json = post.toJSON();
-  equal(json.date, '2001-01-01T10:15:33.000Z', "Date should be serialized");
-  equal(json.null_date, null, "null date attributes should not cause error");
-  equal(json.missing_date, null, "missing date attributes should not cause error");
-  strictEqual(json.count, 3, "Count should be serialized");
-  strictEqual(json.zero_count, 0, "Zero count should be serialized");
-  equal(json.null_number, null, "null number attributes should not cause error");
-  equal(json.missing_number, null, "missing number attributes should not cause error");
+  assert.equal(json.date, '2001-01-01T10:15:33.000Z', "Date should be serialized");
+  assert.equal(json.null_date, null, "null date attributes should not cause error");
+  assert.equal(json.missing_date, null, "missing date attributes should not cause error");
+  assert.strictEqual(json.count, 3, "Count should be serialized");
+  assert.strictEqual(json.zero_count, 0, "Zero count should be serialized");
+  assert.equal(json.null_number, null, "null number attributes should not cause error");
+  assert.equal(json.missing_number, null, "missing number attributes should not cause error");
 });
 
 
 
-test("attr should know how to deserialize some built in objects", function() {
-  expect(8);
+QUnit.test("attr should know how to deserialize some built in objects", function(assert) {
+  assert.expect(8);
 
   var Post = Ember.Model.extend({
     date:           attr(Date),
@@ -141,17 +141,17 @@ test("attr should know how to deserialize some built in objects", function() {
 
   var date = new Date(Date.UTC(2001,0,1, 10, 15, 33));
 
-  equal(post.get('date').getTime(), date.getTime(), "Date should be deserialized");
-  equal(post.get('date2').getTime(), date.getTime(), "Other date format should be deserialized");
-  equal(post.get('null_date'), null, "null date attributes should not cause error");
-  equal(post.get('missing_date'), null, "missing date attributes should not cause error");
-  strictEqual(post.get('count'), 3, "Count should be deserialized");
-  strictEqual(post.get('zero_count'), 0, "Zero count should be deserialized");
-  equal(post.get('null_number'), null, "null number attributes should not cause error");
-  equal(post.get('missing_number'), null, "missing number attributes should not cause error");
+  assert.equal(post.get('date').getTime(), date.getTime(), "Date should be deserialized");
+  assert.equal(post.get('date2').getTime(), date.getTime(), "Other date format should be deserialized");
+  assert.equal(post.get('null_date'), null, "null date attributes should not cause error");
+  assert.equal(post.get('missing_date'), null, "missing date attributes should not cause error");
+  assert.strictEqual(post.get('count'), 3, "Count should be deserialized");
+  assert.strictEqual(post.get('zero_count'), 0, "Zero count should be deserialized");
+  assert.equal(post.get('null_number'), null, "null number attributes should not cause error");
+  assert.equal(post.get('missing_number'), null, "missing number attributes should not cause error");
 });
 
-test("attr should camelize attributes when reading", function() {
+QUnit.test("attr should camelize attributes when reading", function(assert) {
   var Page = Ember.Model.extend({
     someAuthor: attr()
   });
@@ -164,10 +164,10 @@ test("attr should camelize attributes when reading", function() {
   });
 
   var someAuthor = page.get('someAuthor');
-  equal(someAuthor, "Alex", "author should be set to Alex");
+  assert.equal(someAuthor, "Alex", "author should be set to Alex");
 });
 
-test("attr should camelize attributes when writing", function() {
+QUnit.test("attr should camelize attributes when writing", function(assert) {
   var Page = Ember.Model.extend({
     someAuthor: attr()
   });
@@ -178,12 +178,12 @@ test("attr should camelize attributes when writing", function() {
   });
 
   var data = page.get('_data');
-  equal(data.some_author, "Alex", "data.some_author should be set to Alex");
+  assert.equal(data.some_author, "Alex", "data.some_author should be set to Alex");
   var json = page.toJSON();
-  equal(json.some_author, "Alex", "json.some_author should be set to Alex");
+  assert.equal(json.some_author, "Alex", "json.some_author should be set to Alex");
 });
 
-test("toJSON should respect the key option in attr", function() {
+QUnit.test("toJSON should respect the key option in attr", function(assert) {
   var Page = Ember.Model.extend({
     author: attr(String, { key: 'Author'})
   });
@@ -194,13 +194,13 @@ test("toJSON should respect the key option in attr", function() {
   });
 
   var json = page.toJSON();
-  equal(page.get('author'), "Guilherme", "author should be Guilherme");
-  equal(page.get('Author'), undefined, "Author should be undefined");
-  equal(json.Author, "Guilherme", "json.Author should be Guilherme");
-  equal(json.author, undefined, "json.author should be undefined");
+  assert.equal(page.get('author'), "Guilherme", "author should be Guilherme");
+  assert.equal(page.get('Author'), undefined, "Author should be undefined");
+  assert.equal(json.Author, "Guilherme", "json.Author should be Guilherme");
+  assert.equal(json.author, undefined, "json.author should be undefined");
 });
 
-test("custom attributes should revert correctly", function () {
+QUnit.test("custom attributes should revert correctly", function(assert) {
   var Time = {
     serialize: function (time) {
       return time.hour + ":" + time.min;
@@ -225,27 +225,27 @@ test("custom attributes should revert correctly", function () {
 
 
   var t0 = post.get('time');
-  equal(t0.hour, 10, "Time should have correct hour");
-  equal(t0.min, 11, "Time should have correct minute");
+  assert.equal(t0.hour, 10, "Time should have correct hour");
+  assert.equal(t0.min, 11, "Time should have correct minute");
 
 
   post.set('time', { hour: 11, min: 12 });
 
 
   var t1 = post.get('time');
-  equal(t1.hour, 11, "Time should have correct hour");
-  equal(t1.min, 12, "Time should have correct minute");
+  assert.equal(t1.hour, 11, "Time should have correct hour");
+  assert.equal(t1.min, 12, "Time should have correct minute");
 
   post.revert();
   var t2 = post.get('time');
-  equal(t2.hour, 10, "Time should have correct hour");
-  equal(t2.min, 11, "Time should have correct minute");
+  assert.equal(t2.hour, 10, "Time should have correct hour");
+  assert.equal(t2.min, 11, "Time should have correct minute");
 
   // should not be dirty now
-  ok(post.get('isDirty') === false, "model should no longer be dirty after reverting changes");
+  assert.ok(post.get('isDirty') === false, "model should no longer be dirty after reverting changes");
 });
 
-test("attr should handle default values", function() {
+QUnit.test("attr should handle default values", function(assert) {
   var Book = Ember.Model.extend({
     author: attr(String, { defaultValue: 'anonymous'}),
     chapters: attr(String, { defaultValue: []})
@@ -259,12 +259,12 @@ test("attr should handle default values", function() {
   });
   novel.get("chapters").push('intro');
 
-  equal(novel.get('author'), "Jane", "author should be Jane");
-  equal(coloringBook.get('author'), "anonymous", "missing author should be filled in");
-  deepEqual(novel.get('chapters'), ['intro'], "mutable defaults should be filled in");
-  deepEqual(coloringBook.get('chapters'), [], "mutable defaults should not be shared");
+  assert.equal(novel.get('author'), "Jane", "author should be Jane");
+  assert.equal(coloringBook.get('author'), "anonymous", "missing author should be filled in");
+  assert.deepEqual(novel.get('chapters'), ['intro'], "mutable defaults should be filled in");
+  assert.deepEqual(coloringBook.get('chapters'), [], "mutable defaults should not be shared");
 
   var json = coloringBook.toJSON();
-  equal(json.author, "anonymous", "default values should be serialized");
-  deepEqual(json.chapters, [], "default values should be serialized");
+  assert.equal(json.author, "anonymous", "default values should be serialized");
+  assert.deepEqual(json.chapters, [], "default values should be serialized");
 });
