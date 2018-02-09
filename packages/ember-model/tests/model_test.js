@@ -701,242 +701,246 @@ QUnit.test("can use data as attribute name", function(assert) {
 
   assert.deepEqual(record.toJSON(), {id: 1, data: 'abc'});
 });
-//
-// QUnit.test("record is available in reference cache when load is run in cachedRecordForId", function(assert) {
-//   var recordFromCache,
-//       Post = Ember.Model.extend({
-//         load: function() {
-//           recordFromCache = this.constructor._referenceCache['1'].record;
-//         }
-//       });
-//
-//   Post.sideloadedData = { '1': { id: '1' } };
-//
-//   Post.cachedRecordForId('1');
-//
-//   ok(recordFromCache, 'record should be available in cache when running load');
+
+QUnit.test("record is available in reference cache when load is run in cachedRecordForId", function(assert) {
+  var recordFromCache,
+      Post = Ember.Model.extend({
+        load: function() {
+          recordFromCache = this.constructor._referenceCache['1'].record;
+        }
+      });
+
+  Post.sideloadedData = { '1': { id: '1' } };
+
+  Post.cachedRecordForId('1');
+
+  assert.ok(recordFromCache, 'record should be available in cache when running load');
+});
+
+QUnit.test("fetchQuery returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params) {
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("second promise returned by fetchAll when loading, resolves on load", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var deferred = Ember.RSVP.defer();
+
+  var DeferredResolvingAdapter = Ember.FixtureAdapter.extend({
+    findAll: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        deferred.promise.then(function() {
+          records.set('isLoaded', true);
+          resolve(records);
+        });
+      });
+    }
+  });
+  Model.adapter = DeferredResolvingAdapter.create();
+
+  var firstPromise = Ember.run(Model, Model.fetchAll);
+  var secondPromise = Ember.run(Model, Model.fetchAll);
+
+  secondPromise.then(function(records) {
+    assert.ok(records.get('isLoaded'), 'records should be loaded when promise resolves');
+    done();
+  });
+
+  deferred.resolve();
+});
+
+QUnit.test("fetchAll returns a promise", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetchAll);
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    assert.equal(records.get('length'), 1);
+    done();
+  });
+});
+
+QUnit.test("fetchAll returns promise if findAll RecordArray already exists", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch);
+  promise.then(function(records) {
+    var secondPromise = Ember.run(Model, Model.fetch);
+    secondPromise.then(function() {
+      assert.ok(true, "Second fetch returned a promise");
+      done();
+    });
+  });
+});
+
+QUnit.test("fetchAll resolves to same RecordArray when called multiple times", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promiseOne = Ember.run(Model, Model.fetch);
+  var promiseTwo = Ember.run(Model, Model.fetch);
+  Ember.RSVP.all([promiseOne, promiseTwo]).then(function(records) {
+    assert.ok(records[0] === records[1], "Both promises resolve with same RecordArray");
+    done();
+  });
+});
+
+QUnit.test("fetchMany returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findMany: function(klass, records, params) {
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("fetchById returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetchById, 'a');
+  promise.then(function(record) {
+    assert.ok(record.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("fetchQuery resolves with error object", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
+  promise.then(null, function(error) {
+    assert.deepEqual(error, {error: true});
+    done();
+  });
+});
+
+QUnit.test("fetchAll resolves with error object", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findAll: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchAll);
+  promise.then(null, function(error) {
+    assert.equal(error.error, true);
+    done();
+  });
+});
+
+QUnit.test("fetchById resolves with error object", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    find: function(record, id) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchById, 'a');
+  promise.then(null, function(error) {
+    assert.deepEqual(error, {error: true});
+    done();
+  });
+});
+
+QUnit.test("fetchMany resolves with error object", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findMany: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
+  promise.then(null, function(error) {
+    assert.deepEqual(error, {error: true});
+    done();
+  });
+});
+
+QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var records = Model.find();
+  records.on('didLoad', function() {
+    Model.clearCache();
+    var newRecords = Model.find();
+    assert.equal(newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray");
+    done();
+  });
+});
+// TODO: test that creating a record calls load
+
+// QUnit.test('Model#registerRecordArray', function(){
+
 // });
-//
-// QUnit.test("fetchQuery returns a promise", function(assert) {
-//   assert.expect(1);
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findQuery: function(klass, records, params) {
-//       records.set('isLoaded', true);
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         resolve(records);
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
-//   promise.then(function(records) {
-//     start();
-//     ok(records.get('isLoaded'));
-//   });
-//   stop();
+
+// QUnit.test('Model#unregisterRecordArray', function(){
+
 // });
-//
-// QUnit.test("second promise returned by fetchAll when loading, resolves on load", function(assert) {
-//   assert.expect(1);
-//
-//   var deferred = Ember.RSVP.defer();
-//
-//   var DeferredResolvingAdapter = Ember.FixtureAdapter.extend({
-//     findAll: function(klass, records, params) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         deferred.promise.then(function() {
-//           records.set('isLoaded', true);
-//           resolve(records);
-//         });
-//       });
-//     }
-//   });
-//   Model.adapter = DeferredResolvingAdapter.create();
-//
-//   var firstPromise = Ember.run(Model, Model.fetchAll);
-//   var secondPromise = Ember.run(Model, Model.fetchAll);
-//
-//   secondPromise.then(function(records) {
-//     start();
-//     ok(records.get('isLoaded'), 'records should be loaded when promise resolves');
-//   });
-//
-//   deferred.resolve();
-//
-//   stop();
-// });
-//
-// QUnit.test("fetchAll returns a promise", function(assert) {
-//     var promise = Ember.run(Model, Model.fetchAll);
-//     promise.then(function(records) {
-//       start();
-//       ok(records.get('isLoaded'));
-//       equal(records.get('length'), 1);
-//     });
-//     stop();
-// });
-//
-// QUnit.test("fetchAll returns promise if findAll RecordArray already exists", function(assert) {
-//   assert.expect(1);
-//   var promise = Ember.run(Model, Model.fetch);
-//   promise.then(function(records) {
-//     start();
-//     var secondPromise = Ember.run(Model, Model.fetch);
-//     secondPromise.then(function() {
-//       start();
-//       ok(true, "Second fetch returned a promise");
-//     });
-//     stop();
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchAll resolves to same RecordArray when called multiple times", function(assert) {
-//   assert.expect(1);
-//   var promiseOne = Ember.run(Model, Model.fetch);
-//   var promiseTwo = Ember.run(Model, Model.fetch);
-//   Ember.RSVP.all([promiseOne, promiseTwo]).then(function(records) {
-//     start();
-//     ok(records[0] === records[1], "Both promises resolve with same RecordArray");
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchMany returns a promise", function(assert) {
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findMany: function(klass, records, params) {
-//       records.set('isLoaded', true);
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         resolve(records);
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
-//   promise.then(function(records) {
-//     start();
-//     ok(records.get('isLoaded'));
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchById returns a promise", function(assert) {
-//   assert.expect(1);
-//
-//   var promise = Ember.run(Model, Model.fetchById, 'a');
-//   promise.then(function(record) {
-//     start();
-//     ok(record.get('isLoaded'));
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchQuery resolves with error object", function(assert) {
-//   assert.expect(1);
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findQuery: function(klass, records, params) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         reject({error: true});
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
-//   promise.then(null, function(error) {
-//     start();
-//     deepEqual(error, {error: true});
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchAll resolves with error object", function(assert) {
-//   assert.expect(1);
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findAll: function(klass, records, params) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         reject({error: true});
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchAll);
-//   promise.then(null, function(error) {
-//     start();
-//     equal(error.error, true);
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchById resolves with error object", function(assert) {
-//   assert.expect(1);
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     find: function(record, id) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         reject({error: true});
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchById, 'a');
-//   promise.then(null, function(error) {
-//     start();
-//     deepEqual(error, {error: true});
-//   });
-//   stop();
-// });
-//
-// QUnit.test("fetchMany resolves with error object", function(assert) {
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findMany: function(klass, records, params) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         reject({error: true});
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
-//   promise.then(null, function(error) {
-//     start();
-//     deepEqual(error, {error: true});
-//   });
-//   stop();
-// });
-//
-// QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert) {
-//   assert.expect(1);
-//
-//   var records = Model.find();
-//   records.on('didLoad', function() {
-//     start();
-//
-//     Model.clearCache();
-//     var newRecords = Model.find();
-//     equal( newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray" );
-//   });
-//   stop();
-// });
-// // TODO: test that creating a record calls load
-//
-// // QUnit.test('Model#registerRecordArray', function(){
-//
-// // });
-//
-// // QUnit.test('Model#unregisterRecordArray', function(){
-//
-// // });
