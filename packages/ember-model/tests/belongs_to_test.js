@@ -1,79 +1,82 @@
-// module("Ember.belongsTo");
-//
-// test("it exists", function() {
-//   ok(Ember.belongsTo);
-// });
-//
-// test("is a CP macro", function() {
-//   var Article = Ember.Model.extend({
-//         slug: Ember.attr(String)
-//       }),
-//       cp = Ember.belongsTo(Article, { key: 'article', embedded: true }),
-//       Comment = Ember.Model.extend({
-//         article: cp
-//       });
-//
-//   ok(cp instanceof Ember.ComputedProperty);
-// });
-//
-// test("using it in a model definition", function() {
-//   var Article = Ember.Model.extend({
-//         slug: Ember.attr(String)
-//       }),
-//       Comment = Ember.Model.extend({
-//         article: Ember.belongsTo(Article, { key: 'article', embedded: true })
-//       });
-//
-//   Article.primaryKey = 'slug';
-//
-//   var comment = Comment.create();
-//   Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
-//   var article = Ember.run(comment, comment.get, 'article');
-//
-//   equal(article.get('slug'), 'first-article');
-//   ok(article instanceof Article);
-// });
-//
-// test("model can be specified with a string instead of a class", function() {
-//   var Article = Ember.ArticleModel = Ember.Model.extend({
-//         slug: Ember.attr(String)
-//       }),
-//       Comment = Ember.Model.extend({
-//         article: Ember.belongsTo('Ember.ArticleModel', { key: 'article', embedded: true })
-//       });
-//
-//   Article.primaryKey = 'slug';
-//
-//   var comment = Comment.create();
-//   Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
-//   var article = Ember.run(comment, comment.get, 'article');
-//
-//   equal(article.get('slug'), 'first-article');
-//   ok(article instanceof Article);
-// });
-//
-// test("model can be specified with a string to a resolved path", function() {
-//   var App;
-//   Ember.run(function() {
-//     App = Ember.Application.create({});
-//   });
-//   App.Article  = Ember.Model.extend({
-//       id: Ember.attr(String)
-//     });
-//   App.Comment = Ember.Model.extend({
-//       article: Ember.belongsTo('article', { key: 'article', embedded: true })
-//     });
-//
-//   var comment = App.Comment.create({container: App.__container__});
-//   Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
-//   var article = Ember.run(comment, comment.get, 'article');
-//
-//   equal(article.get('id'), 'a');
-//   ok(article instanceof App.Article);
-//   Ember.run(App, 'destroy');
-// });
-//
-// test("non embedded belongsTo should get a record by its id", function() {
+QUnit.module("Ember.belongsTo");
+
+QUnit.test("it exists", function(assert) {
+  assert.ok(Ember.belongsTo);
+});
+
+QUnit.test("is a CP macro", function(assert) {
+  var Article = Ember.Model.extend({
+        slug: Ember.attr(String)
+      }),
+      cp = Ember.belongsTo(Article, { key: 'article', embedded: true }),
+      Comment = Ember.Model.extend({
+        article: cp
+      });
+
+  assert.ok(cp instanceof Ember.ComputedProperty);
+});
+
+QUnit.test("using it in a model definition", function(assert) {
+  var Article = Ember.Model.extend({
+        slug: Ember.attr(String)
+      }),
+      Comment = Ember.Model.extend({
+        article: Ember.belongsTo(Article, { key: 'article', embedded: true })
+      });
+
+  Article.primaryKey = 'slug';
+
+  var comment = Comment.create();
+  Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
+  var article = Ember.run(comment, comment.get, 'article');
+
+  assert.equal(article.get('slug'), 'first-article');
+  assert.ok(article instanceof Article);
+});
+
+QUnit.test("model can be specified with a string instead of a class", function(assert) {
+  var Article = Ember.ArticleModel = Ember.Model.extend({
+        slug: Ember.attr(String)
+      }),
+      Comment = Ember.Model.extend({
+        article: Ember.belongsTo('Ember.ArticleModel', { key: 'article', embedded: true })
+      });
+
+  Article.primaryKey = 'slug';
+
+  var comment = Comment.create();
+  Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
+  var article = Ember.run(comment, comment.get, 'article');
+
+  assert.equal(article.get('slug'), 'first-article');
+  assert.ok(article instanceof Article);
+});
+
+QUnit.test("model can be specified with a string to a resolved path", function(assert) {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+    App.register('store:main', Ember.Model.Store);
+  });
+  App.Article  = Ember.Model.extend({
+      id: Ember.attr(String)
+    });
+  App.Comment = Ember.Model.extend({
+      article: Ember.belongsTo('article', { key: 'article', embedded: true })
+    });
+
+  var store = App.__container__.lookup('store:main'); //TODO: GJ: use public API
+  var comment = store.createRecord('comment', {});
+
+  Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
+  var article = Ember.run(comment, comment.get, 'article');
+
+  assert.equal(article.get('id'), 'a');
+  assert.ok(article instanceof App.Article);
+  Ember.run(App, 'destroy');
+});
+
+// QUnit.test("non embedded belongsTo should get a record by its id", function(assert) {
 //   var Article = Ember.Model.extend({
 //         slug: Ember.attr(String)
 //       }),
@@ -97,7 +100,7 @@
 //   });
 // });
 //
-// test("relationship should be refreshed when data changes", function() {
+// QUnit.test("relationship should be refreshed when data changes", function(assert) {
 //   var Article = Ember.Model.extend({
 //         slug: Ember.attr(String)
 //       }),
@@ -125,7 +128,7 @@
 //   });
 // });
 //
-// test("when fetching an association getBelongsTo is called", function() {
+// QUnit.test("when fetching an association getBelongsTo is called", function(assert) {
 //   expect(4);
 //
 //   var Article = Ember.Model.extend({
@@ -151,7 +154,7 @@
 //   equal(comment.get('article'), 'foobar', "value returned from getBelongsTo should be returned as an association");
 // });
 //
-// test("toJSON uses the given relationship key in belongsTo", function() {
+// QUnit.test("toJSON uses the given relationship key in belongsTo", function(assert) {
 //   expect(1);
 //
 //   var Article = Ember.Model.extend({
@@ -173,7 +176,7 @@
 //   deepEqual(comment.toJSON(), { article_id: 2 }, "belongsTo id should be serialized only under the given key");
 // });
 //
-// test("un-embedded belongsTo CP should handle set", function() {
+// QUnit.test("un-embedded belongsTo CP should handle set", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -203,7 +206,7 @@
 //
 // });
 //
-// test("embedded belongsTo CP should handle set", function() {
+// QUnit.test("embedded belongsTo CP should handle set", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -233,7 +236,7 @@
 //
 // });
 //
-// test("must be set with value of same type", function() {
+// QUnit.test("must be set with value of same type", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -261,7 +264,7 @@
 //     /Attempted to set property of type/);
 // });
 //
-// test("relationship type cannot be empty", function() {
+// QUnit.test("relationship type cannot be empty", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -287,7 +290,7 @@
 //     /Type cannot be empty/);
 // });
 //
-// test("should be able to set embedded relationship to null", function() {
+// QUnit.test("should be able to set embedded relationship to null", function(assert) {
 //   expect(2);
 //
 //   var Article = Ember.Model.extend({
@@ -308,7 +311,7 @@
 //   ok(comment.save());
 // });
 //
-// test("should be able to set nonembedded relationship to null", function() {
+// QUnit.test("should be able to set nonembedded relationship to null", function(assert) {
 //   expect(2);
 //
 //   var Author = Ember.Model.extend({
@@ -338,7 +341,7 @@
 //   deepEqual(post.toJSON(), {id: 1, author_id: undefined});
 // });
 //
-// test("materializing the relationship should should not dirty the record", function() {
+// QUnit.test("materializing the relationship should should not dirty the record", function(assert) {
 //   expect(2);
 //
 //   var Author = Ember.Model.extend({
@@ -359,7 +362,7 @@
 //   ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
 // });
 //
-// test("setting relationship should make parent dirty", function() {
+// QUnit.test("setting relationship should make parent dirty", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -389,7 +392,7 @@
 //   ok(post.get('isDirty'));
 // });
 //
-// test("setting existing nonembedded relationship should make parent dirty", function() {
+// QUnit.test("setting existing nonembedded relationship should make parent dirty", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -421,7 +424,7 @@
 //   ok(post.get('isDirty'));
 // });
 //
-// test("setting existing nonembedded relationship to NULL should make parent dirty", function() {
+// QUnit.test("setting existing nonembedded relationship to NULL should make parent dirty", function(assert) {
 //   expect(1);
 //
 //   var Author = Ember.Model.extend({
@@ -453,7 +456,7 @@
 //   ok(post.get('isDirty'));
 // });
 //
-// test("relationships should be seralized when specified with string", function() {
+// QUnit.test("relationships should be seralized when specified with string", function(assert) {
 //   expect(1);
 //
 //   Ember.Author = Ember.Model.extend({
@@ -481,7 +484,7 @@
 // });
 //
 //
-// test("belongsTo from an embedded source is able to materialize without having to re-find", function() {
+// QUnit.test("belongsTo from an embedded source is able to materialize without having to re-find", function(assert) {
 //
 //
 //   var Company = Ember.Company = Ember.Model.extend({
@@ -528,7 +531,7 @@
 // });
 //
 //
-// test("unloaded records are removed from reference cache", function() {
+// QUnit.test("unloaded records are removed from reference cache", function(assert) {
 //
 //
 //   var Company = Ember.Company = Ember.Model.extend({
@@ -575,7 +578,7 @@
 //   equal(reloadedProject1.get('title'), 'project one new title');
 // });
 //
-// test("unloaded records are removed from hasMany cache", function() {
+// QUnit.test("unloaded records are removed from hasMany cache", function(assert) {
 //   var Company = Ember.Company = Ember.Model.extend({
 //      id: Ember.attr('string'),
 //      title: Ember.attr('string'),
@@ -618,7 +621,7 @@
 //   ok(company.get('projects.isDirty'), 'remains dirty');
 // });
 //
-// test("belongsTo records created are available from reference cache", function() {
+// QUnit.test("belongsTo records created are available from reference cache", function(assert) {
 //
 //
 //   var Company = Ember.Company = Ember.Model.extend({
@@ -656,7 +659,7 @@
 //   equal(company, project.get('company'));
 // });
 //
-// test("embedded belongsTo with undefined value", function() {
+// QUnit.test("embedded belongsTo with undefined value", function(assert) {
 //   expect(1);
 //   var json = {
 //     id: 1,
@@ -680,7 +683,7 @@
 //   equal(post.get('author'), null);
 // });
 //
-// test("key defaults to model's property key", function() {
+// QUnit.test("key defaults to model's property key", function() {
 //   expect(1);
 //
 //   var Article = Ember.Model.extend({
@@ -701,7 +704,7 @@
 //   deepEqual(comment.toJSON(), { article: 2 });
 // });
 //
-// test("non embedded belongsTo should return a record with a container", function() {
+// QUnit.test("non embedded belongsTo should return a record with a container", function(assert) {
 //   var App;
 //   Ember.run(function() {
 //     App = Ember.Application.create({});
