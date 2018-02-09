@@ -214,12 +214,13 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     } else {
       record = klass.create({ _reference: reference });
       reference.record = record;
+      Ember.setOwner(record, owner);
+
       if (attrs) {
         record.load(attrs[primaryKey], attrs);
       }
     }
 
-    Ember.setOwner(record, owner);
     return record;
   },
 

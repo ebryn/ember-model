@@ -14,9 +14,6 @@ QUnit.module("Ember.Model.Store", {
     });
     owner.__container__ = container;
 
-    store = Ember.Model.Store.create();
-    Ember.setOwner(store, container);
-
     TestModel = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr(),
@@ -76,12 +73,14 @@ QUnit.module("Ember.Model.Store", {
     registry.register('model:embedded', EmbeddedModel);
     registry.register('model:uuid', UUIDModel);
     registry.register('store:main', Ember.Model.Store);
+
+    store = container.lookup('store:main');
   }
 });
 
 QUnit.test("store.createRecord(type) returns a record with an owner", function(assert) {
   var record = Ember.run(store, store.createRecord, 'test');
-  assert.equal(Ember.getOwner(record), container);
+  assert.equal(Ember.getOwner(record), owner);
 });
 
 QUnit.test("store.createRecord(type) with properties", function(assert) {
@@ -97,7 +96,7 @@ QUnit.test("model.load(hashes) returns a existing record with correct owner", fu
       record = Ember.run(store, store.createRecord, 'uuid');
 
   assert.equal(model, UUIDModel);
-  assert.equal(Ember.getOwner(record), container);
+  assert.equal(Ember.getOwner(record), owner);
 
   assert.ok(record.set('token', 'c'));
 
@@ -109,14 +108,14 @@ QUnit.test("model.load(hashes) returns a existing record with correct owner", fu
   assert.equal(record.get('id'), 1234);
   assert.equal(record.get('token'), 'd');
   assert.equal(record.get('name'), 'Andrew');
-  assert.equal(Ember.getOwner(record), container);
+  assert.equal(Ember.getOwner(record), owner);
 
-  model.load({id: 1234, name: 'Peter'}, container);
+  model.load({id: 1234, name: 'Peter'}, owner);
 
   assert.equal(record.get('id'), 1234);
   assert.equal(record.get('token'), undefined);
   assert.equal(record.get('name'), 'Peter');
-  assert.equal(Ember.getOwner(record), container);
+  assert.equal(Ember.getOwner(record), owner);
 });
 
 QUnit.test("store.find(type) returns a record with hasMany and belongsTo that should all have an owner", function(assert) {
@@ -126,12 +125,12 @@ QUnit.test("store.find(type) returns a record with hasMany and belongsTo that sh
   var promise = Ember.run(store, store.find, 'test', 'a');
 
   promise.then(function(record) {
-    assert.equal(Ember.getOwner(record), container);
+    assert.equal(Ember.getOwner(record), owner);
 
-    assert.equal(Ember.getOwner(record.get('embeddedBelongsTo')), container);
+    assert.equal(Ember.getOwner(record.get('embeddedBelongsTo')), owner);
 
     record.get('embeddedHasmany').forEach(function(embeddedBelongsToRecord) {
-      assert.equal(Ember.getOwner(embeddedBelongsToRecord), container);
+      assert.equal(Ember.getOwner(embeddedBelongsToRecord), owner);
     });
 
     done();
@@ -145,7 +144,7 @@ QUnit.test("store.find(type, id) returns a promise and loads an owner for the re
   var promise = Ember.run(store, store.find, 'test', 'a');
   promise.then(function(record) {
     assert.ok(record.get('isLoaded'));
-    assert.equal(Ember.getOwner(record), container);
+    assert.equal(Ember.getOwner(record), owner);
 
     done();
   });
@@ -161,7 +160,7 @@ QUnit.test("store.find(type) returns a promise and loads an owner for each recor
 
     records.forEach(function(record){
       assert.ok(record.get('isLoaded'));
-      assert.equal(Ember.getOwner(record), container);
+      assert.equal(Ember.getOwner(record), owner);
     });
 
     done();
@@ -169,15 +168,15 @@ QUnit.test("store.find(type) returns a promise and loads an owner for each recor
 });
 
 QUnit.test("store.find(type, Array) returns a promise and loads an owner for each record", function(assert) {
-  assert.expect(3); //TODO: 5?
+  assert.expect(5);
   var done = assert.async();
 
   var promise = Ember.run(store, store.find, 'test', ['a','b']);
   promise.then(function(records) {
     assert.equal(records.content.length, 2);
     records.forEach(function(record){
-      // assert.ok(record.get('isLoaded')); //TODO: GJ: should these be loaded?
-      assert.equal(Ember.getOwner(record), container);
+      assert.ok(record.get('isLoaded'));
+      assert.equal(Ember.getOwner(record), owner);
     });
     done();
   });
