@@ -111,58 +111,58 @@ QUnit.test("model.load(hashes) returns a existing record with correct container"
 QUnit.test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function(assert) {
   assert.expect(4);
   var promise = Ember.run(store, store.find, 'test', 'a');
+  var done = assert.async();
   promise.then(function(record) {
-    done();
     assert.ok(record.get('container'));
     assert.ok(record.get('embeddedBelongsTo').get('container'));
 
     record.get('embeddedHasmany').forEach(function(embeddedBelongsToRecord) {
       assert.ok(embeddedBelongsToRecord.get('container'));
     });
+    done();
   });
-  var done = assert.async();
 });
 
 QUnit.test("store.find(type, id) returns a promise and loads a container for the record", function(assert) {
   assert.expect(2);
 
   var promise = Ember.run(store, store.find, 'test','a');
+  var done = assert.async();
   promise.then(function(record) {
-    done();
     assert.ok(record.get('isLoaded'));
     assert.ok(record.get('container'));
+    done();
   });
-  var done = assert.async();
 });
 
 QUnit.test("store.find(type) returns a promise and loads a container for each record", function(assert) {
   assert.expect(5);
 
   var promise = Ember.run(store, store.find, 'test');
+  var done = assert.async();
   promise.then(function(records) {
-    done();
     assert.equal(records.content.length, 2);
     records.forEach(function(record){
       assert.ok(record.get('isLoaded'));
       assert.ok(record.get('container'));
     });
+    done();
   });
-  var done = assert.async();
 });
 
 QUnit.test("store.find(type, Array) returns a promise and loads a container for each record", function(assert) {
   assert.expect(5);
 
   var promise = Ember.run(store, store.find, 'test', ['a','b']);
+  var done = assert.async();
   promise.then(function(records) {
-    done();
     assert.equal(records.content.length, 2);
     records.forEach(function(record){
       assert.ok(record.get('isLoaded'));
       assert.ok(record.get('container'));
     });
+    done();
   });
-  var done = assert.async();
 });
 
 QUnit.test("store.adapterFor(type) returns klass.adapter first", function(assert) {
@@ -204,15 +204,14 @@ QUnit.test("store.find(type) records use application adapter if no klass.adapter
   registry.register('adapter:application', Ember.FixtureAdapter);
 
   var promise = Ember.run(store, store.find, 'test','a');
+  var done = assert.async();
 
   promise.then(function(record) {
-    done();
     assert.ok(record.get('constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for record is application adapter');
     assert.ok(record.get('embeddedBelongsTo.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for belongsTo record is application adapter');
     assert.ok(record.get('embeddedHasmany.firstObject.constructor.adapter') instanceof Ember.FixtureAdapter, 'Adapter for hasMany record is application adapter');
+    done();
   });
-
-  var done = assert.async();
 });
 
 QUnit.test("Registering a custom store on application works", function(assert) {

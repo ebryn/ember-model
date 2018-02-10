@@ -31,9 +31,9 @@ QUnit.test(".find([]) delegates to the adapter's findMany method", function(asse
 
   var done = assert.async();
   records.one('didLoad', function() {
-    done();
     assert.equal(records.get('length'), 3, "RecordArray#length is 3 after resolved");
     assert.ok(records.get('isLoaded'), "RecordArray is loaded after resolved");
+    done();
   });
 });
 

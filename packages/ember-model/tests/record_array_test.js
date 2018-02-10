@@ -41,8 +41,8 @@ QUnit.test("when called with findMany, should contain an array of the IDs contai
   var done = assert.async();
 
   records.one('didLoad', function() {
-    done();
     assert.equal(records.get('length'), 3);
+    done();
   });
 });
 

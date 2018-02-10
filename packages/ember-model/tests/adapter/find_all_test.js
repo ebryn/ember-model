@@ -18,12 +18,12 @@ QUnit.test("Model.find() delegates to Adapter#findAll", function(assert) {
   var done = assert.async();
 
   records.on('didLoad', function() {
-    done();
     // equal(records.get('firstObject.id'), 1); // TODO: built-in CP for primaryKey
     assert.equal(records.get('firstObject.name'), 'Erik');
     assert.ok(records.get('firstObject.isLoaded'));
     assert.ok(records.get('isLoaded'));
     assert.ok(!records.get('isLoading'));
+    done();
   });
 });
 

@@ -20,12 +20,11 @@ QUnit.test("fetch loads the full FIXTURES payload when id isn't specified", func
     
   FixtureModel.FIXTURES = data;
 
-  FixtureModel.fetch().then(function(records) {
-    done();
-    assert.equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
-  });
-
   var done = assert.async();
+  FixtureModel.fetch().then(function(records) {
+    assert.equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
+    done();
+  });
 });
 
 QUnit.test("fetch loads the desired FIXTURE payload when the id (int) is specified", function(assert) {
@@ -38,12 +37,11 @@ QUnit.test("fetch loads the desired FIXTURE payload when the id (int) is specifi
 
   FixtureModel.FIXTURES = data;
 
-  Ember.run(FixtureModel, FixtureModel.fetch, [1]).then(function(records) {
-    done();
-    assert.equal(records.get('length'), 1, "The proper number of items should have been loaded.");
-  });
-
   var done = assert.async();
+  Ember.run(FixtureModel, FixtureModel.fetch, [1]).then(function(records) {
+    assert.equal(records.get('length'), 1, "The proper number of items should have been loaded.");
+    done();
+  });
 });
 
 QUnit.test("fetch loads the desired FIXTURE payload when the id (string) is specified", function(assert) {
@@ -56,12 +54,11 @@ QUnit.test("fetch loads the desired FIXTURE payload when the id (string) is spec
 
   FixtureModel.FIXTURES = data;
 
-  Ember.run(FixtureModel, FixtureModel.fetch, ["1"]).then(function(records) {
-    done();
-    assert.equal(records.get('length'), 1, "The proper number of items should have been loaded.");
-  });
-
   var done = assert.async();
+  Ember.run(FixtureModel, FixtureModel.fetch, ["1"]).then(function(records) {
+    assert.equal(records.get('length'), 1, "The proper number of items should have been loaded.");
+    done();
+  });
 });
 
 QUnit.test("createRecord", function(assert) {
@@ -75,11 +72,11 @@ QUnit.test("createRecord", function(assert) {
   assert.ok(!record.get('id'), "Record #id should be undefined");
 
   // Ember.run(record, record.save);
-  Ember.run(record, record.save).then(function(record) {
-    done();
-    assert.equal(record.get('id'), "fixture-0", "Value to Record #id should be assigned");
-  });
   var done = assert.async();
+  Ember.run(record, record.save).then(function(record) {
+    assert.equal(record.get('id'), "fixture-0", "Value to Record #id should be assigned");
+    done();
+  });
 });
 
 QUnit.test("createRecord - handle the case when the `rootKey` property is set", function(assert) {
@@ -89,13 +86,13 @@ QUnit.test("createRecord - handle the case when the `rootKey` property is set", 
   FixtureModel.FIXTURES = [];
 
   var record = FixtureModel.create({name: "Erik"});
+  var done = assert.async();
 
   Ember.run(record, record.save).then(function () {
-    done();
     var record = FixtureModel.find("fixture-0");
     assert.deepEqual(record.get("_data"), {id: "fixture-0", name: "Erik"}, "Data is set correctly");
+    done();
   });
-  var done = assert.async();
 });
 
 QUnit.test("_generatePrimaryKey", function(assert) {

@@ -116,8 +116,8 @@ QUnit.test("after saving, the model shouldn't be dirty", function(assert) {
   var done = assert.async();
   Ember.run(function() {
     obj.save().then(function() {
-      done();
       assert.ok(!obj.get('isDirty'), "The record is no longer dirty");
+      done();
     });
   });
 });
@@ -139,8 +139,8 @@ QUnit.test("after reloading, the model shouldn't be dirty", function(assert) {
   var done = assert.async();
   Ember.run(function() {
     record.reload().then(function() {
-      done();
       assert.ok(!record.get('isDirty'), "The record is no longer dirty");
+      done();
     });
   });
 });
@@ -283,7 +283,6 @@ QUnit.test("manipulating object presence in a hasMany should dirty the parent", 
   var done = assert.async();
   Ember.run(function() {
     post.save().then(function() {
-      done();
       assert.ok(!post.get('isDirty'), "The post is clean after being saved");
 
       comments.removeObject(newComment);
@@ -291,6 +290,7 @@ QUnit.test("manipulating object presence in a hasMany should dirty the parent", 
 
       comments.pushObject(newComment);
       assert.ok(!post.get('isDirty'), "After reverting to the saved state, the post should be clean again");
+      done();
     });
   });
 });
@@ -466,7 +466,6 @@ QUnit.test("isDirty on embedded hasMany records should be false after parent is 
 
   var done = assert.async();
   post.save().then(function() {
-    done();
     assert.equal(post.get('isDirty'), false, "parent should not be dirty");
     assert.equal(post.get('comments.firstObject.isDirty'), false, 'child should not be dirty');
     assert.equal(post.get('comments.firstObject.body'), 'New body', 'updated child property is saved');
@@ -474,6 +473,7 @@ QUnit.test("isDirty on embedded hasMany records should be false after parent is 
     post.set('comments.firstObject.body', 'The body');
     assert.equal(post.get('isDirty'), true, 'parent should be dirty again');
     assert.equal(post.get('comments.firstObject.isDirty'), true, 'child should be dirty again');
+    done();
   });
 });
 
@@ -566,7 +566,6 @@ QUnit.test("save parent of embedded belongsTo", function(assert) {
   var done = assert.async();
   Ember.run(function() {
     post.save().then(function() {
-      done();
       assert.equal(post.get('author.isDirty'), false, 'the author should be clean after being saved');
       assert.equal(post.get('isDirty'), false, 'the post should be clean after being saved');
 
@@ -577,6 +576,7 @@ QUnit.test("save parent of embedded belongsTo", function(assert) {
       post.set('author.name', 'Cory Loken'); // special case: setting back to its original value
       assert.equal(post.get('author.isDirty'), true, 'the author should be dirty because it was saved as "Billy Bob"');
       assert.equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+      done();
     });
   });
 });
@@ -611,7 +611,6 @@ QUnit.test("save parent of embedded belongsTo with different named key", functio
   var done = assert.async();
   Ember.run(function() {
     post.save().then(function() {
-      done();
       assert.equal(post.get('author.isDirty'), false, 'the author should be clean after being saved');
       assert.equal(post.get('isDirty'), false, 'the post should be clean after being saved');
 
@@ -622,6 +621,7 @@ QUnit.test("save parent of embedded belongsTo with different named key", functio
       post.set('author.name', 'Cory Loken'); // special case: setting back to its original value
       assert.equal(post.get('author.isDirty'), true, 'the author should be dirty because it was saved as "Billy Bob"');
       assert.equal(post.get('isDirty'), true, 'the post should be dirty because the author is dirty');
+      done();
     });
   });
 });
@@ -658,7 +658,6 @@ QUnit.test("set embedded belongsTo", function(assert) {
   var done = assert.async();
   Ember.run(function() {
     post.save().then(function() {
-      done();
       assert.equal(post.get('author.isDirty'), false, 'author should be clean after being saved');
       assert.equal(post.get('isDirty'), false, 'parent should be clean after being saved');
 
@@ -669,6 +668,7 @@ QUnit.test("set embedded belongsTo", function(assert) {
       post.set('author', firstAuthor);
       assert.equal(post.get('author.isDirty'), false, 'the author should be clean because it has not been changed');
       assert.equal(post.get('isDirty'), true, 'the post should be dirty because the author was changed');
+      done();
     });
   });
 });

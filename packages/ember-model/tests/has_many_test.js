@@ -305,7 +305,7 @@ QUnit.test("relationship type cannot be empty", function(assert) {
   var comments = [comment];
   Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
 
-  expectAssertion(function() {
+  expectAssertion(assert, function() {
       article.get('comments');
   },
   /Type cannot be empty/);

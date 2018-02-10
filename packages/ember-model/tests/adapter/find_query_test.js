@@ -23,7 +23,7 @@ QUnit.test(".find({}) delegates to the adapter's findQuery method", function(ass
 
   var done = assert.async();
   records.one('didLoad', function() {
-    done();
     assert.ok(records.get('isLoaded'), "RecordArray is loaded after resolved");
+    done();
   });
 });

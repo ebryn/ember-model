@@ -59,9 +59,9 @@ QUnit.test("derp", function(assert) {
   Ember.run(function() {
     var done = assert.async();
     comments.save().then(function(record) {
-      done();
       assert.ok(!newComment.get('isDirty'), "New comment is not dirty");
       assert.equal(newComment.get('id'), 4, "New comment has an ID");
+      done();
     });
   });
 });
@@ -102,11 +102,11 @@ QUnit.test("new records should remain after parent is saved", function(assert) {
   });
   article.get('comments').addObject(comment);
   var promise = Ember.run(article, article.save);
+  var done = assert.async();
   promise.then(function(record) {
-    done();
     assert.ok(record.get('comments.firstObject') === comment, "Comment is the same object");
     assert.equal(record.get('comments.length'), 1, "Article should still have one comment after save");
     assert.equal(record.get('comments.firstObject.text'), comment.get('text'), 'Comment is the same');
+    done();
   });
-  var done = assert.async();
 });

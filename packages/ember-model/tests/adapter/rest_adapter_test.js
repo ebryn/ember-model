@@ -784,11 +784,11 @@ QUnit.test("find() resolves with record", function(assert) {
     return ajaxSuccess(data);
   };
 
-  adapter.find(record, 1).then(function(resolve) {
-    done();
-    assert.ok(resolve === record, "find() resolved with record");
-  });
   var done = assert.async();
+  adapter.find(record, 1).then(function(resolve) {
+    assert.ok(resolve === record, "find() resolved with record");
+    done();
+  });
 });
 
 QUnit.test("findAll() resolves with records", function(assert) {
@@ -805,11 +805,11 @@ QUnit.test("findAll() resolves with records", function(assert) {
     return ajaxSuccess(data);
   };
 
-  adapter.findAll(RESTModel, records).then(function(resolve) {
-    done();
-    assert.ok(resolve === records, "findAll() resolved with records");
-  });
   var done = assert.async();
+  adapter.findAll(RESTModel, records).then(function(resolve) {
+    assert.ok(resolve === records, "findAll() resolved with records");
+    done();
+  });
 });
 
 QUnit.test("findQuery() resolves with records", function(assert) {
@@ -826,11 +826,11 @@ QUnit.test("findQuery() resolves with records", function(assert) {
     return ajaxSuccess(data);
   };
 
-  adapter.findQuery(RESTModel, records, {}).then(function(resolve) {
-    done();
-    assert.ok(resolve === records, "findQuery() resolved with records");
-  });
   var done = assert.async();
+  adapter.findQuery(RESTModel, records, {}).then(function(resolve) {
+    assert.ok(resolve === records, "findQuery() resolved with records");
+    done();
+  });
 });
 
 QUnit.test("createRecord() resolves with record", function(assert) {
@@ -843,11 +843,11 @@ QUnit.test("createRecord() resolves with record", function(assert) {
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
   };
-  adapter.createRecord(record).then(function(resolve) {
-    done();
-    assert.ok(resolve === record, "createRecord() resolved with record");
-  });
   var done = assert.async();
+  adapter.createRecord(record).then(function(resolve) {
+    assert.ok(resolve === record, "createRecord() resolved with record");
+    done();
+  });
 });
 
 QUnit.test("saveRecord() resolves with record", function(assert) {
@@ -860,11 +860,11 @@ QUnit.test("saveRecord() resolves with record", function(assert) {
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
   };
-  adapter.saveRecord(record).then(function(resolve) {
-    done();
-    assert.ok(resolve === record, "saveRecord() resolved with record");
-  });
   var done = assert.async();
+  adapter.saveRecord(record).then(function(resolve) {
+    assert.ok(resolve === record, "saveRecord() resolved with record");
+    done();
+  });
 });
 
 QUnit.test("buildURL() creates url from model's url, id, and url suffix", function(assert) {

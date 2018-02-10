@@ -91,9 +91,9 @@ QUnit.test("non embedded belongsTo should get a record by its id", function(asse
 
   var done = assert.async();
   article.one('didLoad', function() {
-    done();
     assert.equal(article.get('slug'), 'first-article');
     assert.ok(article instanceof Article);
+    done();
   });
 });
 
@@ -119,9 +119,9 @@ QUnit.test("relationship should be refreshed when data changes", function(assert
 
   var done = assert.async();
   article.one('didLoad', function() {
-    done();
     assert.equal(article.get('slug'), 'first-article');
     assert.ok(article instanceof Article);
+    done();
   });
 });
 
@@ -255,7 +255,7 @@ QUnit.test("must be set with value of same type", function(assert) {
     postTwo.load(2, {id: 2, author_id: null});
   });
 
-  expectAssertion(function() {
+  expectAssertion(assert, function() {
       post.set('author', postTwo);
     },
     /Attempted to set property of type/);
@@ -281,7 +281,7 @@ QUnit.test("relationship type cannot be empty", function(assert) {
     post.load(1, {id: 1, author_id: author});
   });
 
-  expectAssertion(function() {
+  expectAssertion(assert, function() {
       post.set('author', null);
     },
     /Type cannot be empty/);

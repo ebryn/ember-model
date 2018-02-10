@@ -38,9 +38,8 @@ QUnit.test("must be created with a filterProperties property", function(assert) 
 QUnit.test("with a noop filter will return all the loaded records", function(assert) {
   assert.expect(1);
 
+  var done = assert.async();
   Model.fetch().then(function() {
-    done();
-
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
       filterFunction: Ember.K,
@@ -48,17 +47,15 @@ QUnit.test("with a noop filter will return all the loaded records", function(ass
     });
 
     assert.equal(recordArray.get('length'), 3, "There are 3 records");
+    done();
   });
-
-  var done = assert.async();
 });
 
 QUnit.test("with a filter will return only the relevant loaded records", function(assert) {
   assert.expect(2);
 
+  var done = assert.async();
   Model.fetch().then(function() {
-    done();
-
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
       filterFunction: function(record) {
@@ -69,16 +66,15 @@ QUnit.test("with a filter will return only the relevant loaded records", functio
 
     assert.equal(recordArray.get('length'), 1, "There is 1 record");
     assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
+    done();
   });
-
-  var done = assert.async();
 });
 
 QUnit.test("loading a record that doesn't match the filter after creating a FilteredRecordArray shouldn't change the content", function(assert) {
   assert.expect(2);
 
+  var done = assert.async();
   Model.fetch().then(function() {
-    done();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
       filterFunction: function(record) {
@@ -88,21 +84,19 @@ QUnit.test("loading a record that doesn't match the filter after creating a Filt
     });
 
     Model.create({id: 3, name: 'Kris'}).save().then(function(record) {
-      done();
       assert.equal(recordArray.get('length'), 1, "There is still 1 record");
       assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
+      done();
     });
-    var done = assert.async();
   });
 
-  var done = assert.async();
 });
 
 QUnit.test("loading a record that matches the filter after creating a FilteredRecordArray should update the content of it", function(assert) {
   assert.expect(3);
 
+  var done = assert.async();
   Model.fetch().then(function() {
-    done();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
       filterFunction: function(record) {
@@ -112,21 +106,18 @@ QUnit.test("loading a record that matches the filter after creating a FilteredRe
     });
 
     Model.create({id: 3, name: 'Kris'}).save().then(function(record) {
-      done();
       assert.equal(recordArray.get('length'), 2, "There are 2 records");
       assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
       assert.equal(recordArray.get('lastObject.name'), 'Kris', "The record data matches");
+      done();
     });
-    var done = assert.async();
   });
-
-  var done = assert.async();
 });
 
 QUnit.test("changing a property that matches the filter should update the FilteredRecordArray to include it", function(assert) {
   assert.expect(5);
+  var done = assert.async();
   Model.fetch().then(function() {
-    done();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
       filterFunction: function(record) {
@@ -139,24 +130,21 @@ QUnit.test("changing a property that matches the filter should update the Filter
     assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
 
     Model.fetch(2).then(function(record) {
-      done();
       record.set('name', 'Estefan');
 
       assert.equal(recordArray.get('length'), 2, "There are 2 records after changing the name");
       assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
       assert.equal(recordArray.get('lastObject.name'), 'Estefan', "The record data matches");
+      done();
     });
-    var done = assert.async();
   });
-
-  var done = assert.async();
 });
 
 QUnit.test("adding a new record and changing a property that matches the filter should update the FilteredRecordArray to include it", function(assert) {
   assert.expect(8);
 
+  var done = assert.async();
   Model.fetch().then(function() {
-    done();
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
       filterFunction: function(record) {
@@ -169,7 +157,6 @@ QUnit.test("adding a new record and changing a property that matches the filter 
     assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
 
     Model.create({id: 3, name: 'Kris'}).save().then(function(record) {
-      done();
       record.set('name', 'Ekris');
 
       assert.equal(recordArray.get('length'), 2, "There are 2 records after changing the name");
@@ -181,9 +168,7 @@ QUnit.test("adding a new record and changing a property that matches the filter 
       assert.equal(recordArray.get('length'), 2, "There are still 2 records after changing the name again");
       assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data still matches");
       assert.equal(recordArray.get('lastObject.name'), 'Eskil', "The record data still matches");
+      done();
     });
-    var done = assert.async();
   });
-
-  var done = assert.async();
 });

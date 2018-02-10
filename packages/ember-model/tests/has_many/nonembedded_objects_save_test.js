@@ -41,13 +41,13 @@ QUnit.test("new records should remain after parent is saved", function(assert) {
   article.get('comments').addObject(comment);
 
   var promise = Ember.run(article, article.save);
+  var done = assert.async();
   promise.then(function(record) {
-    done();
     assert.ok(record.get('comments.firstObject') === comment, "Comment is the same object");
     assert.equal(record.get('comments.length'), 1, "Article should still have one comment after save");
     assert.equal(record.get('comments.firstObject.text'), comment.get('text'), 'Comment is the same');
+    done();
   });
-  var done = assert.async();
 });
 
 QUnit.test("saving child objects", function(assert) {
@@ -85,12 +85,12 @@ QUnit.test("saving child objects", function(assert) {
   comments.addObject(comment);
 
   var promise = Ember.run(comments, comments.save);
+  var done = assert.async();
   promise.then(function(records) {
-    done();
     var comment = records.get('firstObject');
     assert.equal(comment.get("id"), 2, "Data from the response is loaded");
+    done();
   }).catch(function(error) {
     console.error(error);
   });
-  var done = assert.async();
 });
