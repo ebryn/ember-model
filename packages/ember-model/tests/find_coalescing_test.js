@@ -1,18 +1,18 @@
-module("find coalescing");
+QUnit.module("find coalescing");
 
-test("multiple calls to Model#find within the same run loop coalesce into a findMany call", function() {
-  expect(2);
+QUnit.test("multiple calls to Model#find within the same run loop coalesce into a findMany call", function(assert) {
+  assert.expect(2);
 
   var Model = Ember.Model.extend();
 
   Model.adapter = {
     find: function() {
-      ok(false, "find was called");
+      assert.ok(false, "find was called");
     },
 
     findMany: function(klass, records, ids) {
-      ok(true, "findMany was called");
-      deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
+      assert.ok(true, "findMany was called");
+      assert.deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
     }
   };
 
@@ -23,8 +23,8 @@ test("multiple calls to Model#find within the same run loop coalesce into a find
   });
 });
 
-test("coalesced findMany call should only include records which aren't loaded in the identity map", function() {
-  expect(2);
+QUnit.test("coalesced findMany call should only include records which aren't loaded in the identity map", function(assert) {
+  assert.expect(2);
 
   var Model = Ember.Model.extend({
     id: Ember.attr()
@@ -32,8 +32,8 @@ test("coalesced findMany call should only include records which aren't loaded in
 
   Model.adapter = {
     findMany: function(klass, records, ids) {
-      ok(true, "findMany was called");
-      deepEqual(ids, [2,3], "The correct ids were passed into findMany");
+      assert.ok(true, "findMany was called");
+      assert.deepEqual(ids, [2,3], "The correct ids were passed into findMany");
     }
   };
 
@@ -46,8 +46,8 @@ test("coalesced findMany call should only include records which aren't loaded in
   });
 });
 
-test("coalesced findMany returns a resolved promise even if all records are loaded from cache", function() {
-  expect(1);
+QUnit.test("coalesced findMany returns a resolved promise even if all records are loaded from cache", function(assert) {
+  assert.expect(1);
 
   var Model = Ember.Model.extend({
     id: Ember.attr()
@@ -55,7 +55,7 @@ test("coalesced findMany returns a resolved promise even if all records are load
 
   Model.adapter = {
     findMany: function(klass, records, ids) {
-      ok(false, "findMany shouldn't be called");
+      assert.ok(false, "findMany shouldn't be called");
     }
   };
 
@@ -71,25 +71,25 @@ test("coalesced findMany returns a resolved promise even if all records are load
 
   Ember.run(function() {
     promise.then(function(records) {
-      equal(records.get("length"), 2);
+      assert.equal(records.get("length"), 2);
     });
   });
 });
 
 
-test("calls to Model#find and Model#findMany within the same run loop coalesce into a single findMany call", function() {
-  expect(2);
+QUnit.test("calls to Model#find and Model#findMany within the same run loop coalesce into a single findMany call", function(assert) {
+  assert.expect(2);
 
   var Model = Ember.Model.extend();
 
   Model.adapter = {
     find: function() {
-      ok(false, "find was called");
+      assert.ok(false, "find was called");
     },
 
     findMany: function(klass, records, ids) {
-      ok(true, "findMany was called");
-      deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
+      assert.ok(true, "findMany was called");
+      assert.deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
     }
   };
 
@@ -99,19 +99,19 @@ test("calls to Model#find and Model#findMany within the same run loop coalesce i
   });
 });
 
-test("should unique IDs", function() {
-  expect(2);
+QUnit.test("should unique IDs", function(assert) {
+  assert.expect(2);
 
   var Model = Ember.Model.extend();
 
   Model.adapter = {
     find: function() {
-      ok(false, "find was called");
+      assert.ok(false, "find was called");
     },
 
     findMany: function(klass, records, ids) {
-      ok(true, "findMany was called");
-      deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
+      assert.ok(true, "findMany was called");
+      assert.deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
       records.load(klass, []);
     }
   };
@@ -124,8 +124,8 @@ test("should unique IDs", function() {
   });
 });
 
-test("should resolve all RecordArrays", function() {
-  expect(2);
+QUnit.test("should resolve all RecordArrays", function(assert) {
+  assert.expect(2);
 
   var Model = Ember.Model.extend();
 
@@ -144,11 +144,11 @@ test("should resolve all RecordArrays", function() {
     promise2 = Model.fetch([1, 2, 3]);
 
     promise1.then(function() {
-      ok(true, "The first RecordArray returned from findMany was loaded");
+      assert.ok(true, "The first RecordArray returned from findMany was loaded");
     });
 
     promise2.then(function() {
-      ok(true, "The second RecordArray returned from findMany was loaded");
+      assert.ok(true, "The second RecordArray returned from findMany was loaded");
     });
   });
 });

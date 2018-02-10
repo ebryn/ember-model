@@ -1,9 +1,9 @@
 var attr = Ember.attr;
 
-module("Ember.HasManyArray - non embedded objects saving");
+QUnit.module("Ember.HasManyArray - non embedded objects saving");
 
-test("new records should remain after parent is saved", function() {
-  expect(3);
+QUnit.test("new records should remain after parent is saved", function(assert) {
+  assert.expect(3);
   var json = {
     id: 1,
     title: 'foo',
@@ -42,16 +42,16 @@ test("new records should remain after parent is saved", function() {
 
   var promise = Ember.run(article, article.save);
   promise.then(function(record) {
-    start();
-    ok(record.get('comments.firstObject') === comment, "Comment is the same object");
-    equal(record.get('comments.length'), 1, "Article should still have one comment after save");
-    equal(record.get('comments.firstObject.text'), comment.get('text'), 'Comment is the same');
+    done();
+    assert.ok(record.get('comments.firstObject') === comment, "Comment is the same object");
+    assert.equal(record.get('comments.length'), 1, "Article should still have one comment after save");
+    assert.equal(record.get('comments.firstObject.text'), comment.get('text'), 'Comment is the same');
   });
-  stop();
+  var done = assert.async();
 });
 
-test("saving child objects", function() {
-  expect(1);
+QUnit.test("saving child objects", function(assert) {
+  assert.expect(1);
 
   var commentJSON = {
     id: 2,
@@ -86,11 +86,11 @@ test("saving child objects", function() {
 
   var promise = Ember.run(comments, comments.save);
   promise.then(function(records) {
-    start();
+    done();
     var comment = records.get('firstObject');
-    equal(comment.get("id"), 2, "Data from the response is loaded");
+    assert.equal(comment.get("id"), 2, "Data from the response is loaded");
   }).catch(function(error) {
     console.error(error);
   });
-  stop();
+  var done = assert.async();
 });

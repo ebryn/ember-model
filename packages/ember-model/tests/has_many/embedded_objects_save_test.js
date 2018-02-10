@@ -1,8 +1,8 @@
 var attr = Ember.attr;
 
-module("Ember.EmbeddedHasManyArray - embedded objects saving");
+QUnit.module("Ember.EmbeddedHasManyArray - embedded objects saving");
 
-test("derp", function() {
+QUnit.test("derp", function(assert) {
   var json = {
     id: 1,
     title: 'foo',
@@ -52,22 +52,22 @@ test("derp", function() {
   var comments = article.get('comments');
   var newComment = Ember.run(comments, comments.create, {text: 'quattro'});
 
-  equal(comments.get('length'), 4);
-  ok(newComment instanceof Comment);
-  deepEqual(Ember.run(comments, comments.mapBy, 'text'), ['uno', 'dos', 'tres', 'quattro']);
+  assert.equal(comments.get('length'), 4);
+  assert.ok(newComment instanceof Comment);
+  assert.deepEqual(Ember.run(comments, comments.mapBy, 'text'), ['uno', 'dos', 'tres', 'quattro']);
 
   Ember.run(function() {
-    stop();
+    var done = assert.async();
     comments.save().then(function(record) {
-      start();
-      ok(!newComment.get('isDirty'), "New comment is not dirty");
-      equal(newComment.get('id'), 4, "New comment has an ID");
+      done();
+      assert.ok(!newComment.get('isDirty'), "New comment is not dirty");
+      assert.equal(newComment.get('id'), 4, "New comment has an ID");
     });
   });
 });
 
-test("new records should remain after parent is saved", function() {
-  expect(3);
+QUnit.test("new records should remain after parent is saved", function(assert) {
+  assert.expect(3);
   var json = {
     id: 1,
     title: 'foo',
@@ -103,10 +103,10 @@ test("new records should remain after parent is saved", function() {
   article.get('comments').addObject(comment);
   var promise = Ember.run(article, article.save);
   promise.then(function(record) {
-    start();
-    ok(record.get('comments.firstObject') === comment, "Comment is the same object");
-    equal(record.get('comments.length'), 1, "Article should still have one comment after save");
-    equal(record.get('comments.firstObject.text'), comment.get('text'), 'Comment is the same');
+    done();
+    assert.ok(record.get('comments.firstObject') === comment, "Comment is the same object");
+    assert.equal(record.get('comments.length'), 1, "Article should still have one comment after save");
+    assert.equal(record.get('comments.firstObject.text'), comment.get('text'), 'Comment is the same');
   });
-  stop();
+  var done = assert.async();
 });

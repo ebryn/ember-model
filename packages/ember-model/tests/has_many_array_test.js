@@ -1,5 +1,5 @@
-module("Ember.HasManyArray");
+QUnit.module("Ember.HasManyArray");
 
-test("it exists", function() {
-  ok(Ember.HasManyArray);
+QUnit.test("it exists", function(assert) {
+  assert.ok(Ember.HasManyArray);
 });

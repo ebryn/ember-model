@@ -6,7 +6,7 @@
     "ember": "2.8.3"
   },
   "devDependencies": {
-    "qunit": "~1.11"
+    "qunit": "~2.5"
   },
   "ignore": [
     "**/.*",

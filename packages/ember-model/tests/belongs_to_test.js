@@ -1,10 +1,10 @@
-module("Ember.belongsTo");
+QUnit.module("Ember.belongsTo");
 
-test("it exists", function() {
-  ok(Ember.belongsTo);
+QUnit.test("it exists", function(assert) {
+  assert.ok(Ember.belongsTo);
 });
 
-test("is a CP macro", function() {
+QUnit.test("is a CP macro", function(assert) {
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -13,10 +13,10 @@ test("is a CP macro", function() {
         article: cp
       });
 
-  ok(cp instanceof Ember.ComputedProperty);
+  assert.ok(cp instanceof Ember.ComputedProperty);
 });
 
-test("using it in a model definition", function() {
+QUnit.test("using it in a model definition", function(assert) {
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -30,11 +30,11 @@ test("using it in a model definition", function() {
   Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
   var article = Ember.run(comment, comment.get, 'article');
 
-  equal(article.get('slug'), 'first-article');
-  ok(article instanceof Article);
+  assert.equal(article.get('slug'), 'first-article');
+  assert.ok(article instanceof Article);
 });
 
-test("model can be specified with a string instead of a class", function() {
+QUnit.test("model can be specified with a string instead of a class", function(assert) {
   var Article = Ember.ArticleModel = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -48,11 +48,11 @@ test("model can be specified with a string instead of a class", function() {
   Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
   var article = Ember.run(comment, comment.get, 'article');
 
-  equal(article.get('slug'), 'first-article');
-  ok(article instanceof Article);
+  assert.equal(article.get('slug'), 'first-article');
+  assert.ok(article instanceof Article);
 });
 
-test("model can be specified with a string to a resolved path", function() {
+QUnit.test("model can be specified with a string to a resolved path", function(assert) {
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
@@ -68,12 +68,12 @@ test("model can be specified with a string to a resolved path", function() {
   Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
   var article = Ember.run(comment, comment.get, 'article');
 
-  equal(article.get('id'), 'a');
-  ok(article instanceof App.Article);
+  assert.equal(article.get('id'), 'a');
+  assert.ok(article instanceof App.Article);
   Ember.run(App, 'destroy');
 });
 
-test("non embedded belongsTo should get a record by its id", function() {
+QUnit.test("non embedded belongsTo should get a record by its id", function(assert) {
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -89,15 +89,15 @@ test("non embedded belongsTo should get a record by its id", function() {
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
 
-  stop();
+  var done = assert.async();
   article.one('didLoad', function() {
-    start();
-    equal(article.get('slug'), 'first-article');
-    ok(article instanceof Article);
+    done();
+    assert.equal(article.get('slug'), 'first-article');
+    assert.ok(article instanceof Article);
   });
 });
 
-test("relationship should be refreshed when data changes", function() {
+QUnit.test("relationship should be refreshed when data changes", function(assert) {
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -112,21 +112,21 @@ test("relationship should be refreshed when data changes", function() {
   var comment = Comment.create();
   var article = Ember.run(comment, comment.get, 'article');
 
-  ok(!article, "belongsTo relationship should default to null if there is no primaryKey defined");
+  assert.ok(!article, "belongsTo relationship should default to null if there is no primaryKey defined");
 
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   article = Ember.run(comment, comment.get, 'article');
 
-  stop();
+  var done = assert.async();
   article.one('didLoad', function() {
-    start();
-    equal(article.get('slug'), 'first-article');
-    ok(article instanceof Article);
+    done();
+    assert.equal(article.get('slug'), 'first-article');
+    assert.ok(article instanceof Article);
   });
 });
 
-test("when fetching an association getBelongsTo is called", function() {
-  expect(4);
+QUnit.test("when fetching an association getBelongsTo is called", function(assert) {
+  assert.expect(4);
 
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
@@ -141,18 +141,18 @@ test("when fetching an association getBelongsTo is called", function() {
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
 
   comment.getBelongsTo = function(key, type, meta) {
-    equal(key, 'article_slug', "key passed to getBelongsTo should be the same as key in belongsTo options");
-    equal(type, Article, "type of the association should be passed to getBelongsTo");
-    equal(meta.kind, 'belongsTo', "metadata should be passed to getBelongsTo");
+    assert.equal(key, 'article_slug', "key passed to getBelongsTo should be the same as key in belongsTo options");
+    assert.equal(type, Article, "type of the association should be passed to getBelongsTo");
+    assert.equal(meta.kind, 'belongsTo', "metadata should be passed to getBelongsTo");
 
     return 'foobar';
   };
 
-  equal(comment.get('article'), 'foobar', "value returned from getBelongsTo should be returned as an association");
+  assert.equal(comment.get('article'), 'foobar', "value returned from getBelongsTo should be returned as an association");
 });
 
-test("toJSON uses the given relationship key in belongsTo", function() {
-  expect(1);
+QUnit.test("toJSON uses the given relationship key in belongsTo", function(assert) {
+  assert.expect(1);
 
   var Article = Ember.Model.extend({
     token: Ember.attr(String)
@@ -170,11 +170,11 @@ test("toJSON uses the given relationship key in belongsTo", function() {
 
   Ember.run(comment, comment.load, 1, { article_id: 2 });
 
-  deepEqual(comment.toJSON(), { article_id: 2 }, "belongsTo id should be serialized only under the given key");
+  assert.deepEqual(comment.toJSON(), { article_id: 2 }, "belongsTo id should be serialized only under the given key");
 });
 
-test("un-embedded belongsTo CP should handle set", function() {
-  expect(1);
+QUnit.test("un-embedded belongsTo CP should handle set", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -199,12 +199,12 @@ test("un-embedded belongsTo CP should handle set", function() {
     post.set('author', author);
   });
 
-  deepEqual(post.toJSON(), {id: 1, author_id: 100});
+  assert.deepEqual(post.toJSON(), {id: 1, author_id: 100});
 
 });
 
-test("embedded belongsTo CP should handle set", function() {
-  expect(1);
+QUnit.test("embedded belongsTo CP should handle set", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -229,12 +229,12 @@ test("embedded belongsTo CP should handle set", function() {
     post.set('author', author);
   });
 
-  deepEqual(post.toJSON(), {id: 1, author: {id: 100}});
+  assert.deepEqual(post.toJSON(), {id: 1, author: {id: 100}});
 
 });
 
-test("must be set with value of same type", function() {
-  expect(1);
+QUnit.test("must be set with value of same type", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -261,8 +261,8 @@ test("must be set with value of same type", function() {
     /Attempted to set property of type/);
 });
 
-test("relationship type cannot be empty", function() {
-  expect(1);
+QUnit.test("relationship type cannot be empty", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
       id: Ember.attr()
@@ -287,8 +287,8 @@ test("relationship type cannot be empty", function() {
     /Type cannot be empty/);
 });
 
-test("should be able to set embedded relationship to null", function() {
-  expect(2);
+QUnit.test("should be able to set embedded relationship to null", function(assert) {
+  assert.expect(2);
 
   var Article = Ember.Model.extend({
         id: Ember.attr(String)
@@ -303,13 +303,13 @@ test("should be able to set embedded relationship to null", function() {
   var comment = Comment.create();
   Ember.run(comment, comment.load, 1, { article: null });
 
-  equal(comment.get('article'), null); // Materialize the data.
+  assert.equal(comment.get('article'), null); // Materialize the data.
   comment.set('text', 'I totally agree');
-  ok(comment.save());
+  assert.ok(comment.save());
 });
 
-test("should be able to set nonembedded relationship to null", function() {
-  expect(2);
+QUnit.test("should be able to set nonembedded relationship to null", function(assert) {
+  assert.expect(2);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -334,12 +334,12 @@ test("should be able to set nonembedded relationship to null", function() {
     post.set('author', null);
   });
 
-  equal(post.get('author'), null);
-  deepEqual(post.toJSON(), {id: 1, author_id: undefined});
+  assert.equal(post.get('author'), null);
+  assert.deepEqual(post.toJSON(), {id: 1, author_id: undefined});
 });
 
-test("materializing the relationship should should not dirty the record", function() {
-  expect(2);
+QUnit.test("materializing the relationship should should not dirty the record", function(assert) {
+  assert.expect(2);
 
   var Author = Ember.Model.extend({
         id: Ember.attr()
@@ -354,13 +354,13 @@ test("materializing the relationship should should not dirty the record", functi
 
   var post = Ember.run(Post, Post.create);
   post.get('id');
-  ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
+  assert.ok(!post.get('isDirty'), 'is not dirty before materializing the relationship');
   post.get('author');
-  ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
+  assert.ok(!post.get('isDirty'), 'is not dirty after materializing the relationship');
 });
 
-test("setting relationship should make parent dirty", function() {
-  expect(1);
+QUnit.test("setting relationship should make parent dirty", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
         id: Ember.attr(),
@@ -386,11 +386,11 @@ test("setting relationship should make parent dirty", function() {
     post.set('author', author);
   });
 
-  ok(post.get('isDirty'));
+  assert.ok(post.get('isDirty'));
 });
 
-test("setting existing nonembedded relationship should make parent dirty", function() {
-  expect(1);
+QUnit.test("setting existing nonembedded relationship should make parent dirty", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
         id: Ember.attr(),
@@ -418,11 +418,11 @@ test("setting existing nonembedded relationship should make parent dirty", funct
     post.set('author', secondAuthor);
   });
 
-  ok(post.get('isDirty'));
+  assert.ok(post.get('isDirty'));
 });
 
-test("setting existing nonembedded relationship to NULL should make parent dirty", function() {
-  expect(1);
+QUnit.test("setting existing nonembedded relationship to NULL should make parent dirty", function(assert) {
+  assert.expect(1);
 
   var Author = Ember.Model.extend({
         id: Ember.attr(),
@@ -450,11 +450,11 @@ test("setting existing nonembedded relationship to NULL should make parent dirty
     post.set('author', null);
   });
 
-  ok(post.get('isDirty'));
+  assert.ok(post.get('isDirty'));
 });
 
-test("relationships should be seralized when specified with string", function() {
-  expect(1);
+QUnit.test("relationships should be seralized when specified with string", function(assert) {
+  assert.expect(1);
 
   Ember.Author = Ember.Model.extend({
     id: Ember.attr(),
@@ -477,11 +477,11 @@ test("relationships should be seralized when specified with string", function() 
     post.load(1, {id: 1, author_id: 100});
   });
 
-  deepEqual(post.toJSON(), {id: 1, author_id: 100});
+  assert.deepEqual(post.toJSON(), {id: 1, author_id: 100});
 });
 
 
-test("belongsTo from an embedded source is able to materialize without having to re-find", function() {
+QUnit.test("belongsTo from an embedded source is able to materialize without having to re-find", function(assert) {
 
 
   var Company = Ember.Company = Ember.Model.extend({
@@ -517,18 +517,18 @@ test("belongsTo from an embedded source is able to materialize without having to
   Company.load([compJson]);
   var company = Company.find(1);
 
-  equal(company.get('projects.length'), 1);
-  equal(company.get('projects.firstObject.posts.length'), 2);
+  assert.equal(company.get('projects.length'), 1);
+  assert.equal(company.get('projects.firstObject.posts.length'), 2);
 
   var project1 = company.get('projects.firstObject');
-  equal(company, project1.get('company'));
+  assert.equal(company, project1.get('company'));
 
   var post1 = project1.get('posts.firstObject');
-  equal(project1, post1.get('project'));
+  assert.equal(project1, post1.get('project'));
 });
 
 
-test("unloaded records are removed from reference cache", function() {
+QUnit.test("unloaded records are removed from reference cache", function(assert) {
 
 
   var Company = Ember.Company = Ember.Model.extend({
@@ -558,7 +558,7 @@ test("unloaded records are removed from reference cache", function() {
   var company = Company.find(1);
   var project1 = company.get('projects.firstObject');
 
-  equal(company.get('projects.length'), 2);
+  assert.equal(company.get('projects.length'), 2);
 
   Company.unload(company);
   var project2 = company.get('projects').objectAt(1);
@@ -570,12 +570,12 @@ test("unloaded records are removed from reference cache", function() {
   var reloadedProject1 = company.get('projects.firstObject');
 
 
-  notEqual(project1, reloadedProject1);
-  equal(project1.get('title'), 'project one title');
-  equal(reloadedProject1.get('title'), 'project one new title');
+  assert.notEqual(project1, reloadedProject1);
+  assert.equal(project1.get('title'), 'project one title');
+  assert.equal(reloadedProject1.get('title'), 'project one new title');
 });
 
-test("unloaded records are removed from hasMany cache", function() {
+QUnit.test("unloaded records are removed from hasMany cache", function(assert) {
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
@@ -601,24 +601,24 @@ test("unloaded records are removed from hasMany cache", function() {
       project2 = company.get('projects').objectAt(1),
       project3 = company.get('projects').objectAt(2);
 
-  equal(company.get('projects.length'), 3);
+  assert.equal(company.get('projects.length'), 3);
 
   project1.set('title', 'changed project one title');
-  ok(company.get('projects.isDirty'));
+  assert.ok(company.get('projects.isDirty'));
 
   Project.unload(project1);
-  equal(company.get('projects.length'), 2);
-  equal(company.get('projects.firstObject.title'), 'project two title');
-  ok(!company.get('projects.isDirty'), 'removes dirtiness from unloaded relationship');
+  assert.equal(company.get('projects.length'), 2);
+  assert.equal(company.get('projects.firstObject.title'), 'project two title');
+  assert.ok(!company.get('projects.isDirty'), 'removes dirtiness from unloaded relationship');
 
   project3.set('title', 'changed project three title');
   Project.unload(project2);
-  equal(company.get('projects.length'), 1);
-  equal(company.get('projects.firstObject.title'), 'changed project three title');
-  ok(company.get('projects.isDirty'), 'remains dirty');
+  assert.equal(company.get('projects.length'), 1);
+  assert.equal(company.get('projects.firstObject.title'), 'changed project three title');
+  assert.ok(company.get('projects.isDirty'), 'remains dirty');
 });
 
-test("belongsTo records created are available from reference cache", function() {
+QUnit.test("belongsTo records created are available from reference cache", function(assert) {
 
 
   var Company = Ember.Company = Ember.Model.extend({
@@ -649,15 +649,15 @@ test("belongsTo records created are available from reference cache", function() 
   var projectFromCacheViaFind = Project.find(project.get('id'));
   var projectRecordFromCache = Project._referenceCache[project.get('id')].record;
 
-  equal(project, projectFromCacheViaFind);
-  equal(project, projectRecordFromCache);
+  assert.equal(project, projectFromCacheViaFind);
+  assert.equal(project, projectRecordFromCache);
 
   // referenced company record is the same as the company returned from find
-  equal(company, project.get('company'));
+  assert.equal(company, project.get('company'));
 });
 
-test("embedded belongsTo with undefined value", function() {
-  expect(1);
+QUnit.test("embedded belongsTo with undefined value", function(assert) {
+  assert.expect(1);
   var json = {
     id: 1,
     name: 'foo'
@@ -677,11 +677,11 @@ test("embedded belongsTo with undefined value", function() {
 
   var post = Post.create();
   Ember.run(post, post.load, json.id, json);
-  equal(post.get('author'), null);
+  assert.equal(post.get('author'), null);
 });
 
-test("key defaults to model's property key", function() {
-  expect(1);
+QUnit.test("key defaults to model's property key", function(assert) {
+  assert.expect(1);
 
   var Article = Ember.Model.extend({
     id: Ember.attr()
@@ -698,10 +698,10 @@ test("key defaults to model's property key", function() {
 
   Ember.run(comment, comment.load, 1, { article: 2 });
 
-  deepEqual(comment.toJSON(), { article: 2 });
+  assert.deepEqual(comment.toJSON(), { article: 2 });
 });
 
-test("non embedded belongsTo should return a record with a container", function() {
+QUnit.test("non embedded belongsTo should return a record with a container", function(assert) {
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
@@ -719,6 +719,6 @@ test("non embedded belongsTo should return a record with a container", function(
   var comment = App.Comment.create({container: App.__container__});
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
-  ok(article.get('container'));
+  assert.ok(article.get('container'));
   Ember.run(App, 'destroy');
 });

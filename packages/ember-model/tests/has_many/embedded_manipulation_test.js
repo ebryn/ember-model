@@ -1,8 +1,8 @@
 var attr = Ember.attr;
 
-module("Ember.EmbeddedHasManyArray - manipulation");
+QUnit.module("Ember.EmbeddedHasManyArray - manipulation");
 
-test("pushing record adds a record to many array", function() {
+QUnit.test("pushing record adds a record to many array", function(assert) {
   var json = {
     id: 1,
     title: 'foo',
@@ -32,18 +32,18 @@ test("pushing record adds a record to many array", function() {
 
   Ember.run(comments, comments.pushObject, comment);
 
-  equal(comments.get('length'), 4);
-  equal(comments.get('lastObject.text'), 'quatro', 'added element should be available in the array');
+  assert.equal(comments.get('length'), 4);
+  assert.equal(comments.get('lastObject.text'), 'quatro', 'added element should be available in the array');
 
   comment = Comment.create({ id: 5, text: 'cinco' });
 
   Ember.run(comments, comments.pushObject, comment);
 
-  equal(comments.get('length'), 5);
-  equal(comments.get('lastObject.text'), 'cinco', 'added element should be available in the array');
+  assert.equal(comments.get('length'), 5);
+  assert.equal(comments.get('lastObject.text'), 'cinco', 'added element should be available in the array');
 });
 
-test("removing a record from the many array", function() {
+QUnit.test("removing a record from the many array", function(assert) {
   var json = {
     id: 1,
     title: 'foo',
@@ -72,7 +72,7 @@ test("removing a record from the many array", function() {
 
   comments.removeObject(dos);
 
-  equal(comments.get('length'), 2, "There are now only two items in the array");
-  equal(comments.objectAt(0).get('text'), "uno", "The first element is correct");
-  equal(comments.objectAt(1).get('text'), "tres", "The second element is correct");
+  assert.equal(comments.get('length'), 2, "There are now only two items in the array");
+  assert.equal(comments.objectAt(0).get('text'), "uno", "The first element is correct");
+  assert.equal(comments.objectAt(1).get('text'), "tres", "The second element is correct");
 });

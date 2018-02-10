@@ -24,7 +24,8 @@
         "module",
         "expect",
         "minispade",
-        "expectAssertion"
+        "expectAssertion",
+        "QUnit"
     ],
 
     "node" : false,
