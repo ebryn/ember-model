@@ -13,6 +13,7 @@ QUnit.test("multiple calls to Model#find within the same run loop coalesce into 
     findMany: function(klass, records, ids) {
       assert.ok(true, "findMany was called");
       assert.deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
+      return Ember.RSVP.resolve();
     }
   };
 
@@ -34,6 +35,7 @@ QUnit.test("coalesced findMany call should only include records which aren't loa
     findMany: function(klass, records, ids) {
       assert.ok(true, "findMany was called");
       assert.deepEqual(ids, [2,3], "The correct ids were passed into findMany");
+      return Ember.RSVP.resolve();
     }
   };
 
@@ -90,6 +92,7 @@ QUnit.test("calls to Model#find and Model#findMany within the same run loop coal
     findMany: function(klass, records, ids) {
       assert.ok(true, "findMany was called");
       assert.deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
+      return Ember.RSVP.resolve();
     }
   };
 
@@ -113,6 +116,7 @@ QUnit.test("should unique IDs", function(assert) {
       assert.ok(true, "findMany was called");
       assert.deepEqual(ids, [1,2,3], "The correct ids were passed into findMany");
       records.load(klass, []);
+      return Ember.RSVP.resolve();
     }
   };
 
@@ -132,6 +136,7 @@ QUnit.test("should resolve all RecordArrays", function(assert) {
   Model.adapter = {
     findMany: function(klass, records, ids) {
       records.load(klass, []);
+      return Ember.RSVP.resolve();
     }
   };
 
