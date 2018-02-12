@@ -1,5 +1,5 @@
 //Taken from github.com/emberjs/ember-dev
-  function expectAssertion(fn, expectedMessage) {
+  function expectAssertion(assert, fn, expectedMessage) {
     var originalAssert = Ember.assert,
       actualMessage, actualTest,
       arity, sawAssertion;
@@ -28,22 +28,22 @@
       }
 
       if (!sawAssertion) {
-        ok(false, "Expected Ember.assert: '" + expectedMessage + "', but no assertions where run");
+        assert.ok(false, "Expected Ember.assert: '" + expectedMessage + "', but no assertions where run");
       } else if (arity === 2) {
 
         if (expectedMessage) {
           if (expectedMessage instanceof RegExp) {
-            ok(expectedMessage.test(actualMessage), "Expected Ember.assert: '" + expectedMessage + "', but got '" + actualMessage + "'");
+            assert.ok(expectedMessage.test(actualMessage), "Expected Ember.assert: '" + expectedMessage + "', but got '" + actualMessage + "'");
           }else{
-            equal(actualMessage, expectedMessage, "Expected Ember.assert: '" + expectedMessage + "', but got '" + actualMessage + "'");
+            assert.equal(actualMessage, expectedMessage, "Expected Ember.assert: '" + expectedMessage + "', but got '" + actualMessage + "'");
           }
         } else {
-          ok(!actualTest);
+          assert.ok(!actualTest);
         }
       } else if (arity === 1) {
-        ok(!actualTest);
+        assert.ok(!actualTest);
       } else {
-        ok(false, 'Ember.assert was called without the assertion');
+        assert.ok(false, 'Ember.assert was called without the assertion');
       }
 
     } finally {
