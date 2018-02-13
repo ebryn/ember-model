@@ -51,3 +51,17 @@
     }
   }
   window.expectAssertion = expectAssertion;
+
+
+var Owner = Ember.Object.extend(Ember._RegistryProxyMixin, Ember._ContainerProxyMixin);
+window.createOwner = function() {
+  var registry = new Ember.Registry();
+  var owner = Owner.create({
+    __registry__: registry
+  });
+  var container = registry.container({
+    owner: owner
+  });
+  owner.__container__ = container;
+  return owner;
+};
