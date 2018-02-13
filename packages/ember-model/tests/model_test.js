@@ -687,112 +687,112 @@ QUnit.test("creating a record with camelizedKeys = true works as expected", func
   });
 });
 
-// QUnit.test("can use data as attribute name", function(assert) {
-//   assert.expect(1);
-//
-//   var DataModel = Ember.Model.extend({
-//     id: Ember.attr(),
-//     data: Ember.attr()
-//   });
-//
-//   DataModel.adapter = Ember.FixtureAdapter.create();
-//
-//   var record = DataModel.create({id: 1, data: 'abc'});
-//
-//   assert.deepEqual(record.toJSON(), {id: 1, data: 'abc'});
-// });
-//
-// QUnit.test("record is available in reference cache when load is run in cachedRecordForId", function(assert) {
-//   var recordFromCache,
-//       Post = Ember.Model.extend({
-//         load: function() {
-//           recordFromCache = this.constructor._referenceCache['1'].record;
-//         }
-//       });
-//
-//   Post.sideloadedData = { '1': { id: '1' } };
-//
-//   Post.cachedRecordForId('1');
-//
-//   assert.ok(recordFromCache, 'record should be available in cache when running load');
-// });
-//
-// QUnit.test("fetchQuery returns a promise", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findQuery: function(klass, records, params) {
-//       records.set('isLoaded', true);
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         resolve(records);
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
-//   promise.then(function(records) {
-//     assert.ok(records.get('isLoaded'));
-//     done();
-//   });
-// });
-//
-// QUnit.test("second promise returned by fetchAll when loading, resolves on load", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var deferred = Ember.RSVP.defer();
-//
-//   var DeferredResolvingAdapter = Ember.FixtureAdapter.extend({
-//     findAll: function(klass, records, params) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         deferred.promise.then(function() {
-//           records.set('isLoaded', true);
-//           resolve(records);
-//         });
-//       });
-//     }
-//   });
-//   Model.adapter = DeferredResolvingAdapter.create();
-//
-//   var firstPromise = Ember.run(Model, Model.fetchAll);
-//   var secondPromise = Ember.run(Model, Model.fetchAll);
-//
-//   secondPromise.then(function(records) {
-//     assert.ok(records.get('isLoaded'), 'records should be loaded when promise resolves');
-//     done();
-//   });
-//
-//   deferred.resolve();
-// });
-//
-// QUnit.test("fetchAll returns a promise", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetchAll);
-//   promise.then(function(records) {
-//     assert.ok(records.get('isLoaded'));
-//     assert.equal(records.get('length'), 1);
-//     done();
-//   });
-// });
-//
-// QUnit.test("fetchAll returns promise if findAll RecordArray already exists", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetch);
-//   promise.then(function(records) {
-//     var secondPromise = Ember.run(Model, Model.fetch);
-//     secondPromise.then(function() {
-//       assert.ok(true, "Second fetch returned a promise");
-//       done();
-//     });
-//   });
-// });
+QUnit.test("can use data as attribute name", function(assert) {
+  assert.expect(1);
+
+  var DataModel = Ember.Model.extend({
+    id: Ember.attr(),
+    data: Ember.attr()
+  });
+
+  DataModel.adapter = Ember.FixtureAdapter.create();
+
+  var record = DataModel.create({id: 1, data: 'abc'});
+
+  assert.deepEqual(record.toJSON(), {id: 1, data: 'abc'});
+});
+
+QUnit.test("record is available in reference cache when load is run in cachedRecordForId", function(assert) {
+  var recordFromCache,
+      Post = Ember.Model.extend({
+        load: function() {
+          recordFromCache = this.constructor._referenceCache['1'].record;
+        }
+      });
+
+  Post.sideloadedData = { '1': { id: '1' } };
+
+  Post.cachedRecordForId('1');
+
+  assert.ok(recordFromCache, 'record should be available in cache when running load');
+});
+
+QUnit.test("fetchQuery returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params) {
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("second promise returned by fetchAll when loading, resolves on load", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var deferred = Ember.RSVP.defer();
+
+  var DeferredResolvingAdapter = Ember.FixtureAdapter.extend({
+    findAll: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        deferred.promise.then(function() {
+          records.set('isLoaded', true);
+          resolve(records);
+        });
+      });
+    }
+  });
+  Model.adapter = DeferredResolvingAdapter.create();
+
+  var firstPromise = Ember.run(Model, Model.fetchAll);
+  var secondPromise = Ember.run(Model, Model.fetchAll);
+
+  secondPromise.then(function(records) {
+    assert.ok(records.get('isLoaded'), 'records should be loaded when promise resolves');
+    done();
+  });
+
+  deferred.resolve();
+});
+
+QUnit.test("fetchAll returns a promise", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetchAll);
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    assert.equal(records.get('length'), 1);
+    done();
+  });
+});
+
+QUnit.test("fetchAll returns promise if findAll RecordArray already exists", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch);
+  promise.then(function(records) {
+    var secondPromise = Ember.run(Model, Model.fetch);
+    secondPromise.then(function() {
+      assert.ok(true, "Second fetch returned a promise");
+      done();
+    });
+  });
+});
 //
 // QUnit.test("fetchAll resolves to same RecordArray when called multiple times", function(assert) {
 //   assert.expect(1);
