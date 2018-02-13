@@ -503,190 +503,190 @@ QUnit.test(".getAttributes() returns the model's attributes", function(assert) {
   assert.deepEqual(Animal.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
   assert.deepEqual(BaseModel.getAttributes(), ['id']);
 });
-//
-// QUnit.test(".getRelationships() returns the model's relationships", function(assert) {
-//   var Comment = Ember.Model.extend(),
-//       Rating = Ember.Model.extend(),
-//       Author = Ember.Model.extend(),
-//       Site = Ember.Model.extend(),
-//
-//       Commentable = Ember.Model.extend({
-//         comments: Ember.hasMany(Comment, { key: 'comments' }),
-//       }),
-//
-//       Article = Commentable.extend({
-//         author: Ember.belongsTo(Author, { key: 'author' }),
-//         ratings: Ember.hasMany(Rating, { key: 'ratings' })
-//       }),
-//
-//       News = Article.extend({
-//         source: Ember.belongsTo(Site, { key: 'site' })
-//       });
-//
-//   assert.deepEqual(Commentable.getRelationships(), ['comments']);
-//   assert.deepEqual(Article.getRelationships(), ['comments', 'author', 'ratings']);
-//   assert.deepEqual(News.getRelationships(), ['comments', 'author', 'ratings', 'source']);
-// });
-//
-// QUnit.test("toJSON includes embedded relationships", function(assert) {
-//   var attr = Ember.attr,
-//       Comment = Ember.Model.extend({
-//         id: Ember.attr(),
-//         text: Ember.attr()
-//       }),
-//       Author = Ember.Model.extend({
-//         id: Ember.attr(),
-//         name: Ember.attr()
-//       }),
-//       Article = Ember.Model.extend({
-//         id: 1,
-//         title: Ember.attr(),
-//         comments: Ember.hasMany(Comment, { key: 'comments', embedded: true }),
-//         author: Ember.belongsTo(Author, { key: 'author', embedded: true })
-//       });
-//
-//   var articleData = {
-//     id: 1,
-//     title: 'foo',
-//     comments: [
-//       {id: 1, text: 'uno'},
-//       {id: 2, text: 'dos'},
-//       {id: 3, text: 'tres'}
-//     ],
-//     author: {id: 1, name: 'drogus'}
-//   };
-//
-//   var article = Article.create();
-//   Ember.run(article, article.load, articleData.id, articleData);
-//
-//   var json = Ember.run(article, article.toJSON);
-//
-//   assert.deepEqual(json.comments.map(function(c) { return c.text; }), ['uno', 'dos', 'tres'], "JSON should contain serialized records from hasMany relationship");
-//   assert.equal(json.author.name, 'drogus', "JSON should contain serialized record from belongsTo relationship");
-// });
-//
-// QUnit.test("toJSON includes non-embedded relationships", function(assert) {
-//   var Comment = Ember.Model.extend({
-//         id: Ember.attr(),
-//         text: Ember.attr()
-//       }),
-//       Author = Ember.Model.extend({
-//         id: Ember.attr(),
-//         name: Ember.attr()
-//       }),
-//       Article = Ember.Model.extend({
-//         id: 1,
-//         title: Ember.attr(),
-//         comments: Ember.hasMany(Comment, { key: 'comments' }),
-//         author: Ember.belongsTo(Author, { key: 'author' })
-//       });
-//
-//   var articleData = {
-//     id: 1,
-//     title: 'foo',
-//     comments: [1, 2, 3],
-//     author: 1
-//   };
-//
-//   Author.adapter = Ember.FixtureAdapter.create();
-//   Comment.adapter = Ember.FixtureAdapter.create();
-//
-//   Author.FIXTURES = [{id: 1, name: 'drogus'}];
-//   Comment.FIXTURES = [
-//     {id: 1, text: 'uno'},
-//     {id: 2, text: 'dos'},
-//     {id: 3, text: 'tres'}
-//   ];
-//
-//
-//   var article = Article.create();
-//   Ember.run(article, article.load, articleData.id, articleData);
-//
-//   var json = Ember.run(article, article.toJSON);
-//
-//   assert.deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
-//   assert.equal(json.author, 1, "JSON should contain id of belongsTo relationship");
-// });
-//
-// QUnit.test("toJSON works with string names", function(assert) {
-//   var App;
-//   Ember.run(function() {
-//     App = Ember.Application.create({});
-//     App.register('store:main', Ember.Model.Store);
-//   });
-//
-//   var Comment = Ember.Model.extend({
-//         id: Ember.attr(),
-//         text: Ember.attr()
-//       }),
-//       Author = Ember.Model.extend({
-//         id: Ember.attr(),
-//         name: Ember.attr()
-//       }),
-//       Article = Ember.Model.extend({
-//         id: 1,
-//         title: Ember.attr(),
-//         comments: Ember.hasMany('comment', { key: 'comments' }),
-//         author: Ember.belongsTo('author', { key: 'author' })
-//       });
-//
-//   App.register('model:comment', Comment);
-//   App.register('model:author', Author);
-//   App.register('model:article', Article);
-//
-//   assert.ok(true);
-//
-//   var articleData = {
-//     id: 1,
-//     title: 'foo',
-//     comments: [1, 2, 3],
-//     author: 1
-//   };
-//
-//   Author.adapter = Ember.FixtureAdapter.create();
-//   Comment.adapter = Ember.FixtureAdapter.create();
-//
-//   Author.FIXTURES = [{id: 1, name: 'drogus'}];
-//   Comment.FIXTURES = [
-//     {id: 1, text: 'uno'},
-//     {id: 2, text: 'dos'},
-//     {id: 3, text: 'tres'}
-//   ];
-//
-//   var store = App.__container__.lookup('store:main'); //TODO: GJ: use public API
-//   var article = store.createRecord('article', {name: "Erik"});
-//
-//   Ember.run(article, article.load, articleData.id, articleData);
-//
-//   var json = Ember.run(article, article.toJSON);
-//   assert.deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
-//   assert.equal(json.author, 1, "JSON should contain id of belongsTo relationship");
-//   Ember.run(function() {
-//     App.destroy();
-//   });
-// });
-//
-// QUnit.test("creating a record with camelizedKeys = true works as expected", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var Page = Ember.Model.extend({
-//     someAuthor: Ember.attr()
-//   });
-//   Page.camelizeKeys = true;
-//   Page.adapter = Ember.FixtureAdapter.create();
-//   Page.FIXTURES = [];
-//
-//   var record = Page.create({someAuthor: 'Brian'});
-//
-//   record.save();
-//
-//   record.on('didCreateRecord', function() {
-//     assert.equal(record.get('someAuthor'), 'Brian', 'preserves data keys on didCreateRecord');
-//     done();
-//   });
-// });
-//
+
+QUnit.test(".getRelationships() returns the model's relationships", function(assert) {
+  var Comment = Ember.Model.extend(),
+      Rating = Ember.Model.extend(),
+      Author = Ember.Model.extend(),
+      Site = Ember.Model.extend(),
+
+      Commentable = Ember.Model.extend({
+        comments: Ember.hasMany(Comment, { key: 'comments' }),
+      }),
+
+      Article = Commentable.extend({
+        author: Ember.belongsTo(Author, { key: 'author' }),
+        ratings: Ember.hasMany(Rating, { key: 'ratings' })
+      }),
+
+      News = Article.extend({
+        source: Ember.belongsTo(Site, { key: 'site' })
+      });
+
+  assert.deepEqual(Commentable.getRelationships(), ['comments']);
+  assert.deepEqual(Article.getRelationships(), ['comments', 'author', 'ratings']);
+  assert.deepEqual(News.getRelationships(), ['comments', 'author', 'ratings', 'source']);
+});
+
+QUnit.test("toJSON includes embedded relationships", function(assert) {
+  var attr = Ember.attr,
+      Comment = Ember.Model.extend({
+        id: Ember.attr(),
+        text: Ember.attr()
+      }),
+      Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Article = Ember.Model.extend({
+        id: 1,
+        title: Ember.attr(),
+        comments: Ember.hasMany(Comment, { key: 'comments', embedded: true }),
+        author: Ember.belongsTo(Author, { key: 'author', embedded: true })
+      });
+
+  var articleData = {
+    id: 1,
+    title: 'foo',
+    comments: [
+      {id: 1, text: 'uno'},
+      {id: 2, text: 'dos'},
+      {id: 3, text: 'tres'}
+    ],
+    author: {id: 1, name: 'drogus'}
+  };
+
+  var article = Article.create();
+  Ember.run(article, article.load, articleData.id, articleData);
+
+  var json = Ember.run(article, article.toJSON);
+
+  assert.deepEqual(json.comments.map(function(c) { return c.text; }), ['uno', 'dos', 'tres'], "JSON should contain serialized records from hasMany relationship");
+  assert.equal(json.author.name, 'drogus', "JSON should contain serialized record from belongsTo relationship");
+});
+
+QUnit.test("toJSON includes non-embedded relationships", function(assert) {
+  var Comment = Ember.Model.extend({
+        id: Ember.attr(),
+        text: Ember.attr()
+      }),
+      Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Article = Ember.Model.extend({
+        id: 1,
+        title: Ember.attr(),
+        comments: Ember.hasMany(Comment, { key: 'comments' }),
+        author: Ember.belongsTo(Author, { key: 'author' })
+      });
+
+  var articleData = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3],
+    author: 1
+  };
+
+  Author.adapter = Ember.FixtureAdapter.create();
+  Comment.adapter = Ember.FixtureAdapter.create();
+
+  Author.FIXTURES = [{id: 1, name: 'drogus'}];
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+
+  var article = Article.create();
+  Ember.run(article, article.load, articleData.id, articleData);
+
+  var json = Ember.run(article, article.toJSON);
+
+  assert.deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
+  assert.equal(json.author, 1, "JSON should contain id of belongsTo relationship");
+});
+
+QUnit.test("toJSON works with string names", function(assert) {
+  var App;
+  Ember.run(function() {
+    App = Ember.Application.create({});
+    App.register('store:main', Ember.Model.Store);
+  });
+
+  var Comment = Ember.Model.extend({
+        id: Ember.attr(),
+        text: Ember.attr()
+      }),
+      Author = Ember.Model.extend({
+        id: Ember.attr(),
+        name: Ember.attr()
+      }),
+      Article = Ember.Model.extend({
+        id: 1,
+        title: Ember.attr(),
+        comments: Ember.hasMany('comment', { key: 'comments' }),
+        author: Ember.belongsTo('author', { key: 'author' })
+      });
+
+  App.register('model:comment', Comment);
+  App.register('model:author', Author);
+  App.register('model:article', Article);
+
+  assert.ok(true);
+
+  var articleData = {
+    id: 1,
+    title: 'foo',
+    comments: [1, 2, 3],
+    author: 1
+  };
+
+  Author.adapter = Ember.FixtureAdapter.create();
+  Comment.adapter = Ember.FixtureAdapter.create();
+
+  Author.FIXTURES = [{id: 1, name: 'drogus'}];
+  Comment.FIXTURES = [
+    {id: 1, text: 'uno'},
+    {id: 2, text: 'dos'},
+    {id: 3, text: 'tres'}
+  ];
+
+  var store = App.__container__.lookup('store:main'); //TODO: GJ: use public API
+  var article = store.createRecord('article', {name: "Erik"});
+
+  Ember.run(article, article.load, articleData.id, articleData);
+
+  var json = Ember.run(article, article.toJSON);
+  assert.deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
+  assert.equal(json.author, 1, "JSON should contain id of belongsTo relationship");
+  Ember.run(function() {
+    App.destroy();
+  });
+});
+
+QUnit.test("creating a record with camelizedKeys = true works as expected", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var Page = Ember.Model.extend({
+    someAuthor: Ember.attr()
+  });
+  Page.camelizeKeys = true;
+  Page.adapter = Ember.FixtureAdapter.create();
+  Page.FIXTURES = [];
+
+  var record = Page.create({someAuthor: 'Brian'});
+
+  record.save();
+
+  record.on('didCreateRecord', function() {
+    assert.equal(record.get('someAuthor'), 'Brian', 'preserves data keys on didCreateRecord');
+    done();
+  });
+});
+
 // QUnit.test("can use data as attribute name", function(assert) {
 //   assert.expect(1);
 //
