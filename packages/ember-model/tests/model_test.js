@@ -793,72 +793,72 @@ QUnit.test("fetchAll returns promise if findAll RecordArray already exists", fun
     });
   });
 });
-//
-// QUnit.test("fetchAll resolves to same RecordArray when called multiple times", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var promiseOne = Ember.run(Model, Model.fetch);
-//   var promiseTwo = Ember.run(Model, Model.fetch);
-//   Ember.RSVP.all([promiseOne, promiseTwo]).then(function(records) {
-//     assert.ok(records[0] === records[1], "Both promises resolve with same RecordArray");
-//     done();
-//   });
-// });
-//
-// QUnit.test("fetchMany returns a promise", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findMany: function(klass, records, params) {
-//       records.set('isLoaded', true);
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         resolve(records);
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
-//   promise.then(function(records) {
-//     assert.ok(records.get('isLoaded'));
-//     done();
-//   });
-// });
-//
-// QUnit.test("fetchById returns a promise", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetchById, 'a');
-//   promise.then(function(record) {
-//     assert.ok(record.get('isLoaded'));
-//     done();
-//   });
-// });
-//
-// QUnit.test("fetchQuery resolves with error object", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-//     findQuery: function(klass, records, params) {
-//       return new Ember.RSVP.Promise(function(resolve, reject) {
-//         reject({error: true});
-//       });
-//     }
-//   });
-//
-//   Model.adapter = FixtureFindQueryAdapter.create();
-//
-//   var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
-//   promise.then(null, function(error) {
-//     assert.deepEqual(error, {error: true});
-//     done();
-//   });
-// });
+
+QUnit.test("fetchAll resolves to same RecordArray when called multiple times", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promiseOne = Ember.run(Model, Model.fetch);
+  var promiseTwo = Ember.run(Model, Model.fetch);
+  Ember.RSVP.all([promiseOne, promiseTwo]).then(function(records) {
+    assert.ok(records[0] === records[1], "Both promises resolve with same RecordArray");
+    done();
+  });
+});
+
+QUnit.test("fetchMany returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findMany: function(klass, records, params) {
+      records.set('isLoaded', true);
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        resolve(records);
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("fetchById returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetchById, 'a');
+  promise.then(function(record) {
+    assert.ok(record.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("fetchQuery resolves with error object", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+    findQuery: function(klass, records, params) {
+      return new Ember.RSVP.Promise(function(resolve, reject) {
+        reject({error: true});
+      });
+    }
+  });
+
+  Model.adapter = FixtureFindQueryAdapter.create();
+
+  var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
+  promise.then(null, function(error) {
+    assert.deepEqual(error, {error: true});
+    done();
+  });
+});
 //
 // QUnit.test("fetchAll resolves with error object", function(assert) {
 //   assert.expect(1);
