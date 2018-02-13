@@ -880,48 +880,48 @@ QUnit.test("fetchAll resolves with error object", function(assert) {
     done();
   });
 });
-
-QUnit.test("fetchById resolves with error object", function(assert) {
-  assert.expect(1);
-  var done = assert.async();
-
-  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-    find: function(record, id) {
-      return new Ember.RSVP.Promise(function(resolve, reject) {
-        reject({error: true});
-      });
-    }
-  });
-
-  Model.adapter = FixtureFindQueryAdapter.create();
-
-  var promise = Ember.run(Model, Model.fetchById, 'a');
-  promise.then(null, function(error) {
-    assert.deepEqual(error, {error: true});
-    done();
-  });
-});
-
-QUnit.test("fetchMany resolves with error object", function(assert) {
-  assert.expect(1);
-  var done = assert.async();
-
-  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-    findMany: function(klass, records, params) {
-      return new Ember.RSVP.Promise(function(resolve, reject) {
-        reject({error: true});
-      });
-    }
-  });
-
-  Model.adapter = FixtureFindQueryAdapter.create();
-
-  var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
-  promise.then(null, function(error) {
-    assert.deepEqual(error, {error: true});
-    done();
-  });
-});
+//
+// QUnit.test("fetchById resolves with error object", function(assert) {
+//   assert.expect(1);
+//   var done = assert.async();
+//
+//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+//     find: function(record, id) {
+//       return new Ember.RSVP.Promise(function(resolve, reject) {
+//         reject({error: true});
+//       });
+//     }
+//   });
+//
+//   Model.adapter = FixtureFindQueryAdapter.create();
+//
+//   var promise = Ember.run(Model, Model.fetchById, 'a');
+//   promise.then(null, function(error) {
+//     assert.deepEqual(error, {error: true});
+//     done();
+//   });
+// });
+//
+// QUnit.test("fetchMany resolves with error object", function(assert) {
+//   assert.expect(1);
+//   var done = assert.async();
+//
+//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+//     findMany: function(klass, records, params) {
+//       return new Ember.RSVP.Promise(function(resolve, reject) {
+//         reject({error: true});
+//       });
+//     }
+//   });
+//
+//   Model.adapter = FixtureFindQueryAdapter.create();
+//
+//   var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
+//   promise.then(null, function(error) {
+//     assert.deepEqual(error, {error: true});
+//     done();
+//   });
+// });
 //
 // QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert) {
 //   assert.expect(1);
