@@ -56,6 +56,7 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
+    App.register('emstore:main', Ember.Model.Store);
   });
   App.Article  = Ember.Model.extend({
       id: Ember.attr(String)
@@ -64,7 +65,9 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
       article: Ember.belongsTo('article', { key: 'article', embedded: true })
     });
 
-  var comment = App.Comment.create({container: App.__container__});
+  var store = App.__container__.lookup('emstore:main');
+  var comment = store.createRecord('comment', {});
+
   Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
   var article = Ember.run(comment, comment.get, 'article');
 
@@ -74,6 +77,8 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
 });
 
 QUnit.test("non embedded belongsTo should get a record by its id", function(assert) {
+  var done = assert.async();
+
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -89,7 +94,6 @@ QUnit.test("non embedded belongsTo should get a record by its id", function(asse
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
 
-  var done = assert.async();
   article.one('didLoad', function() {
     assert.equal(article.get('slug'), 'first-article');
     assert.ok(article instanceof Article);
@@ -98,6 +102,8 @@ QUnit.test("non embedded belongsTo should get a record by its id", function(asse
 });
 
 QUnit.test("relationship should be refreshed when data changes", function(assert) {
+  var done = assert.async();
+
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
@@ -117,7 +123,6 @@ QUnit.test("relationship should be refreshed when data changes", function(assert
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   article = Ember.run(comment, comment.get, 'article');
 
-  var done = assert.async();
   article.one('didLoad', function() {
     assert.equal(article.get('slug'), 'first-article');
     assert.ok(article instanceof Article);
@@ -200,7 +205,6 @@ QUnit.test("un-embedded belongsTo CP should handle set", function(assert) {
   });
 
   assert.deepEqual(post.toJSON(), {id: 1, author_id: 100});
-
 });
 
 QUnit.test("embedded belongsTo CP should handle set", function(assert) {
@@ -482,8 +486,6 @@ QUnit.test("relationships should be seralized when specified with string", funct
 
 
 QUnit.test("belongsTo from an embedded source is able to materialize without having to re-find", function(assert) {
-
-
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
@@ -527,10 +529,7 @@ QUnit.test("belongsTo from an embedded source is able to materialize without hav
   assert.equal(project1, post1.get('project'));
 });
 
-
 QUnit.test("unloaded records are removed from reference cache", function(assert) {
-
-
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
@@ -568,7 +567,6 @@ QUnit.test("unloaded records are removed from reference cache", function(assert)
   Company.load([compJson2]);
   company = Company.find(1);
   var reloadedProject1 = company.get('projects.firstObject');
-
 
   assert.notEqual(project1, reloadedProject1);
   assert.equal(project1.get('title'), 'project one title');
@@ -619,8 +617,6 @@ QUnit.test("unloaded records are removed from hasMany cache", function(assert) {
 });
 
 QUnit.test("belongsTo records created are available from reference cache", function(assert) {
-
-
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
@@ -701,10 +697,11 @@ QUnit.test("key defaults to model's property key", function(assert) {
   assert.deepEqual(comment.toJSON(), { article: 2 });
 });
 
-QUnit.test("non embedded belongsTo should return a record with a container", function(assert) {
+QUnit.test("non embedded belongsTo should return a record with an owner", function(assert) {
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
+    App.register('emstore:main', Ember.Model.Store);
   });
   App.Article = Ember.Model.extend({
     id: Ember.attr(String)
@@ -716,9 +713,11 @@ QUnit.test("non embedded belongsTo should return a record with a container", fun
   App.Article.adapter = Ember.FixtureAdapter.create();
   App.Article.FIXTURES = [{ id: 'first-article' }];
 
-  var comment = App.Comment.create({container: App.__container__});
+  var store = App.__container__.lookup('emstore:main');
+  var comment = store.createRecord('comment', {});
+
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
-  assert.ok(article.get('container'));
+  assert.ok(Ember.getOwner(article));
   Ember.run(App, 'destroy');
 });

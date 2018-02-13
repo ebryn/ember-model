@@ -17,9 +17,6 @@ QUnit.module("Ember.Model", {
       {name: 'Erik'},
       {name: 'Alex'}
     ];
-  },
-  afterEach: function() {
-
   }
 });
 
@@ -87,23 +84,24 @@ QUnit.test("can define attributes with Ember.attr, data is accessible", function
 
 QUnit.test("can handle models without an ID", function(assert) {
   assert.expect(3);
-  var records = ModelWithoutID.find();
   var done = assert.async();
+
+  var records = ModelWithoutID.find();
   records.on('didLoad', function() {
     assert.equal(records.get('length'), 2);
     assert.equal(records.get('firstObject.name'), 'Erik');
     assert.equal(records.get('lastObject.name'), 'Alex');
     done();
   });
-
 });
 
 QUnit.test("can handle models with ID of zero", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var ModelWithZeroID = Model.extend({
-      id: Ember.attr(),
-      name: Ember.attr()
+    id: Ember.attr(),
+    name: Ember.attr()
   });
 
   ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
@@ -112,25 +110,25 @@ QUnit.test("can handle models with ID of zero", function(assert) {
   ];
 
   var record = Ember.run(ModelWithZeroID, ModelWithZeroID.find, 0);
-  var done = assert.async();
 
   record.on('didLoad', function() {
     assert.equal(record.get('name'), 'Erik');
     done();
   });
+
 });
 
-// test("coercion", function() {
+// QUnit.test("coercion", function() {
 // });
 
 QUnit.test(".find(id) delegates to the adapter's find method", function(assert) {
   assert.expect(6);
+  var done = assert.async();
 
   var record = Ember.run(Model, Model.find, 'a');
   assert.ok(record, "Record was returned by find");
   assert.ok(!record.get('isLoaded'));
   assert.ok(record.get('isLoading'));
-  var done = assert.async();
 
   record.on('didLoad', function() {
     assert.equal(record.get('name'), 'Erik', "Loaded value is accessible from the record");
@@ -191,12 +189,12 @@ QUnit.test(".reload() loads the record via the adapter after it was loaded", fun
 
 QUnit.test(".reload() returns a promise", function(assert) {
   assert.expect(2);
+  var done = assert.async();
 
   Model.load([{ token: 'a', name: 'Yehuda' }]);
   var record = Ember.run(Model, Model.find, 'a');
 
   var promise = Ember.run(record, record.reload);
-  var done = assert.async();
   promise.then(function(resolvedRecord) {
     assert.ok(resolvedRecord === record, ".reload() resolved with same record");
     assert.ok(true, ".reload() returned a promise");
@@ -206,9 +204,9 @@ QUnit.test(".reload() returns a promise", function(assert) {
 
 QUnit.test(".revert() sets the data back to its saved state", function(assert) {
   assert.expect(3);
+  var done = assert.async();
 
   var record = Ember.run(Model, Model.find, 'a');
-  var done = assert.async();
 
   record.on('didLoad', function() {
     record.set('name', 'Brian');
@@ -280,16 +278,15 @@ QUnit.test(".clearCache destroys sideloadedData and record references", function
 
   assert.ok(Model._referenceCache === undefined);
   assert.ok(Model.sideloadedData === undefined);
-
 });
 
 QUnit.test("new records are added to the identity map", function(assert) {
   assert.expect(2);
+  var done = assert.async();
 
   var record = Model.create({token: 2, name: 'Yehuda'});
 
   record.save();
-  var done = assert.async();
 
   record.on("didCreateRecord", function() {
     assert.ok(Model._referenceCache);
@@ -300,11 +297,11 @@ QUnit.test("new records are added to the identity map", function(assert) {
 
 QUnit.test("creating a new record adds it to existing record arrays", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var records = Model.find();
   var record = Model.create({token: 'b', name: 'Yehuda'});
   record.save();
-  var done = assert.async();
 
   record.on('didSaveRecord', function() {
     assert.equal(records.get('length'), 2, "The record array was updated");
@@ -314,9 +311,9 @@ QUnit.test("creating a new record adds it to existing record arrays", function(a
 
 QUnit.test("destroying a record removes it from record arrays", function(assert) {
   assert.expect(2);
+  var done = assert.async();
 
   var records = Model.find();
-  var done = assert.async();
   records.on('didLoad', function() {
     assert.equal(records.get('length'), 1, "The record array was updated");
     var record = Model.find('a');
@@ -330,6 +327,7 @@ QUnit.test("destroying a record removes it from record arrays", function(assert)
 
 QUnit.test("record isNew & isSaving flags", function(assert) {
   assert.expect(5);
+  var done = assert.async();
 
   var record = Model.create();
   assert.ok(record.get('isNew'));
@@ -338,8 +336,6 @@ QUnit.test("record isNew & isSaving flags", function(assert) {
   assert.ok(record.get('isNew'));
   assert.ok(record.get('isSaving'));
 
-  var done = assert.async();
-
   record.on('didSaveRecord', function() {
     assert.ok(!record.get('isNew'));
     assert.ok(!record.get('isSaving'));
@@ -347,12 +343,11 @@ QUnit.test("record isNew & isSaving flags", function(assert) {
   });
 });
 
-
 QUnit.test("record.toJSON() is generated from Ember.attr definitions", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var record = Ember.run(Model, Model.find, 'a');
-  var done = assert.async();
   record.on('didLoad', function() {
     assert.deepEqual(record.toJSON(), {token: 'a', name: 'Erik'});
     done();
@@ -361,11 +356,11 @@ QUnit.test("record.toJSON() is generated from Ember.attr definitions", function(
 
 QUnit.test("record.toJSON() uses rootKey if it is defined", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   Model.rootKey = 'model';
 
   var record = Ember.run(Model, Model.find, 'a');
-  var done = assert.async();
   record.on('didLoad', function() {
     assert.deepEqual(record.toJSON(), { model: { token: 'a', name: 'Erik' } });
     done();
@@ -391,9 +386,9 @@ QUnit.test("record.toJSON() can use computed property as rootKey", function(asse
 
 QUnit.test("Model.fetch() returns a promise", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var promise = Ember.run(Model, Model.fetch);
-  var done = assert.async();
   promise.then(function(record) {
     assert.ok(record.get('isLoaded'));
     done();
@@ -402,9 +397,9 @@ QUnit.test("Model.fetch() returns a promise", function(assert) {
 
 QUnit.test("Model.fetch(id) returns a promise", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var promise = Ember.run(Model, Model.fetch, 'a');
-  var done = assert.async();
   promise.then(function(record) {
     assert.ok(record.get('isLoaded'));
     done();
@@ -413,9 +408,9 @@ QUnit.test("Model.fetch(id) returns a promise", function(assert) {
 
 QUnit.test("Model#save() returns a promise", function(assert) {
   assert.expect(2);
+  var done = assert.async();
 
   var promise = Ember.run(Model, Model.fetch, 'a');
-  var done = assert.async();
   promise.then(function(record) {
     record.set('name', 'Stefan');
     record.save().then(function(record2) {
@@ -428,9 +423,9 @@ QUnit.test("Model#save() returns a promise", function(assert) {
 
 QUnit.test("Model#deleteRecord() returns a promise", function(assert) {
   assert.expect(2);
+  var done = assert.async();
 
   var promise = Ember.run(Model, Model.fetch, 'a');
-  var done = assert.async();
   promise.then(function(record) {
     record.deleteRecord().then(function(record2) {
       assert.equal(record, record2);
@@ -442,10 +437,10 @@ QUnit.test("Model#deleteRecord() returns a promise", function(assert) {
 
 QUnit.test("Model#save() works as expected", function(assert) {
   assert.expect(2);
+  var done = assert.async();
 
   var recordsPromise = Ember.run(Model, Model.fetch);
   var record = Ember.run(Model, Model.find, 'a');
-  var done = assert.async();
 
   recordsPromise.then(function(records) {
     assert.ok(!record.get('isNew'));
@@ -460,6 +455,7 @@ QUnit.test("Model#save() works as expected", function(assert) {
 
 QUnit.test("Model#create() works as expected", function(assert) {
   assert.expect(10);
+  var done = assert.async();
 
   var record = Model.create({name: 'Yehuda'});
 
@@ -467,7 +463,6 @@ QUnit.test("Model#create() works as expected", function(assert) {
   assert.ok(record.get('isLoaded'), "record isLoaded upon instantiation");
   assert.ok(!record.get('isSaving'), "record isSaving is false upon instantiation");
 
-  var done = assert.async();
   record.save().then(function(record2) {
     assert.equal(record, record2, "The same record object is passed into the resolved promise");
     assert.ok(!record.get('isNew'), "The record is no longer new after being saved");
@@ -617,29 +612,29 @@ QUnit.test("toJSON works with string names", function(assert) {
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
+    App.register('emstore:main', Ember.Model.Store);
   });
 
   var Comment = Ember.Model.extend({
-        container: App.__container__,
         id: Ember.attr(),
         text: Ember.attr()
       }),
       Author = Ember.Model.extend({
-        container: App.__container__,
         id: Ember.attr(),
         name: Ember.attr()
       }),
       Article = Ember.Model.extend({
-        container: App.__container__,
         id: 1,
         title: Ember.attr(),
         comments: Ember.hasMany('comment', { key: 'comments' }),
         author: Ember.belongsTo('author', { key: 'author' })
       });
 
-  App.registry.register('model:comment', Comment);
-  App.registry.register('model:author', Author);
-  App.registry.register('model:article', Article);
+  App.register('model:comment', Comment);
+  App.register('model:author', Author);
+  App.register('model:article', Article);
+
+  assert.ok(true);
 
   var articleData = {
     id: 1,
@@ -658,12 +653,12 @@ QUnit.test("toJSON works with string names", function(assert) {
     {id: 3, text: 'tres'}
   ];
 
+  var store = App.__container__.lookup('emstore:main');
+  var article = store.createRecord('article', {name: "Erik"});
 
-  var article = Article.create();
   Ember.run(article, article.load, articleData.id, articleData);
 
   var json = Ember.run(article, article.toJSON);
-
   assert.deepEqual(json.comments, [1, 2, 3], "JSON should contain ids of hasMany relationship");
   assert.equal(json.author, 1, "JSON should contain id of belongsTo relationship");
   Ember.run(function() {
@@ -673,6 +668,7 @@ QUnit.test("toJSON works with string names", function(assert) {
 
 QUnit.test("creating a record with camelizedKeys = true works as expected", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var Page = Ember.Model.extend({
     someAuthor: Ember.attr()
@@ -684,7 +680,6 @@ QUnit.test("creating a record with camelizedKeys = true works as expected", func
   var record = Page.create({someAuthor: 'Brian'});
 
   record.save();
-  var done = assert.async();
 
   record.on('didCreateRecord', function() {
     assert.equal(record.get('someAuthor'), 'Brian', 'preserves data keys on didCreateRecord');
@@ -724,6 +719,7 @@ QUnit.test("record is available in reference cache when load is run in cachedRec
 
 QUnit.test("fetchQuery returns a promise", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
     findQuery: function(klass, records, params) {
@@ -737,7 +733,6 @@ QUnit.test("fetchQuery returns a promise", function(assert) {
   Model.adapter = FixtureFindQueryAdapter.create();
 
   var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
-  var done = assert.async();
   promise.then(function(records) {
     assert.ok(records.get('isLoaded'));
     done();
@@ -746,6 +741,7 @@ QUnit.test("fetchQuery returns a promise", function(assert) {
 
 QUnit.test("second promise returned by fetchAll when loading, resolves on load", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var deferred = Ember.RSVP.defer();
 
@@ -763,7 +759,6 @@ QUnit.test("second promise returned by fetchAll when loading, resolves on load",
 
   var firstPromise = Ember.run(Model, Model.fetchAll);
   var secondPromise = Ember.run(Model, Model.fetchAll);
-  var done = assert.async();
 
   secondPromise.then(function(records) {
     assert.ok(records.get('isLoaded'), 'records should be loaded when promise resolves');
@@ -774,19 +769,22 @@ QUnit.test("second promise returned by fetchAll when loading, resolves on load",
 });
 
 QUnit.test("fetchAll returns a promise", function(assert) {
-    var promise = Ember.run(Model, Model.fetchAll);
-    var done = assert.async();
-    promise.then(function(records) {
-      assert.ok(records.get('isLoaded'));
-      assert.equal(records.get('length'), 1);
-      done();
-    });
+  assert.expect(2);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetchAll);
+  promise.then(function(records) {
+    assert.ok(records.get('isLoaded'));
+    assert.equal(records.get('length'), 1);
+    done();
+  });
 });
 
 QUnit.test("fetchAll returns promise if findAll RecordArray already exists", function(assert) {
   assert.expect(1);
-  var promise = Ember.run(Model, Model.fetch);
   var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch);
   promise.then(function(records) {
     var secondPromise = Ember.run(Model, Model.fetch);
     secondPromise.then(function() {
@@ -798,9 +796,10 @@ QUnit.test("fetchAll returns promise if findAll RecordArray already exists", fun
 
 QUnit.test("fetchAll resolves to same RecordArray when called multiple times", function(assert) {
   assert.expect(1);
+  var done = assert.async();
+
   var promiseOne = Ember.run(Model, Model.fetch);
   var promiseTwo = Ember.run(Model, Model.fetch);
-  var done = assert.async();
   Ember.RSVP.all([promiseOne, promiseTwo]).then(function(records) {
     assert.ok(records[0] === records[1], "Both promises resolve with same RecordArray");
     done();
@@ -808,6 +807,9 @@ QUnit.test("fetchAll resolves to same RecordArray when called multiple times", f
 });
 
 QUnit.test("fetchMany returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
     findMany: function(klass, records, params) {
       records.set('isLoaded', true);
@@ -820,7 +822,6 @@ QUnit.test("fetchMany returns a promise", function(assert) {
   Model.adapter = FixtureFindQueryAdapter.create();
 
   var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
-  var done = assert.async();
   promise.then(function(records) {
     assert.ok(records.get('isLoaded'));
     done();
@@ -829,9 +830,9 @@ QUnit.test("fetchMany returns a promise", function(assert) {
 
 QUnit.test("fetchById returns a promise", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var promise = Ember.run(Model, Model.fetchById, 'a');
-  var done = assert.async();
   promise.then(function(record) {
     assert.ok(record.get('isLoaded'));
     done();
@@ -840,6 +841,7 @@ QUnit.test("fetchById returns a promise", function(assert) {
 
 QUnit.test("fetchQuery resolves with error object", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
     findQuery: function(klass, records, params) {
@@ -852,7 +854,6 @@ QUnit.test("fetchQuery resolves with error object", function(assert) {
   Model.adapter = FixtureFindQueryAdapter.create();
 
   var promise = Ember.run(Model, Model.fetchQuery, {name: 'a'});
-  var done = assert.async();
   promise.then(null, function(error) {
     assert.deepEqual(error, {error: true});
     done();
@@ -861,6 +862,7 @@ QUnit.test("fetchQuery resolves with error object", function(assert) {
 
 QUnit.test("fetchAll resolves with error object", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
     findAll: function(klass, records, params) {
@@ -873,7 +875,6 @@ QUnit.test("fetchAll resolves with error object", function(assert) {
   Model.adapter = FixtureFindQueryAdapter.create();
 
   var promise = Ember.run(Model, Model.fetchAll);
-  var done = assert.async();
   promise.then(null, function(error) {
     assert.equal(error.error, true);
     done();
@@ -882,6 +883,7 @@ QUnit.test("fetchAll resolves with error object", function(assert) {
 
 QUnit.test("fetchById resolves with error object", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
     find: function(record, id) {
@@ -894,7 +896,6 @@ QUnit.test("fetchById resolves with error object", function(assert) {
   Model.adapter = FixtureFindQueryAdapter.create();
 
   var promise = Ember.run(Model, Model.fetchById, 'a');
-  var done = assert.async();
   promise.then(null, function(error) {
     assert.deepEqual(error, {error: true});
     done();
@@ -902,6 +903,9 @@ QUnit.test("fetchById resolves with error object", function(assert) {
 });
 
 QUnit.test("fetchMany resolves with error object", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
     findMany: function(klass, records, params) {
       return new Ember.RSVP.Promise(function(resolve, reject) {
@@ -913,7 +917,6 @@ QUnit.test("fetchMany resolves with error object", function(assert) {
   Model.adapter = FixtureFindQueryAdapter.create();
 
   var promise = Ember.run(Model, Model.fetchMany, ['a', 'b']);
-  var done = assert.async();
   promise.then(null, function(error) {
     assert.deepEqual(error, {error: true});
     done();
@@ -922,22 +925,22 @@ QUnit.test("fetchMany resolves with error object", function(assert) {
 
 QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert) {
   assert.expect(1);
+  var done = assert.async();
 
   var records = Model.find();
-  var done = assert.async();
   records.on('didLoad', function() {
     Model.clearCache();
     var newRecords = Model.find();
-    assert.equal( newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray" );
+    assert.equal(newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray");
     done();
   });
 });
-// TODO: test that creating a record calls load
-
-// test('Model#registerRecordArray', function(){
-
-// });
-
-// test('Model#unregisterRecordArray', function(){
-
-// });
+// // TODO: test that creating a record calls load
+//
+// // QUnit.test('Model#registerRecordArray', function(){
+//
+// // });
+//
+// // QUnit.test('Model#unregisterRecordArray', function(){
+//
+// // });

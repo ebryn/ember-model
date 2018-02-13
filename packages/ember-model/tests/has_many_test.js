@@ -86,8 +86,10 @@ QUnit.test("model can be specified with a string instead of a class", function(a
 
 QUnit.test("model can be specified with a string to a resolved path", function(assert) {
   var App;
+
   Ember.run(function() {
     App = Ember.Application.create({});
+    App.register('emstore:main', Ember.Model.Store);
   });
 
   App.Subcomment = Ember.Model.extend({
@@ -101,7 +103,9 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
     comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
   });
 
-  var article = App.Article.create({container: App.__container__});
+  var store = App.__container__.lookup('emstore:main');
+  var article = store.createRecord('article', {});
+
   var subcomments = {
     subcomments: Ember.A([
       {id: 'c'},
@@ -239,8 +243,6 @@ QUnit.test("materializing the relationship should not dirty the record", functio
 });
 
 QUnit.test("has many records created are available from reference cache", function(assert) {
-
-
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
@@ -265,10 +267,10 @@ QUnit.test("has many records created are available from reference cache", functi
     projects:[{
           id: 1,
           title: 'project one title',
-          company: 1, 
-          posts: [{id: 1, title: 'title', body: 'body', project:1 }, 
+          company: 1,
+          posts: [{id: 1, title: 'title', body: 'body', project:1 },
                   {id: 2, title: 'title two', body: 'body two', project:1 }]
-      }] 
+      }]
     };
 
   Company.load([compJson]);
@@ -306,10 +308,9 @@ QUnit.test("relationship type cannot be empty", function(assert) {
   Ember.run(article, article.load, 1, {comments: Ember.A([{token: 'a'}, {token: 'b'}])});
 
   expectAssertion(assert, function() {
-      article.get('comments');
+    article.get('comments');
   },
   /Type cannot be empty/);
-
 });
 
 QUnit.test("key defaults to model's property key", function(assert) {
