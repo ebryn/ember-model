@@ -19,12 +19,13 @@ QUnit.module("Ember.RecordArray", {
       {id: 3, name: 'Kris'}
     ];
     container = new Ember.Registry().container();
-  },
-  afterEach: function() { }
+  }
 });
 
 QUnit.test("load creates records with container when container exists", function(assert) {
-  var records = Ember.RecordArray.create({modelClass: Model, container: container});
+  assert.expect(6);
+  var records = Ember.RecordArray.create({ modelClass: Model });
+  Ember.setOwner(records, container);
   Ember.run(records, records.load, Model, Model.FIXTURES);
   records.forEach(function(record){
     assert.ok(record.get('isLoaded'));
@@ -33,12 +34,14 @@ QUnit.test("load creates records with container when container exists", function
 });
 
 QUnit.test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function(assert) {
+  assert.expect(4);
+  var done = assert.async();
+
   var records = Ember.run(Model, Model.find, [1,2,3]);
 
   assert.deepEqual(records.get('_ids'), [1,2,3]);
   assert.equal(records.get('length'), 0);
   assert.ok(!records.get('isLoaded'));
-  var done = assert.async();
 
   records.one('didLoad', function() {
     assert.equal(records.get('length'), 3);
@@ -123,7 +126,6 @@ QUnit.test("findQuery RecordArray implements reload", function(assert) {
   assert.equal(records.get('length'), 3);
   assert.ok(records.get('isLoaded'));
   assert.deepEqual(RESTModel.find(2).toJSON(), {id: 2, name: 'Amos'});
-
 });
 
 QUnit.test("findMany RecordArray implements reload", function(assert) {
@@ -166,7 +168,6 @@ QUnit.test("findMany RecordArray implements reload", function(assert) {
   assert.equal(records.get('length'), 2);
   assert.ok(records.get('isLoaded'));
   assert.deepEqual(RESTModel.find(2).toJSON(), {id: 2, name: 'Amos'});
-
 });
 
 QUnit.test("reload handles record removal", function(assert) {
