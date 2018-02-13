@@ -24,8 +24,9 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
 
   materializeData: function(klass, data) {
     var self = this;
+    var owner = Ember.getOwner(this);
     return Ember.A(data.map(function(el) {
-      return klass.findFromCacheOrLoad(el, self.container); // FIXME
+      return klass.findFromCacheOrLoad(el, owner);
     }));
   },
 
@@ -33,7 +34,7 @@ Ember.RecordArray = Ember.ArrayProxy.extend(Ember.Evented, {
     var modelClass = this.get('modelClass'),
         self = this,
         promises;
-    
+
     set(this, 'isLoaded', false);
     if (modelClass._findAllRecordArray === this) {
       return modelClass.adapter.findAll(modelClass, this);
