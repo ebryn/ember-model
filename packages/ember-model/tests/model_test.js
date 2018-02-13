@@ -94,113 +94,113 @@ QUnit.test("can handle models without an ID", function(assert) {
     done();
   });
 });
-// //
-// QUnit.test("can handle models with ID of zero", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
 //
-//   var ModelWithZeroID = Model.extend({
-//     id: Ember.attr(),
-//     name: Ember.attr()
-//   });
-//
-//   ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
-//   ModelWithZeroID.FIXTURES = [
-//     { id: 0, name: 'Erik' }
-//   ];
-//
-//   var record = Ember.run(ModelWithZeroID, ModelWithZeroID.find, 0);
-//
-//   record.on('didLoad', function() {
-//     assert.equal(record.get('name'), 'Erik');
-//     done();
-//   });
-//
+QUnit.test("can handle models with ID of zero", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var ModelWithZeroID = Model.extend({
+    id: Ember.attr(),
+    name: Ember.attr()
+  });
+
+  ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
+  ModelWithZeroID.FIXTURES = [
+    { id: 0, name: 'Erik' }
+  ];
+
+  var record = Ember.run(ModelWithZeroID, ModelWithZeroID.find, 0);
+
+  record.on('didLoad', function() {
+    assert.equal(record.get('name'), 'Erik');
+    done();
+  });
+
+});
+
+// QUnit.test("coercion", function() {
 // });
-//
-// // QUnit.test("coercion", function() {
-// // });
-//
-// QUnit.test(".find(id) delegates to the adapter's find method", function(assert) {
-//   assert.expect(6);
-//   var done = assert.async();
-//
-//   var record = Ember.run(Model, Model.find, 'a');
-//   assert.ok(record, "Record was returned by find");
-//   assert.ok(!record.get('isLoaded'));
-//   assert.ok(record.get('isLoading'));
-//
-//   record.on('didLoad', function() {
-//     assert.equal(record.get('name'), 'Erik', "Loaded value is accessible from the record");
-//     assert.ok(record.get('isLoaded'));
-//     assert.ok(!record.get('isLoading'));
-//     done();
-//   });
-// });
-//
-// QUnit.test(".find([]) called with a single record returns cache before delgating to adapter's find method", function(assert) {
-//   assert.expect(1);
-//
-//   Model.load([{ token: 'a', name: 'Yehuda' }]);
-//   Model.adapter = Ember.FixtureAdapter.extend({
-//     find: function() {
-//       assert.ok(false, "record should have been loaded via cache");
-//       return this._super.apply(this, arguments);
-//     }
-//   }).create();
-//
-//   var record = Ember.run(Model, Model.find, ['a']);
-//   Ember.run(Model, Model.find, 'a');
-//   assert.ok(record, "Record was returned by find");
-// });
-//
-// QUnit.test(".find([]) called when Model.transient true always delegates to adapter's find", function(assert) {
-//   assert.expect(3);
-//
-//   Model.transient = true;
-//   Model.load([{ token: 'a', name: 'Yehuda' }]);
-//   Model.adapter = Ember.FixtureAdapter.extend({
-//     find: function() {
-//       assert.ok(true, "record should not get loaded from cache");
-//       return this._super.apply(this, arguments);
-//     }
-//   }).create();
-//
-//   var record = Ember.run(Model, Model.find, ['a']);
-//   Ember.run(Model, Model.find, 'a');
-//   assert.ok(record, "Record was returned by find");
-// });
-//
-// QUnit.test(".reload() loads the record via the adapter after it was loaded", function(assert) {
-//   assert.expect(1);
-//
-//   Model.load([{ token: 'a', name: 'Yehuda' }]);
-//   var record = Ember.run(Model, Model.find, 'a');
-//
-//   Model.adapter = Ember.FixtureAdapter.extend({
-//     find: function() {
-//       assert.ok(true, "find was called in the adapter upon reload");
-//       return this._super.apply(this, arguments);
-//     }
-//   }).create();
-//
-//   Ember.run(record, record.reload);
-// });
-//
-// QUnit.test(".reload() returns a promise", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   Model.load([{ token: 'a', name: 'Yehuda' }]);
-//   var record = Ember.run(Model, Model.find, 'a');
-//
-//   var promise = Ember.run(record, record.reload);
-//   promise.then(function(resolvedRecord) {
-//     assert.ok(resolvedRecord === record, ".reload() resolved with same record");
-//     assert.ok(true, ".reload() returned a promise");
-//     done();
-//   });
-// });
+
+QUnit.test(".find(id) delegates to the adapter's find method", function(assert) {
+  assert.expect(6);
+  var done = assert.async();
+
+  var record = Ember.run(Model, Model.find, 'a');
+  assert.ok(record, "Record was returned by find");
+  assert.ok(!record.get('isLoaded'));
+  assert.ok(record.get('isLoading'));
+
+  record.on('didLoad', function() {
+    assert.equal(record.get('name'), 'Erik', "Loaded value is accessible from the record");
+    assert.ok(record.get('isLoaded'));
+    assert.ok(!record.get('isLoading'));
+    done();
+  });
+});
+
+QUnit.test(".find([]) called with a single record returns cache before delgating to adapter's find method", function(assert) {
+  assert.expect(1);
+
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      assert.ok(false, "record should have been loaded via cache");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  var record = Ember.run(Model, Model.find, ['a']);
+  Ember.run(Model, Model.find, 'a');
+  assert.ok(record, "Record was returned by find");
+});
+
+QUnit.test(".find([]) called when Model.transient true always delegates to adapter's find", function(assert) {
+  assert.expect(3);
+
+  Model.transient = true;
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      assert.ok(true, "record should not get loaded from cache");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  var record = Ember.run(Model, Model.find, ['a']);
+  Ember.run(Model, Model.find, 'a');
+  assert.ok(record, "Record was returned by find");
+});
+
+QUnit.test(".reload() loads the record via the adapter after it was loaded", function(assert) {
+  assert.expect(1);
+
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  var record = Ember.run(Model, Model.find, 'a');
+
+  Model.adapter = Ember.FixtureAdapter.extend({
+    find: function() {
+      assert.ok(true, "find was called in the adapter upon reload");
+      return this._super.apply(this, arguments);
+    }
+  }).create();
+
+  Ember.run(record, record.reload);
+});
+
+QUnit.test(".reload() returns a promise", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  Model.load([{ token: 'a', name: 'Yehuda' }]);
+  var record = Ember.run(Model, Model.find, 'a');
+
+  var promise = Ember.run(record, record.reload);
+  promise.then(function(resolvedRecord) {
+    assert.ok(resolvedRecord === record, ".reload() resolved with same record");
+    assert.ok(true, ".reload() returned a promise");
+    done();
+  });
+});
 //
 // QUnit.test(".revert() sets the data back to its saved state", function(assert) {
 //   assert.expect(3);
