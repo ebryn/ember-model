@@ -366,143 +366,143 @@ QUnit.test("record.toJSON() uses rootKey if it is defined", function(assert) {
     done();
   });
 });
-//
-// QUnit.test("record.toJSON() can use computed property as rootKey", function(assert) {
-//   assert.expect(1);
-//
-//   var CPRoot = Model.extend();
-//   CPRoot.reopenClass({
-//     rootKey: Ember.computed(function() {
-//       return 'computed';
-//     })
-//   });
-//
-//   var record = CPRoot.create({
-//     name: 'Tom Dale'
-//   });
-//
-//   assert.deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
-// });
-//
-// QUnit.test("Model.fetch() returns a promise", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetch);
-//   promise.then(function(record) {
-//     assert.ok(record.get('isLoaded'));
-//     done();
-//   });
-// });
-//
-// QUnit.test("Model.fetch(id) returns a promise", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetch, 'a');
-//   promise.then(function(record) {
-//     assert.ok(record.get('isLoaded'));
-//     done();
-//   });
-// });
-//
-// QUnit.test("Model#save() returns a promise", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetch, 'a');
-//   promise.then(function(record) {
-//     record.set('name', 'Stefan');
-//     record.save().then(function(record2) {
-//       assert.equal(record, record2);
-//       assert.ok(!record.get('isSaving'));
-//       done();
-//     });
-//   });
-// });
-//
-// QUnit.test("Model#deleteRecord() returns a promise", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var promise = Ember.run(Model, Model.fetch, 'a');
-//   promise.then(function(record) {
-//     record.deleteRecord().then(function(record2) {
-//       assert.equal(record, record2);
-//       assert.ok(record.get('isDeleted'));
-//       done();
-//     });
-//   });
-// });
-//
-// QUnit.test("Model#save() works as expected", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var recordsPromise = Ember.run(Model, Model.fetch);
-//   var record = Ember.run(Model, Model.find, 'a');
-//
-//   recordsPromise.then(function(records) {
-//     assert.ok(!record.get('isNew'));
-//
-//     record.set('name', 'Stefan');
-//     record.save().then(function() {
-//       assert.equal(records.get('length'), 1);
-//       done();
-//     });
-//   });
-// });
-//
-// QUnit.test("Model#create() works as expected", function(assert) {
-//   assert.expect(10);
-//   var done = assert.async();
-//
-//   var record = Model.create({name: 'Yehuda'});
-//
-//   assert.ok(record.get('isNew'), "record isNew upon instantiation");
-//   assert.ok(record.get('isLoaded'), "record isLoaded upon instantiation");
-//   assert.ok(!record.get('isSaving'), "record isSaving is false upon instantiation");
-//
-//   record.save().then(function(record2) {
-//     assert.equal(record, record2, "The same record object is passed into the resolved promise");
-//     assert.ok(!record.get('isNew'), "The record is no longer new after being saved");
-//     assert.ok(record.get('isLoaded'), "The record isLoaded");
-//     assert.ok(!record.get('isSaving'), "The record is no longer saving");
-//     done();
-//   });
-//
-//   assert.ok(record.get('isNew'), "The record is still new until the save completes");
-//   assert.ok(record.get('isLoaded'), "The record is still loaded while saving is in progress");
-//   assert.ok(record.get('isSaving'), 'The record isSaving flag is true while saving is in progress');
-// });
-//
-// QUnit.test(".getAttributes() returns the model's attributes", function(assert) {
-//   var attr = Ember.attr,
-//       BaseModel = Ember.Model.extend({
-//         id: attr()
-//       }),
-//
-//       Person = BaseModel.extend({
-//         name: attr(),
-//         nationality: attr()
-//       }),
-//
-//       Employee = Person.extend({
-//         employeeId: attr()
-//       }),
-//
-//       Animal = BaseModel.extend({
-//         order: attr(),
-//         family: attr(),
-//         genus: attr(),
-//         species: attr()
-//       });
-//
-//   assert.deepEqual(Employee.getAttributes(), ['id', 'name', 'nationality', 'employeeId']);
-//   assert.deepEqual(Person.getAttributes(), ['id', 'name', 'nationality']);
-//   assert.deepEqual(Animal.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
-//   assert.deepEqual(BaseModel.getAttributes(), ['id']);
-// });
+
+QUnit.test("record.toJSON() can use computed property as rootKey", function(assert) {
+  assert.expect(1);
+
+  var CPRoot = Model.extend();
+  CPRoot.reopenClass({
+    rootKey: Ember.computed(function() {
+      return 'computed';
+    })
+  });
+
+  var record = CPRoot.create({
+    name: 'Tom Dale'
+  });
+
+  assert.deepEqual(record.toJSON(), {computed: {token: undefined, name: 'Tom Dale'}});
+});
+
+QUnit.test("Model.fetch() returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch);
+  promise.then(function(record) {
+    assert.ok(record.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("Model.fetch(id) returns a promise", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch, 'a');
+  promise.then(function(record) {
+    assert.ok(record.get('isLoaded'));
+    done();
+  });
+});
+
+QUnit.test("Model#save() returns a promise", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch, 'a');
+  promise.then(function(record) {
+    record.set('name', 'Stefan');
+    record.save().then(function(record2) {
+      assert.equal(record, record2);
+      assert.ok(!record.get('isSaving'));
+      done();
+    });
+  });
+});
+
+QUnit.test("Model#deleteRecord() returns a promise", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var promise = Ember.run(Model, Model.fetch, 'a');
+  promise.then(function(record) {
+    record.deleteRecord().then(function(record2) {
+      assert.equal(record, record2);
+      assert.ok(record.get('isDeleted'));
+      done();
+    });
+  });
+});
+
+QUnit.test("Model#save() works as expected", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var recordsPromise = Ember.run(Model, Model.fetch);
+  var record = Ember.run(Model, Model.find, 'a');
+
+  recordsPromise.then(function(records) {
+    assert.ok(!record.get('isNew'));
+
+    record.set('name', 'Stefan');
+    record.save().then(function() {
+      assert.equal(records.get('length'), 1);
+      done();
+    });
+  });
+});
+
+QUnit.test("Model#create() works as expected", function(assert) {
+  assert.expect(10);
+  var done = assert.async();
+
+  var record = Model.create({name: 'Yehuda'});
+
+  assert.ok(record.get('isNew'), "record isNew upon instantiation");
+  assert.ok(record.get('isLoaded'), "record isLoaded upon instantiation");
+  assert.ok(!record.get('isSaving'), "record isSaving is false upon instantiation");
+
+  record.save().then(function(record2) {
+    assert.equal(record, record2, "The same record object is passed into the resolved promise");
+    assert.ok(!record.get('isNew'), "The record is no longer new after being saved");
+    assert.ok(record.get('isLoaded'), "The record isLoaded");
+    assert.ok(!record.get('isSaving'), "The record is no longer saving");
+    done();
+  });
+
+  assert.ok(record.get('isNew'), "The record is still new until the save completes");
+  assert.ok(record.get('isLoaded'), "The record is still loaded while saving is in progress");
+  assert.ok(record.get('isSaving'), 'The record isSaving flag is true while saving is in progress');
+});
+
+QUnit.test(".getAttributes() returns the model's attributes", function(assert) {
+  var attr = Ember.attr,
+      BaseModel = Ember.Model.extend({
+        id: attr()
+      }),
+
+      Person = BaseModel.extend({
+        name: attr(),
+        nationality: attr()
+      }),
+
+      Employee = Person.extend({
+        employeeId: attr()
+      }),
+
+      Animal = BaseModel.extend({
+        order: attr(),
+        family: attr(),
+        genus: attr(),
+        species: attr()
+      });
+
+  assert.deepEqual(Employee.getAttributes(), ['id', 'name', 'nationality', 'employeeId']);
+  assert.deepEqual(Person.getAttributes(), ['id', 'name', 'nationality']);
+  assert.deepEqual(Animal.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
+  assert.deepEqual(BaseModel.getAttributes(), ['id']);
+});
 //
 // QUnit.test(".getRelationships() returns the model's relationships", function(assert) {
 //   var Comment = Ember.Model.extend(),
