@@ -859,27 +859,27 @@ QUnit.test("fetchQuery resolves with error object", function(assert) {
     done();
   });
 });
-
-QUnit.test("fetchAll resolves with error object", function(assert) {
-  assert.expect(1);
-  var done = assert.async();
-
-  var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
-    findAll: function(klass, records, params) {
-      return new Ember.RSVP.Promise(function(resolve, reject) {
-        reject({error: true});
-      });
-    }
-  });
-
-  Model.adapter = FixtureFindQueryAdapter.create();
-
-  var promise = Ember.run(Model, Model.fetchAll);
-  promise.then(null, function(error) {
-    assert.equal(error.error, true);
-    done();
-  });
-});
+//
+// QUnit.test("fetchAll resolves with error object", function(assert) {
+//   assert.expect(1);
+//   var done = assert.async();
+//
+//   var FixtureFindQueryAdapter = Ember.FixtureAdapter.extend({
+//     findAll: function(klass, records, params) {
+//       return new Ember.RSVP.Promise(function(resolve, reject) {
+//         reject({error: true});
+//       });
+//     }
+//   });
+//
+//   Model.adapter = FixtureFindQueryAdapter.create();
+//
+//   var promise = Ember.run(Model, Model.fetchAll);
+//   promise.then(null, function(error) {
+//     assert.equal(error.error, true);
+//     done();
+//   });
+// });
 //
 // QUnit.test("fetchById resolves with error object", function(assert) {
 //   assert.expect(1);
@@ -923,18 +923,18 @@ QUnit.test("fetchAll resolves with error object", function(assert) {
 //   });
 // });
 //
-// QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var records = Model.find();
-//   records.on('didLoad', function() {
-//     Model.clearCache();
-//     var newRecords = Model.find();
-//     assert.equal(newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray");
-//     done();
-//   });
-// });
+QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var records = Model.find();
+  records.on('didLoad', function() {
+    Model.clearCache();
+    var newRecords = Model.find();
+    assert.equal(newRecords.get( 'isLoaded' ), false, "clearCache should clear _findAllRecordArray");
+    done();
+  });
+});
 // // TODO: test that creating a record calls load
 //
 // // QUnit.test('Model#registerRecordArray', function(){
