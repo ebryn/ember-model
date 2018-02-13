@@ -34,66 +34,66 @@ QUnit.test("creates reference when creating record", function(assert) {
   assert.equal(reference.record, model, "reference should keep a reference to a model");
 });
 
-// QUnit.test("updates reference and cache when primary key changes", function(assert) {
-//   assert.expect(7);
-//
-//   var model = Model.create(),
-//       reference = model._reference;
-//
-//   assert.equal(reference.id, undefined, "reference should keep record's id");
-//   assert.equal(reference.record, model, "reference should keep a reference to a model");
-//
-//   model.load('abc123', { token: 'abc123', name: 'Joy' });
-//   reference = model._reference;
-//
-//   assert.equal(reference.id, 'abc123', "reference should be updated to record's id");
-//   assert.equal(reference.record, model, "reference should keep a reference to a model");
-//   assert.equal(reference.record.get('token'), 'abc123', "reference should have updated record's property");
-//   assert.equal(reference.record.get('name'), 'Joy', "reference should have updated record's property");
-//   assert.equal(Model.find('abc123'), model, 'find should get model');
-// });
-//
-// QUnit.test("isLoaded observers have all the updated properties", function(assert) {
-//   assert.expect(2);
-//
-//   var FooAdapter = Ember.RESTAdapter.extend({
-//     find: function (record, id) {
-//       record.load(id, { token: id, name: 'Joy' });
-//     }
-//   });
-//
-//   var Foo = Model.extend({
-//     isLoadedDidChange: Ember.observer('isLoaded', function() {
-//       assert.ok(this.get('isLoaded'));
-//       assert.ok(!this.get('isNew'), "loaded model should not be new");
-//     })
-//   });
-//
-//   Foo.reopenClass({
-//     adapter: FooAdapter.create()
-//   });
-//
-//   var model = Foo.find('abc123');
-// });
-//
-// QUnit.test("can define attributes with Ember.attr, data is accessible", function(assert) {
-//   var instance = Model.create({name: "Erik"});
-//
-//   assert.equal(instance.get('name'), "Erik", "Property value was retained");
-// });
-//
-// QUnit.test("can handle models without an ID", function(assert) {
-//   assert.expect(3);
-//   var done = assert.async();
-//
-//   var records = ModelWithoutID.find();
-//   records.on('didLoad', function() {
-//     assert.equal(records.get('length'), 2);
-//     assert.equal(records.get('firstObject.name'), 'Erik');
-//     assert.equal(records.get('lastObject.name'), 'Alex');
-//     done();
-//   });
-// });
+QUnit.test("updates reference and cache when primary key changes", function(assert) {
+  assert.expect(7);
+
+  var model = Model.create(),
+      reference = model._reference;
+
+  assert.equal(reference.id, undefined, "reference should keep record's id");
+  assert.equal(reference.record, model, "reference should keep a reference to a model");
+
+  model.load('abc123', { token: 'abc123', name: 'Joy' });
+  reference = model._reference;
+
+  assert.equal(reference.id, 'abc123', "reference should be updated to record's id");
+  assert.equal(reference.record, model, "reference should keep a reference to a model");
+  assert.equal(reference.record.get('token'), 'abc123', "reference should have updated record's property");
+  assert.equal(reference.record.get('name'), 'Joy', "reference should have updated record's property");
+  assert.equal(Model.find('abc123'), model, 'find should get model');
+});
+
+QUnit.test("isLoaded observers have all the updated properties", function(assert) {
+  assert.expect(2);
+
+  var FooAdapter = Ember.RESTAdapter.extend({
+    find: function (record, id) {
+      record.load(id, { token: id, name: 'Joy' });
+    }
+  });
+
+  var Foo = Model.extend({
+    isLoadedDidChange: Ember.observer('isLoaded', function() {
+      assert.ok(this.get('isLoaded'));
+      assert.ok(!this.get('isNew'), "loaded model should not be new");
+    })
+  });
+
+  Foo.reopenClass({
+    adapter: FooAdapter.create()
+  });
+
+  var model = Foo.find('abc123');
+});
+
+QUnit.test("can define attributes with Ember.attr, data is accessible", function(assert) {
+  var instance = Model.create({name: "Erik"});
+
+  assert.equal(instance.get('name'), "Erik", "Property value was retained");
+});
+
+QUnit.test("can handle models without an ID", function(assert) {
+  assert.expect(3);
+  var done = assert.async();
+
+  var records = ModelWithoutID.find();
+  records.on('didLoad', function() {
+    assert.equal(records.get('length'), 2);
+    assert.equal(records.get('firstObject.name'), 'Erik');
+    assert.equal(records.get('lastObject.name'), 'Alex');
+    done();
+  });
+});
 // //
 // QUnit.test("can handle models with ID of zero", function(assert) {
 //   assert.expect(1);
