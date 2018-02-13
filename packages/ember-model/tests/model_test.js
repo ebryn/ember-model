@@ -201,171 +201,171 @@ QUnit.test(".reload() returns a promise", function(assert) {
     done();
   });
 });
-//
-// QUnit.test(".revert() sets the data back to its saved state", function(assert) {
-//   assert.expect(3);
-//   var done = assert.async();
-//
-//   var record = Ember.run(Model, Model.find, 'a');
-//
-//   record.on('didLoad', function() {
-//     record.set('name', 'Brian');
-//     assert.ok(record.get('isDirty'));
-//     record.revert();
-//
-//     assert.equal(record.get('name'), 'Erik');
-//     assert.ok(!record.get('isDirty'));
-//     done();
-//   });
-// });
-//
-// QUnit.test(".revert() works on new records with no attributes", function(assert) {
-//   assert.expect(4);
-//
-//   var record = Model.create();
-//   assert.ok(!record.get('isDirty'));
-//
-//   record.set('name', 'Brian');
-//   assert.ok(record.get('isDirty'));
-//   record.revert();
-//
-//   assert.equal(record.get('name'), null);
-//   assert.ok(!record.get('isDirty'));
-// });
-//
-// QUnit.test(".find(id) called multiple times returns the same object (identity map)", function(assert) {
-//   assert.expect(1);
-//
-//   var first = Ember.run(Model, Model.find, 'a'),
-//       second = Ember.run(Model, Model.find, 'a');
-//
-//   assert.equal(first, second);
-// });
-//
-// QUnit.test(".unload(model) removes models from caches and subsequent find(id) return new objects", function(assert) {
-//   assert.expect(4);
-//
-//   var first = Ember.run(Model, Model.find, 'a'),
-//       second = Ember.run(Model, Model.find, 'a');
-//
-//   Model.unload(first);
-//
-//   first.set('token', 'b');
-//   assert.ok(first.get('token') === second.get('token'), "record models are the same object");
-//
-//   second = Ember.run(Model, Model.find, 'a');
-//   assert.ok(first.get('token') !== second.get('token'), "records ids are different");
-//
-//   second.set('token', 'b');
-//   assert.ok(first.get('token') === second.get('token'));
-//
-//   second.set('token', 'c');
-//   assert.ok(first.get('token') !== second.get('token'));
-// });
-//
-// QUnit.test(".clearCache destroys sideloadedData and record references", function(assert) {
-//   assert.expect(4);
-//
-//   var first = Ember.run(Model, Model.find, 'a'),
-//       second = Ember.run(Model, Model.find, 'a');
-//
-//   Model.load([{token: 2, name: 'Yehuda'}]);
-//
-//   assert.ok(Model._referenceCache !== undefined);
-//   assert.ok(Model.sideloadedData !== undefined);
-//
-//   Model.clearCache();
-//
-//   assert.ok(Model._referenceCache === undefined);
-//   assert.ok(Model.sideloadedData === undefined);
-// });
-//
-// QUnit.test("new records are added to the identity map", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var record = Model.create({token: 2, name: 'Yehuda'});
-//
-//   record.save();
-//
-//   record.on("didCreateRecord", function() {
-//     assert.ok(Model._referenceCache);
-//     assert.equal(Model._referenceCache[2].record, record);
-//     done();
-//   });
-// });
-//
-// QUnit.test("creating a new record adds it to existing record arrays", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var records = Model.find();
-//   var record = Model.create({token: 'b', name: 'Yehuda'});
-//   record.save();
-//
-//   record.on('didSaveRecord', function() {
-//     assert.equal(records.get('length'), 2, "The record array was updated");
-//     done();
-//   });
-// });
-//
-// QUnit.test("destroying a record removes it from record arrays", function(assert) {
-//   assert.expect(2);
-//   var done = assert.async();
-//
-//   var records = Model.find();
-//   records.on('didLoad', function() {
-//     assert.equal(records.get('length'), 1, "The record array was updated");
-//     var record = Model.find('a');
-//     record.deleteRecord();
-//     record.on('didDeleteRecord', function() {
-//       assert.equal(records.get('length'), 0, "The record array was updated");
-//       done();
-//     });
-//   });
-// });
-//
-// QUnit.test("record isNew & isSaving flags", function(assert) {
-//   assert.expect(5);
-//   var done = assert.async();
-//
-//   var record = Model.create();
-//   assert.ok(record.get('isNew'));
-//
-//   record.save();
-//   assert.ok(record.get('isNew'));
-//   assert.ok(record.get('isSaving'));
-//
-//   record.on('didSaveRecord', function() {
-//     assert.ok(!record.get('isNew'));
-//     assert.ok(!record.get('isSaving'));
-//     done();
-//   });
-// });
-//
-// QUnit.test("record.toJSON() is generated from Ember.attr definitions", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   var record = Ember.run(Model, Model.find, 'a');
-//   record.on('didLoad', function() {
-//     assert.deepEqual(record.toJSON(), {token: 'a', name: 'Erik'});
-//     done();
-//   });
-// });
-//
-// QUnit.test("record.toJSON() uses rootKey if it is defined", function(assert) {
-//   assert.expect(1);
-//   var done = assert.async();
-//
-//   Model.rootKey = 'model';
-//
-//   var record = Ember.run(Model, Model.find, 'a');
-//   record.on('didLoad', function() {
-//     assert.deepEqual(record.toJSON(), { model: { token: 'a', name: 'Erik' } });
-//     done();
-//   });
-// });
+
+QUnit.test(".revert() sets the data back to its saved state", function(assert) {
+  assert.expect(3);
+  var done = assert.async();
+
+  var record = Ember.run(Model, Model.find, 'a');
+
+  record.on('didLoad', function() {
+    record.set('name', 'Brian');
+    assert.ok(record.get('isDirty'));
+    record.revert();
+
+    assert.equal(record.get('name'), 'Erik');
+    assert.ok(!record.get('isDirty'));
+    done();
+  });
+});
+
+QUnit.test(".revert() works on new records with no attributes", function(assert) {
+  assert.expect(4);
+
+  var record = Model.create();
+  assert.ok(!record.get('isDirty'));
+
+  record.set('name', 'Brian');
+  assert.ok(record.get('isDirty'));
+  record.revert();
+
+  assert.equal(record.get('name'), null);
+  assert.ok(!record.get('isDirty'));
+});
+
+QUnit.test(".find(id) called multiple times returns the same object (identity map)", function(assert) {
+  assert.expect(1);
+
+  var first = Ember.run(Model, Model.find, 'a'),
+      second = Ember.run(Model, Model.find, 'a');
+
+  assert.equal(first, second);
+});
+
+QUnit.test(".unload(model) removes models from caches and subsequent find(id) return new objects", function(assert) {
+  assert.expect(4);
+
+  var first = Ember.run(Model, Model.find, 'a'),
+      second = Ember.run(Model, Model.find, 'a');
+
+  Model.unload(first);
+
+  first.set('token', 'b');
+  assert.ok(first.get('token') === second.get('token'), "record models are the same object");
+
+  second = Ember.run(Model, Model.find, 'a');
+  assert.ok(first.get('token') !== second.get('token'), "records ids are different");
+
+  second.set('token', 'b');
+  assert.ok(first.get('token') === second.get('token'));
+
+  second.set('token', 'c');
+  assert.ok(first.get('token') !== second.get('token'));
+});
+
+QUnit.test(".clearCache destroys sideloadedData and record references", function(assert) {
+  assert.expect(4);
+
+  var first = Ember.run(Model, Model.find, 'a'),
+      second = Ember.run(Model, Model.find, 'a');
+
+  Model.load([{token: 2, name: 'Yehuda'}]);
+
+  assert.ok(Model._referenceCache !== undefined);
+  assert.ok(Model.sideloadedData !== undefined);
+
+  Model.clearCache();
+
+  assert.ok(Model._referenceCache === undefined);
+  assert.ok(Model.sideloadedData === undefined);
+});
+
+QUnit.test("new records are added to the identity map", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var record = Model.create({token: 2, name: 'Yehuda'});
+
+  record.save();
+
+  record.on("didCreateRecord", function() {
+    assert.ok(Model._referenceCache);
+    assert.equal(Model._referenceCache[2].record, record);
+    done();
+  });
+});
+
+QUnit.test("creating a new record adds it to existing record arrays", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var records = Model.find();
+  var record = Model.create({token: 'b', name: 'Yehuda'});
+  record.save();
+
+  record.on('didSaveRecord', function() {
+    assert.equal(records.get('length'), 2, "The record array was updated");
+    done();
+  });
+});
+
+QUnit.test("destroying a record removes it from record arrays", function(assert) {
+  assert.expect(2);
+  var done = assert.async();
+
+  var records = Model.find();
+  records.on('didLoad', function() {
+    assert.equal(records.get('length'), 1, "The record array was updated");
+    var record = Model.find('a');
+    record.deleteRecord();
+    record.on('didDeleteRecord', function() {
+      assert.equal(records.get('length'), 0, "The record array was updated");
+      done();
+    });
+  });
+});
+
+QUnit.test("record isNew & isSaving flags", function(assert) {
+  assert.expect(5);
+  var done = assert.async();
+
+  var record = Model.create();
+  assert.ok(record.get('isNew'));
+
+  record.save();
+  assert.ok(record.get('isNew'));
+  assert.ok(record.get('isSaving'));
+
+  record.on('didSaveRecord', function() {
+    assert.ok(!record.get('isNew'));
+    assert.ok(!record.get('isSaving'));
+    done();
+  });
+});
+
+QUnit.test("record.toJSON() is generated from Ember.attr definitions", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  var record = Ember.run(Model, Model.find, 'a');
+  record.on('didLoad', function() {
+    assert.deepEqual(record.toJSON(), {token: 'a', name: 'Erik'});
+    done();
+  });
+});
+
+QUnit.test("record.toJSON() uses rootKey if it is defined", function(assert) {
+  assert.expect(1);
+  var done = assert.async();
+
+  Model.rootKey = 'model';
+
+  var record = Ember.run(Model, Model.find, 'a');
+  record.on('didLoad', function() {
+    assert.deepEqual(record.toJSON(), { model: { token: 'a', name: 'Erik' } });
+    done();
+  });
+});
 //
 // QUnit.test("record.toJSON() can use computed property as rootKey", function(assert) {
 //   assert.expect(1);
