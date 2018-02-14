@@ -27,13 +27,11 @@
     // FIXME: Logging rejected promises
     Ember.Logger.error = Ember.K;
   </script>
-
   <script src="../dist/ember-model.js"></script>
 
   <% _.each(files, function(filepath) { %>
   <script type="text/javascript" src="../<%= filepath %>"></script>
   <% }); %>
-
-  </script>
+  <script src="/testem.js"></script>
 </body>
 </html>
