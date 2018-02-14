@@ -3,7 +3,7 @@ function config(name) {
 }
 
 module.exports = function(grunt) {
-  
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('bower.json'),
 
@@ -11,7 +11,7 @@ module.exports = function(grunt) {
     jshint: config('jshint'),
     uglify: config('uglify'),
     release: config('release'),
-    qunit: config('qunit'),
+    testem: config('testem'),
     build_test_runner_file: {
       all: ['packages/ember-model/tests/**/*_test.js']
     },
@@ -19,8 +19,6 @@ module.exports = function(grunt) {
     strip: config('strip'),
     clean: config('clean'),
     copy:  config('copy'),
-    connect: config('connect'),
-    watch: config('watch'),
     'ember-s3': config('ember-s3')
   });
 
@@ -31,13 +29,14 @@ module.exports = function(grunt) {
   grunt.task.renameTask('release', 'publish');
 
   // load local tasks
-  grunt.task.loadTasks('./tasks');   
-  
-  grunt.registerTask('develop', ['jshint:development', 'neuter', 'build_test_runner_file', 'connect:test', 'watch']);
+  grunt.task.loadTasks('./tasks');
+
+  grunt.registerTask('dev_build', ['jshint:development', 'neuter', 'build_test_runner_file']);
+  grunt.registerTask('develop', ['dev_build', 'testem:run:default']);
   grunt.registerTask('build', ['jshint:all', 'neuter', 'production']);
 
   grunt.registerTask('production', ['copy:production', 'strip:production', 'uglify:production', 'banner']);
-  grunt.registerTask('test', ['jshint:all', 'neuter', 'build_test_runner_file', 'qunit:cli', 'clean:test']);
+  grunt.registerTask('test', ['jshint:all', 'neuter', 'build_test_runner_file', 'testem:ci:default', 'clean:test']);
   grunt.registerTask('default', ['build']);
 
 };
