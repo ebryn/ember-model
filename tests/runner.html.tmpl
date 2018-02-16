@@ -20,20 +20,18 @@
 
   <script type="text/javascript" src="../bower_components/qunit/qunit/qunit.js"></script>
 
-  <script type="text/javascript" src="expect_assertion_helper.js"></script>
+  <script type="text/javascript" src="test_helpers.js"></script>
 
   <script type="text/javascript">
     TESTING = true;
     // FIXME: Logging rejected promises
     Ember.Logger.error = Ember.K;
   </script>
-
   <script src="../dist/ember-model.js"></script>
 
   <% _.each(files, function(filepath) { %>
   <script type="text/javascript" src="../<%= filepath %>"></script>
   <% }); %>
-
-  </script>
+  <script src="/testem.js"></script>
 </body>
 </html>
