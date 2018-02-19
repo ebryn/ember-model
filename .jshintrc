@@ -25,6 +25,7 @@
         "expect",
         "minispade",
         "expectAssertion",
+        "createOwner",
         "QUnit"
     ],
 
