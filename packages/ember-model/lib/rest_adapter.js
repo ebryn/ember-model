@@ -154,7 +154,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
 
 
       Ember.$.ajax(settings);
-   });
+   }, "ember-model: RESTAdapter#ajax ${method} to " + url);
   },
 
   _handleRejections: function(method, jqXHR, resolve, reject) {
