@@ -64,7 +64,7 @@ QUnit.module("Ember.Model.Store", {
     registry.register('model:test', TestModel);
     registry.register('model:embedded', EmbeddedModel);
     registry.register('model:uuid', UUIDModel);
-    registry.register('store:main', Ember.Model.Store);
+    registry.register('emstore:main', Ember.Model.Store);
   }
 });
 
@@ -224,11 +224,11 @@ QUnit.test("Registering a custom store on application works", function(assert) {
   });
 
   container = App.__container__;
-  assert.ok(container.lookup('store:application'));
-  assert.ok(container.lookup('store:main').get('custom'));
+  assert.ok(container.lookup('emstore:application'));
+  assert.ok(container.lookup('emstore:main').get('custom'));
 
   var testRoute = container.lookup('route:test');
-  assert.ok(testRoute.get('store.custom'));
+  assert.ok(testRoute.get('emstore.custom'));
 
   Ember.run(App, 'destroy');
 });
