@@ -15,6 +15,7 @@
   "author": "no",
   "license": "MIT",
   "devDependencies": {
+    "ember-source": "2.18.2",
     "glob": "~3.2.1",
     "grunt": "~1.0.1",
     "grunt-contrib-clean": "~0.4.1",
@@ -30,7 +31,8 @@
     "grunt-strip": "~0.2.1",
     "grunt-strip-node": "~0.1.1",
     "grunt-testem-mincer": "patocallaghan/grunt-testem-mincer#patoc/update-testem",
-    "matchdep": "~0.1.2"
+    "matchdep": "~0.1.2",
+    "qunit": "~2.5"
   },
   "version": "2.18.0"
 }
