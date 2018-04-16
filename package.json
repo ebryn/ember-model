@@ -32,5 +32,5 @@
     "grunt-testem-mincer": "patocallaghan/grunt-testem-mincer#patoc/update-testem",
     "matchdep": "~0.1.2"
   },
-  "version": "0.0.18"
+  "version": "2.18.0"
 }
