@@ -8,7 +8,7 @@ function getType(record) {
     this.type = get(Ember.lookup, this.type);
 
     if (!this.type) {
-      var emstore = record.container.lookup('emstore:main');
+      var emstore = Ember.getOwner(record).lookup('emstore:main');
       this.type = emstore.modelFor(type);
       this.type.reopenClass({ adapter: emstore.adapterFor(type) });
     }
@@ -28,11 +28,12 @@ Ember.hasMany = function(type, options) {
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
       var key = options.key || propertyKey;
-      return this.getHasMany(key, type, meta, this.container);
+      var owner = Ember.getOwner(this);
+      return this.getHasMany(key, type, meta, owner);
     },
     set: function(propertyKey, newContentArray, existingArray) {
       if (!existingArray) {
-        existingArray = this.getHasMany(options.key || propertyKey, type, meta, this.container);
+        existingArray = this.getHasMany(options.key || propertyKey, type, meta, Ember.getOwner(this));
       }
       return existingArray.setObjects(newContentArray);
     }
@@ -40,7 +41,7 @@ Ember.hasMany = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getHasMany: function(key, type, meta, container) {
+  getHasMany: function(key, type, meta, owner) {
     var embedded = meta.options.embedded,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
@@ -50,10 +51,10 @@ Ember.Model.reopen({
       content: this._getHasManyContent(key, type, embedded),
       embedded: embedded,
       key: key,
-      relationshipKey: meta.relationshipKey,
-      container: container
+      relationshipKey: meta.relationshipKey
     });
 
+    Ember.setOwner(collection, owner);
     this._registerHasManyArray(collection);
 
     return collection;

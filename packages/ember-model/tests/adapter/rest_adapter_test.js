@@ -18,17 +18,23 @@ QUnit.module("Ember.RESTAdapter", {
 QUnit.test("throws an error if a url isn't provided", function(assert) {
   assert.expect(3);
 
-  assert.throws(function() {
-    Ember.run(RESTModel, RESTModel.find);
-  }, /requires a `url` property to be specified/);
+  Ember.run(function() {
+    assert.throws(function() {
+      RESTModel.find();
+    }, /requires a `url` property to be specified/);
+  });
 
-  assert.throws(function() {
-    Ember.run(RESTModel, RESTModel.find, 1);
-  }, /requires a `url` property to be specified/);
+  Ember.run(function() {
+    assert.throws(function() {
+      RESTModel.find(1);
+    }, /requires a `url` property to be specified/);
+  });
 
-  assert.throws(function() {
-    Ember.run(RESTModel, RESTModel.find, {});
-  }, /requires a `url` property to be specified/);
+  Ember.run(function() {
+    assert.throws(function() {
+      RESTModel.find({});
+    }, /requires a `url` property to be specified/);
+  });
 });
 
 QUnit.module("Ember.RESTAdapter - with a url specified", {
@@ -412,7 +418,7 @@ QUnit.test("findQuery calls didFindQuery callback after finishing", function(ass
 QUnit.test("findQuery with params", function(assert) {
   assert.expect(1);
 
-  adapter._ajax = function(url, params, method) { 
+  adapter._ajax = function(url, params, method) {
     assert.deepEqual(params, {foo: 'bar', num: 42});
     return ajaxSuccess({posts: []});
   };
@@ -778,7 +784,7 @@ QUnit.test("find() resolves with record", function(assert) {
 
   var data = {id: 1, name: 'Erik'},
       record = RESTModel.create();
-  
+
   RESTModel.collectionKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -799,7 +805,7 @@ QUnit.test("findAll() resolves with records", function(assert) {
         {id: 2, name: 'Aaron'}
       ],
       records = Ember.RecordArray.create();
-  
+
   RESTModel.collectionKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -820,7 +826,7 @@ QUnit.test("findQuery() resolves with records", function(assert) {
         {id: 2, name: 'Aaron'}
       ],
       records = Ember.RecordArray.create();
-  
+
   RESTModel.collectionKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -838,7 +844,7 @@ QUnit.test("createRecord() resolves with record", function(assert) {
 
   var data = {id: 1, name: 'Erik'},
       record = RESTModel.create();
-  
+
   RESTModel.rootKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
@@ -855,7 +861,7 @@ QUnit.test("saveRecord() resolves with record", function(assert) {
 
   var data = {id: 1, name: 'Erik'},
       record = RESTModel.create({name: 'Ray'});
-  
+
   RESTModel.rootKey = undefined;
   adapter._ajax = function(url, params, method) {
     return ajaxSuccess(data);
