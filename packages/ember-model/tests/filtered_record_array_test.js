@@ -30,7 +30,7 @@ QUnit.test("must be created with a filterFunction property", function(assert) {
 
 QUnit.test("must be created with a filterProperties property", function(assert) {
   assert.throws(function() {
-    Ember.FilteredRecordArray.create({modelClass: Model, filterFunction: Ember.K});
+    Ember.FilteredRecordArray.create({modelClass: Model, filterFunction: function() {} });
   }, /FilteredRecordArrays must be created with filterProperties/);
 });
 
@@ -42,7 +42,7 @@ QUnit.test("with a noop filter will return all the loaded records", function(ass
   Model.fetch().then(function() {
     var recordArray = Ember.FilteredRecordArray.create({
       modelClass: Model,
-      filterFunction: Ember.K,
+      filterFunction: function() { return true; },
       filterProperties: []
     });
 

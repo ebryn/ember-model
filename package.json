@@ -15,7 +15,7 @@
   "author": "no",
   "license": "MIT",
   "devDependencies": {
-    "ember-source": "2.18.2",
+    "ember-source": "3.0.0",
     "glob": "~3.2.1",
     "grunt": "~1.0.1",
     "grunt-contrib-clean": "~0.4.1",
