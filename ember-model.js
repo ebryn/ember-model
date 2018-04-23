@@ -1,6 +1,6 @@
 (function() {
 
-var VERSION = '2.18.0';
+var VERSION = '3.0.0-beta.1';
 
 if (Ember.libraries) {
   Ember.libraries.register('Ember Model', VERSION);
@@ -645,8 +645,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
     for (var i = 0, l = relationships.length; i < l; i++) {
       relationshipKey = relationships[i];
-      relationship = (meta.descs || this)[relationshipKey];
-      relationshipMeta = relationship.meta();
+      relationshipMeta = this.constructor.metaForProperty(relationshipKey);
 
       if (relationshipMeta.options.embedded) {
         relationshipType = relationshipMeta.type;
