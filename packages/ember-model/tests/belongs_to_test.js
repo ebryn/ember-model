@@ -77,14 +77,12 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
 });
 
 QUnit.test("non embedded belongsTo should get a record by its id", function(assert) {
-  var done = assert.async();
-
   var Article = Ember.Model.extend({
-        slug: Ember.attr(String)
-      }),
-      Comment = Ember.Model.extend({
-        article: Ember.belongsTo(Article, { key: 'article_slug' })
-      });
+    slug: Ember.attr(String)
+  }),
+  Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article, { key: 'article_slug' })
+  });
 
   Article.primaryKey = 'slug';
   Article.adapter = Ember.FixtureAdapter.create();
@@ -94,22 +92,17 @@ QUnit.test("non embedded belongsTo should get a record by its id", function(asse
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
 
-  article.one('didLoad', function() {
-    assert.equal(article.get('slug'), 'first-article');
-    assert.ok(article instanceof Article);
-    done();
-  });
+  assert.equal(article.get('slug'), 'first-article');
+  assert.ok(article instanceof Article);
 });
 
 QUnit.test("relationship should be refreshed when data changes", function(assert) {
-  var done = assert.async();
-
   var Article = Ember.Model.extend({
-        slug: Ember.attr(String)
-      }),
-      Comment = Ember.Model.extend({
-        article: Ember.belongsTo(Article, { key: 'article_slug' })
-      });
+    slug: Ember.attr(String)
+  }),
+  Comment = Ember.Model.extend({
+    article: Ember.belongsTo(Article, { key: 'article_slug' })
+  });
 
   Article.primaryKey = 'slug';
   Article.adapter = Ember.FixtureAdapter.create();
@@ -123,11 +116,8 @@ QUnit.test("relationship should be refreshed when data changes", function(assert
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   article = Ember.run(comment, comment.get, 'article');
 
-  article.one('didLoad', function() {
-    assert.equal(article.get('slug'), 'first-article');
-    assert.ok(article instanceof Article);
-    done();
-  });
+  assert.equal(article.get('slug'), 'first-article');
+  assert.ok(article instanceof Article);
 });
 
 QUnit.test("when fetching an association getBelongsTo is called", function(assert) {

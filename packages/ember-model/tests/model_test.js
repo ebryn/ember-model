@@ -105,8 +105,9 @@ QUnit.test("can handle models with ID of zero", function(assert) {
   });
 
   ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
+  ModelWithZeroID.primaryKey = 'id';
   ModelWithZeroID.FIXTURES = [
-    { id: 0, name: 'Erik' }
+    { id: 0, name: 'Erik' },
   ];
 
   var record = Ember.run(ModelWithZeroID, ModelWithZeroID.find, 0);
@@ -115,7 +116,6 @@ QUnit.test("can handle models with ID of zero", function(assert) {
     assert.equal(record.get('name'), 'Erik');
     done();
   });
-
 });
 
 // QUnit.test("coercion", function() {
@@ -478,54 +478,26 @@ QUnit.test("Model#create() works as expected", function(assert) {
 
 QUnit.test(".getAttributes() returns the model's attributes", function(assert) {
   var attr = Ember.attr,
-      BaseModel = Ember.Model.extend({
-        id: attr()
-      }),
+    BaseModel = Ember.Model.extend({
+      id: attr(),
+      order: attr(),
+      family: attr(),
+      genus: attr(),
+      species: attr()
+    });
 
-      Person = BaseModel.extend({
-        name: attr(),
-        nationality: attr()
-      }),
-
-      Employee = Person.extend({
-        employeeId: attr()
-      }),
-
-      Animal = BaseModel.extend({
-        order: attr(),
-        family: attr(),
-        genus: attr(),
-        species: attr()
-      });
-
-  assert.deepEqual(Employee.getAttributes(), ['id', 'name', 'nationality', 'employeeId']);
-  assert.deepEqual(Person.getAttributes(), ['id', 'name', 'nationality']);
-  assert.deepEqual(Animal.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
-  assert.deepEqual(BaseModel.getAttributes(), ['id']);
+  assert.deepEqual(BaseModel.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
 });
 
 QUnit.test(".getRelationships() returns the model's relationships", function(assert) {
-  var Comment = Ember.Model.extend(),
-      Rating = Ember.Model.extend(),
-      Author = Ember.Model.extend(),
-      Site = Ember.Model.extend(),
+  var Rating = Ember.Model.extend();
+  var Author = Ember.Model.extend();
+  var Article = Ember.Model.extend({
+    author: Ember.belongsTo(Author, { key: 'author' }),
+    ratings: Ember.hasMany(Rating, { key: 'ratings' })
+  });
 
-      Commentable = Ember.Model.extend({
-        comments: Ember.hasMany(Comment, { key: 'comments' }),
-      }),
-
-      Article = Commentable.extend({
-        author: Ember.belongsTo(Author, { key: 'author' }),
-        ratings: Ember.hasMany(Rating, { key: 'ratings' })
-      }),
-
-      News = Article.extend({
-        source: Ember.belongsTo(Site, { key: 'site' })
-      });
-
-  assert.deepEqual(Commentable.getRelationships(), ['comments']);
-  assert.deepEqual(Article.getRelationships(), ['comments', 'author', 'ratings']);
-  assert.deepEqual(News.getRelationships(), ['comments', 'author', 'ratings', 'source']);
+  assert.deepEqual(Article.getRelationships(), ['author', 'ratings']);
 });
 
 QUnit.test("toJSON includes embedded relationships", function(assert) {

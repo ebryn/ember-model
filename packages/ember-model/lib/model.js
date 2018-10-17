@@ -39,7 +39,7 @@ function isDescriptor(value) {
   return value && typeof value === 'object' && value.isDescriptor;
 }
 
-Ember.run.queues.push('data');
+Ember.run.backburner.queueNames.push('data');
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,
@@ -149,6 +149,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     set(this, 'isNew', false);
     set(this, 'isLoaded', true);
     this._createReference();
+
     this.trigger('didLoad');
   },
 
@@ -397,6 +398,32 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
 Ember.Model.reopenClass({
   primaryKey: 'id',
+
+  create: function(properties) {
+    var transformedProperties = {};
+    if (properties) {
+      var attributes = this.getAttributes();
+
+      for (var i=0; i<attributes.length; i++) {
+        var attribute = attributes[i];
+        var transformedKey;
+        var meta = this.metaForProperty(attribute);
+
+        if (meta.options && meta.options.key) {
+          transformedKey = this.camelizeKeys ? underscore(meta.options.key) : meta.options.key;
+        } else {
+          transformedKey = this.camelizeKeys ? underscore(attribute) : attribute;
+        }
+
+        transformedProperties[transformedKey] = properties[attribute];
+      }
+    }
+
+    var obj = this._super.apply(this, arguments);
+    obj.set('_data', transformedProperties);
+    obj.setProperties(properties);
+    return obj;
+  },
 
   adapter: Ember.Adapter.create(),
 
