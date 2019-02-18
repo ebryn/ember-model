@@ -125,6 +125,62 @@ existingUser.set('name', 'Kris');
 existingUser.get('isDirty'); // => true
 existingUser.save(); // PUT /users/1
 ```
+## Store API *experimental*
+At this time Ember Model supports two ways of managing model life-cycle.
+
+1. Store API
+2. Model API - see below
+
+Once you load Ember Model, the store is created and available for use on all routes and controllers. You can then use the store api methods to create and find records.
+
+`store.modelFor(<String>)` - returns a model class from type string. Does a
+`container.lookupFactory(model:<type>)`
+
+`store.createRecord(<String>)` - create a new record of string type passed in - (`'post'` for example)
+
+`store.find()` - find all records, returns a promise
+
+`store.find(<String|Number>)` - find by primary key (multiple calls within a single run loop can coalesce to a findMany), returns a promise
+
+`store.find(<object>)` - find query - object gets passed directly to your adapter, returns a promise
+
+###Store Advantages
+The main advantage of the Store API is that it can reduce boilerplate in your route modules . For example,
+```
+App.PostRoute = Ember.Route.extend({
+  model: function(params) {
+    var data = App.Post.find(params.post_id);
+    return App.Post.create(data);
+  }
+});
+```
+is now:
+```
+App.PostRoute = Ember.Route.extend({});
+```
+
+You will also be able to look up relationships via container so you don't need to pass object nor maintain global App.ModelName. For example,
+```
+App.Post = Ember.Model.extend({
+  id: Ember.attr(),
+  comments: Ember.hasMany(App.Comment, {embedded: true})
+});
+```
+is now:
+```
+var Post = Ember.Model.extend({
+  id: Ember.attr(),
+  comments: Ember.hasMany('comment', {embedded: true})
+});
+```
+
+###Store Warnings
+The store still needs work! Most of the gotchas revolve around relationship definitions. If you define relationships as a simple string i.e. `Ember.hasMany('comment', {embedded: true})` 
+
+1. You must create all of your models via store.createRecord()
+
+2. Be consistent. If you are using the store to create/find models, use the store convention everywhere. I.E. relationships defined as 'comment' not App.Comment
+
 
 ## Store API
 
@@ -246,11 +302,11 @@ Relationships are defined by using relationship computed property macros in plac
 
 Both relationships take two arguments.
 
-- `type` - Class of the related model or string representation (eg. App.Comment or 'App.Comment').
+- `type` - Class of the related model or string representation (eg. App.Comment or 'App.Comment'). As of latest release, can just be a string 'comment'- see Store API section.
 
 - `options` - An object with two properties, `key` which is required and `embedded` which is optional and defaults to `false`.
 
-  - `key` - indicates what property of the JSON backing the model will be accessed to access the relationship
+  - `key` - Indicates what property of the JSON backing the model will be accessed to access the relationship. This will default to the model's attribute name if no key is passed.
   - `embedded` - If `true` the related objects are expected to be present in the data backing the model. If `false` only the primaryKeys are present in the data backing the model. These keys will be used to load the correct model.
 
 ### Relationship Examples
@@ -278,7 +334,7 @@ App.Post = Ember.Model.extend({
   id: Ember.attr(),
   title: Ember.attr(),
   body: Ember.attr(),
-  comments: Ember.hasMany('App.Comment', {key: 'comments', embedded: true})
+  comments: Ember.hasMany('App.Comment', {embedded: true}) //key is implicitly comments
 });
 
 App.Comment = Ember.Model.extend({
@@ -478,7 +534,15 @@ App.User.adapter = Ember.RESTAdapter.create({
 });
 ```
 
+### Cache
+There is an internal cache in Ember Model. You can turn off all caching on the model level with the transient property. 
 
+```
+App.User = Ember.Model.extend({
+  name: attr()
+});
+App.User.transient = true;
+```
 
 ## Building Ember Model
 Ember Model uses [node.js](http://nodejs.org/) and [grunt](http://gruntjs.com/) as a build system,
