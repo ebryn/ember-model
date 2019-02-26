@@ -128,7 +128,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     this._reloadHasManys();
 
     // eagerly load embedded data
-    var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
+    var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, dataKey, relationshipData, relationshipType;
     for (var i = 0, l = relationships.length; i < l; i++) {
       relationshipKey = relationships[i];
       relationshipMeta = this.constructor.metaForProperty(relationshipKey);
@@ -139,7 +139,8 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
           relationshipType = Ember.get(Ember.lookup, relationshipType) || Ember.getOwner(this).resolveRegistration('model:'+ relationshipType);
         }
 
-        relationshipData = data[relationshipKey];
+        dataKey = this.dataKey(relationshipKey);
+        relationshipData = data[dataKey];
         if (relationshipData) {
           relationshipType.load(relationshipData);
         }
