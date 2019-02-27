@@ -20,7 +20,7 @@ QUnit.test("new records should remain after parent is saved", function(assert) {
   var Article = Ember.Model.extend({
     id: attr(),
     title: attr(),
-    comments: Ember.hasMany(Comment, { key: 'comment_ids' })
+    comments: Ember.hasMany('comment', { key: 'comment_ids' })
   });
   Article.adapter = Ember.RESTAdapter.create();
   Article.url = '/articles';
@@ -30,11 +30,17 @@ QUnit.test("new records should remain after parent is saved", function(assert) {
     });
   };
 
-  var article = Article.create({
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+  owner.register('service:store', Ember.Model.Store);
+  owner.register('model:comment', Comment);
+  owner.register('model:article', Article);
+  var article = Article.create(owner.ownerInjection(), {
     title: 'bar'
   });
 
-  var comment = Comment.create({
+  var comment = Comment.create(owner.ownerInjection(), {
     text: 'comment text'
   });
 
@@ -73,13 +79,20 @@ QUnit.test("saving child objects", function(assert) {
   var Article = Ember.Model.extend({
     id: attr(),
     title: attr(),
-    comments: Ember.hasMany(Comment, { key: 'comment_ids' })
+    comments: Ember.hasMany('comment', { key: 'comment_ids' })
   });
   Article.adapter = Ember.RESTAdapter.create();
   Article.url = '/articles';
 
-  var article = Article.create();
-  var comment = Comment.create();
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+  owner.register('service:store', Ember.Model.Store);
+  owner.register('model:comment', Comment);
+  owner.register('model:article', Article);
+
+  var article = Article.create(owner.ownerInjection());
+  var comment = Comment.create(owner.ownerInjection());
 
   var comments = article.get("comments");
   comments.addObject(comment);

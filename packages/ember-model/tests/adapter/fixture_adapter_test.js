@@ -17,10 +17,8 @@ QUnit.test("fetch loads the full FIXTURES payload when id isn't specified", func
       {id: 1, name: 'Erik'},
       {id: 2, name: 'Aaron'}
     ];
-    
-  FixtureModel.FIXTURES = data;
 
-  var done = assert.async();
+  FixtureModel.FIXTURES = data;
   FixtureModel.fetch().then(function(records) {
     assert.equal(records.get('length'), data.length, "The proper number of items should have been loaded.");
     done();
@@ -67,6 +65,7 @@ QUnit.test("createRecord", function(assert) {
   FixtureModel.FIXTURES = [];
 
   var record = FixtureModel.create({name: "Erik"});
+  Ember.setOwner(record, Ember.getOwner(FixtureModel));
 
   assert.ok(record.get('isNew'), "Record should be new");
   assert.ok(!record.get('id'), "Record #id should be undefined");
@@ -86,6 +85,8 @@ QUnit.test("createRecord - handle the case when the `rootKey` property is set", 
   FixtureModel.FIXTURES = [];
 
   var record = FixtureModel.create({name: "Erik"});
+  Ember.setOwner(record, Ember.getOwner(FixtureModel));
+
   var done = assert.async();
 
   Ember.run(record, record.save).then(function () {

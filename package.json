@@ -1,38 +1,68 @@
 {
   "name": "ember-model",
   "description": "A lightweight model library for Ember.js",
-  "main": "Gruntfile.js",
+
+  "repository": "",
+  "license": "MIT",
+  "author": "",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "grunt test"
+    "build": "ember build",
+    "lint:js": "eslint ./*.js addon addon-test-support app config lib server test-support tests",
+    "start": "ember serve",
+    "test": "ember try:each"
   },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ebryn/ember-model.git"
+  "dependencies": {
+    "broccoli-funnel": "1.1.0",
+    "broccoli-merge-trees": "^2.0.0",
+    "ember-cli-babel": "^6.6.0"
   },
   "author": "no",
   "license": "MIT",
   "devDependencies": {
-    "ember-source": "3.0.0",
-    "glob": "~3.2.1",
+    "broccoli-asset-rev": "^2.4.5",
+    "ember-ajax": "^3.0.0",
+    "ember-cli": "~3.0.4",
+    "ember-cli-dependency-checker": "^2.0.0",
+    "ember-cli-eslint": "^4.2.1",
+    "ember-cli-htmlbars": "^2.0.1",
+    "ember-cli-htmlbars-inline-precompile": "^1.0.0",
+    "ember-cli-inject-live-reload": "^1.4.1",
+    "ember-cli-qunit": "^4.1.1",
+    "ember-cli-shims": "^1.2.0",
+    "ember-cli-sri": "^2.1.0",
+    "ember-cli-uglify": "^2.0.0",
+    "ember-disable-prototype-extensions": "^1.1.2",
+    "ember-export-application-global": "^2.0.0",
+    "ember-load-initializers": "^1.0.0",
+    "ember-maybe-import-regenerator": "^0.1.6",
+    "ember-resolver": "^4.0.0",
+    "ember-source": "~3.2.2",
+    "ember-source-channel-url": "^1.0.1",
+    "ember-try": "^0.2.23",
+    "ember-welcome-page": "^3.0.0",
+    "eslint-plugin-ember": "^5.0.0",
+    "eslint-plugin-node": "^6.0.1",
     "grunt": "~1.0.1",
-    "grunt-contrib-clean": "~0.4.1",
-    "grunt-contrib-connect": "~0.3.0",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-jshint": "~0.6.0",
-    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-neuter": "~0.6.0",
+    "grunt-contrib-jshint": "~1.1.0",
+    "grunt-contrib-uglify": "~2.0.0",
+    "grunt-contrib-qunit": "3.0.1",
+    "grunt-contrib-clean": "~1.0.0",
+    "grunt-strip-node": "~0.1.1",
+    "matchdep": "~1.0.1",
+    "grunt-curl": "~2.2.0",
+    "grunt-strip": "~0.2.1",
+    "grunt-release": "~0.14.0",
+    "glob": "4.4.2",
+    "grunt-contrib-copy": "~1.0.0",
+    "grunt-contrib-connect": "~1.0.2",
     "grunt-contrib-watch": "~1.0.0",
     "grunt-curl": "~1.1.1",
     "grunt-ember-s3": "~1.0.2",
-    "grunt-neuter": "~0.6.0",
-    "grunt-release": "git+https://github.com/trek/grunt-release.git#7b766605c85605",
-    "grunt-strip": "~0.2.1",
-    "grunt-strip-node": "~0.1.1",
-    "grunt-testem-mincer": "patocallaghan/grunt-testem-mincer#patoc/update-testem",
-    "matchdep": "~0.1.2",
-    "qunit": "~2.5"
+    "loader.js": "^4.2.3"
   },
-  "version": "3.0.0"
+  "version": "0.0.18"
 }

@@ -13,7 +13,9 @@ QUnit.test("when no properties have changed on a model, save should noop", funct
     }
   };
 
-  var obj = Ember.run(Model, Model.create, {isNew: false});
+  var owner = buildOwner();
+
+  var obj = Ember.run(Model, Model.create, owner.ownerInjection(),{isNew: false});
   assert.ok(!obj.get('isDirty'));
 
   Ember.run(obj, obj.save);
@@ -34,7 +36,9 @@ QUnit.test("when properties have changed on a model, isDirty should be set", fun
     }
   };
 
-  var obj = Ember.run(Model, Model.create, {isNew: false});
+  var owner = buildOwner();
+  Ember.setOwner(Model, owner);
+  var obj = Ember.run(Model, Model.create, owner.ownerInjection(), {isNew: false});
   assert.ok(!obj.get('isDirty'));
 
   obj.set('name', 'Jeffrey');
@@ -109,7 +113,9 @@ QUnit.test("after saving, the model shouldn't be dirty", function(assert) {
     }
   };
 
-  var obj = Ember.run(Model, Model.create, {isNew: false});
+  var owner = buildOwner();
+  Ember.setOwner(Model, owner);
+  var obj = Ember.run(Model, Model.create, owner.ownerInjection(), {isNew: false});
   obj.set('name', 'Erik');
   assert.ok(obj.get('isDirty'));
 
@@ -264,7 +270,10 @@ QUnit.test("manipulating object presence in a hasMany should dirty the parent", 
   });
   Post.adapter = Ember.FixtureAdapter.create();
 
-  var post = Post.create({isNew: false, _data: {comments: []}});
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
+  var post = Post.create(owner.ownerInjection(), {isNew: false, _data: {comments: []}});
 
   assert.ok(!post.get('isDirty'), "Post should be clean initially");
 
@@ -439,7 +448,10 @@ QUnit.test("isDirty on embedded hasMany records should be false after parent is 
     comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
   });
 
-  var post = Post.create({
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
+  var post = Post.create(owner.ownerInjection(), {
     isNew: false,
     _data: {
       comments: [{body: "The body"}]
@@ -555,7 +567,15 @@ QUnit.test("save parent of embedded belongsTo", function(assert) {
 
   Post.adapter = Ember.FixtureAdapter.create();
 
-  var post = Post.create();
+  var owner = buildOwner();
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Post, owner);
+  owner.register('model:author', Author);
+  owner.register('model:post', Post);
+  owner.register('service:store', Ember.Model.Store);
+
+  var post = Post.create(owner.ownerInjection());
+
   Ember.run(post, post.load, json.id, json);
   assert.equal(post.get('isDirty'), false, 'post should be clean initially');
 
@@ -600,7 +620,15 @@ QUnit.test("save parent of embedded belongsTo with different named key", functio
 
   Post.adapter = Ember.FixtureAdapter.create();
 
-  var post = Post.create();
+  var owner = buildOwner();
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Post, owner);
+  owner.register('model:author', Author);
+  owner.register('model:post', Post);
+  owner.register('service:store', Ember.Model.Store);
+
+  var post = Post.create(owner.ownerInjection());
+
   Ember.run(post, post.load, json.id, json);
   assert.equal(post.get('isDirty'), false, 'post should be clean initially');
 
@@ -640,12 +668,22 @@ QUnit.test("set embedded belongsTo", function(assert) {
       }),
       Post = Ember.Model.extend({
         id: Ember.attr(),
-        author: Ember.belongsTo(Author, {key: 'author', embedded: true})
+        author: Ember.belongsTo('author', {key: 'author', embedded: true})
       });
 
   Post.adapter = Ember.FixtureAdapter.create();
 
-  var post = Post.create();
+  var owner = buildOwner();
+
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Post, owner);
+
+  owner.register('model:author', Author);
+  owner.register('model:post', Post);
+  owner.register('service:store', Ember.Model.Store);
+
+  var post = Post.create(owner.ownerInjection());
+
   Ember.run(post, post.load, json.id, json);
   assert.equal(post.get('isDirty'), false, 'post should be clean initially');
 
@@ -732,7 +770,11 @@ QUnit.test("manipulating the content of objects in a hasMany should dirty the pa
     comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
   });
 
-  var post = Post.create({
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
+
+  var post = Post.create(owner.ownerInjection(), {
     isNew: false,
     _data: { comments: [json] }
   });

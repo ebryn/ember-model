@@ -39,12 +39,21 @@ QUnit.test("model can be specified with a string instead of a class", function(a
         slug: Ember.attr(String)
       }),
       Comment = Ember.Model.extend({
-        article: Ember.belongsTo('Ember.ArticleModel', { key: 'article', embedded: true })
+        article: Ember.belongsTo('article', { key: 'article', embedded: true })
       });
 
   Article.primaryKey = 'slug';
 
-  var comment = Comment.create();
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+
+  owner.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('service:store', Ember.Model.Store);
+
+  var comment = Comment.create(owner.ownerInjection());
+
   Ember.run(comment, comment.load, 1, { article: { slug: 'first-article' } });
   var article = Ember.run(comment, comment.get, 'article');
 
@@ -56,7 +65,6 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
-    App.register('emstore:main', Ember.Model.Store);
   });
   App.Article  = Ember.Model.extend({
       id: Ember.attr(String)
@@ -65,9 +73,7 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
       article: Ember.belongsTo('article', { key: 'article', embedded: true })
     });
 
-  var store = App.__container__.lookup('emstore:main');
-  var comment = store.createRecord('comment', {});
-
+  var comment = App.Comment.create({container: App.__container__});
   Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
   var article = Ember.run(comment, comment.get, 'article');
 
@@ -77,23 +83,28 @@ QUnit.test("model can be specified with a string to a resolved path", function(a
 });
 
 QUnit.test("non embedded belongsTo should get a record by its id", function(assert) {
-  var done = assert.async();
-
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
       Comment = Ember.Model.extend({
-        article: Ember.belongsTo(Article, { key: 'article_slug' })
+        article: Ember.belongsTo('article', { key: 'article_slug' })
       });
 
   Article.primaryKey = 'slug';
   Article.adapter = Ember.FixtureAdapter.create();
   Article.FIXTURES = [{ slug: 'first-article' }];
 
+  owner.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('service:store', Ember.Model.Store);
+
   var comment = Comment.create();
+  Ember.setOwner(comment, owner);
+
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
 
+  var done = assert.async();
   article.one('didLoad', function() {
     assert.equal(article.get('slug'), 'first-article');
     assert.ok(article instanceof Article);
@@ -102,27 +113,36 @@ QUnit.test("non embedded belongsTo should get a record by its id", function(asse
 });
 
 QUnit.test("relationship should be refreshed when data changes", function(assert) {
-  var done = assert.async();
-
   var Article = Ember.Model.extend({
         slug: Ember.attr(String)
       }),
       Comment = Ember.Model.extend({
-        article: Ember.belongsTo(Article, { key: 'article_slug' })
+        article: Ember.belongsTo('article', { key: 'article_slug' })
       });
+
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+
+  owner.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('service:store', Ember.Model.Store);
 
   Article.primaryKey = 'slug';
   Article.adapter = Ember.FixtureAdapter.create();
   Article.FIXTURES = [{ slug: 'first-article' }];
 
   var comment = Comment.create();
-  var article = Ember.run(comment, comment.get, 'article');
+  Ember.setOwner(comment, owner);
 
+  assert.ok(!article, "belongsTo relationship should default to null if there is no primaryKey defined");
+  var article = Ember.run(comment, comment.get, 'article');
   assert.ok(!article, "belongsTo relationship should default to null if there is no primaryKey defined");
 
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   article = Ember.run(comment, comment.get, 'article');
 
+  var done = assert.async();
   article.one('didLoad', function() {
     assert.equal(article.get('slug'), 'first-article');
     assert.ok(article instanceof Article);
@@ -137,12 +157,19 @@ QUnit.test("when fetching an association getBelongsTo is called", function(asser
         slug: Ember.attr(String)
       }),
       Comment = Ember.Model.extend({
-        article: Ember.belongsTo(Article, { key: 'article_slug' })
+        article: Ember.belongsTo('article', { key: 'article_slug' })
       });
 
   Article.primaryKey = 'slug';
 
-  var comment = Comment.create();
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+  owner.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('service:store', Ember.Model.Store);
+  var comment = Comment.create(owner.ownerInjection());
+
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
 
   comment.getBelongsTo = function(key, type, meta) {
@@ -168,10 +195,16 @@ QUnit.test("toJSON uses the given relationship key in belongsTo", function(asser
   Article.FIXTURES = [{ token: 2 }];
 
   var Comment = Ember.Model.extend({
-    article: Ember.belongsTo(Article, { key: 'article_id' })
+    article: Ember.belongsTo('article', { key: 'article_id' })
   });
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+  owner.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('service:store', Ember.Model.Store);
 
-  var comment = Comment.create();
+  var comment = Comment.create(owner.ownerInjection());
 
   Ember.run(comment, comment.load, 1, { article_id: 2 });
 
@@ -192,8 +225,10 @@ QUnit.test("un-embedded belongsTo CP should handle set", function(assert) {
   Post.adapter = Ember.FixtureAdapter.create();
   Author.adapter = Ember.FixtureAdapter.create();
 
-  var post = Post.create(),
-      author = Author.create();
+  var owner = buildOwner();
+
+  var post = Post.create(owner.ownerInjection()),
+      author = Author.create(owner.ownerInjection());
 
   Ember.run(function() {
     author.load(100, {id: 100});
@@ -205,6 +240,7 @@ QUnit.test("un-embedded belongsTo CP should handle set", function(assert) {
   });
 
   assert.deepEqual(post.toJSON(), {id: 1, author_id: 100});
+
 });
 
 QUnit.test("embedded belongsTo CP should handle set", function(assert) {
@@ -304,7 +340,11 @@ QUnit.test("should be able to set embedded relationship to null", function(asser
 
   Comment.adapter = Ember.FixtureAdapter.create();
 
-  var comment = Comment.create();
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+
+  var comment = Comment.create(owner.ownerInjection());
   Ember.run(comment, comment.load, 1, { article: null });
 
   assert.equal(comment.get('article'), null); // Materialize the data.
@@ -460,21 +500,28 @@ QUnit.test("setting existing nonembedded relationship to NULL should make parent
 QUnit.test("relationships should be seralized when specified with string", function(assert) {
   assert.expect(1);
 
-  Ember.Author = Ember.Model.extend({
+  var Author = Ember.Model.extend({
     id: Ember.attr(),
     name: Ember.attr()
   });
 
-  Ember.Post = Ember.Model.extend({
+  var Post = Ember.Model.extend({
     id: Ember.attr(),
-    author: Ember.belongsTo('Ember.Author', {key: 'author_id'})
+    author: Ember.belongsTo('author', {key: 'author_id'})
   });
 
-  Ember.Post.adapter = Ember.FixtureAdapter.create();
-  Ember.Author.adapter = Ember.FixtureAdapter.create();
+  Post.adapter = Ember.FixtureAdapter.create();
+  Author.adapter = Ember.FixtureAdapter.create();
 
-  var post = Ember.Post.create(),
-      author = Ember.Author.create();
+  var owner = buildOwner();
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Post, owner);
+  owner.register('model:author', Author);
+  owner.register('model:post', Post);
+  owner.register('service:store', Ember.Model.Store);
+
+  var post = Post.create(owner.ownerInjection()),
+      author = Author.create(owner.ownerInjection());
 
   Ember.run(function() {
     author.load(100, {id: 100, name: 'bob'});
@@ -486,23 +533,33 @@ QUnit.test("relationships should be seralized when specified with string", funct
 
 
 QUnit.test("belongsTo from an embedded source is able to materialize without having to re-find", function(assert) {
+
+
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
-     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+     projects: Ember.hasMany('project', {key:'projects', embedded: true})
   }),
     Project = Ember.Project = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
-        posts: Ember.hasMany('Ember.Post', {key: 'posts', embedded: true}),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
+        posts: Ember.hasMany('post', {key: 'posts', embedded: true}),
+        company: Ember.belongsTo('company', {key:'company'})
     }),
     Post = Ember.Post = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
         body: Ember.attr('string'),
-        project: Ember.belongsTo('Ember.Project', {key:'project'})
+        project: Ember.belongsTo('project', {key:'project'})
     });
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+  Ember.setOwner(Post, owner);
+  owner.register('model:company', Company);
+  owner.register('model:project', Project);
+  owner.register('model:post', Post);
+  owner.register('service:store', Ember.Model.Store);
 
   var compJson = {
     id:1,
@@ -529,17 +586,26 @@ QUnit.test("belongsTo from an embedded source is able to materialize without hav
   assert.equal(project1, post1.get('project'));
 });
 
+
 QUnit.test("unloaded records are removed from reference cache", function(assert) {
+
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
-     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+     projects: Ember.hasMany('project', {key:'projects', embedded: true})
   }),
     Project = Ember.Project = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
+        company: Ember.belongsTo('company', {key:'company'})
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+  owner.register('model:company', Company);
+  owner.register('model:project', Project);
+  owner.register('service:store', Ember.Model.Store);
 
   var compJson = {
     id:1,
@@ -568,6 +634,7 @@ QUnit.test("unloaded records are removed from reference cache", function(assert)
   company = Company.find(1);
   var reloadedProject1 = company.get('projects.firstObject');
 
+
   assert.notEqual(project1, reloadedProject1);
   assert.equal(project1.get('title'), 'project one title');
   assert.equal(reloadedProject1.get('title'), 'project one new title');
@@ -577,13 +644,20 @@ QUnit.test("unloaded records are removed from hasMany cache", function(assert) {
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
-     projects: Ember.hasMany('Ember.Project', {key:'projects', embedded: true})
+     projects: Ember.hasMany('project', {key:'projects', embedded: true})
   }),
     Project = Ember.Project = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
+        company: Ember.belongsTo('company', {key:'company'})
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+  owner.register('model:company', Company);
+  owner.register('model:project', Project);
+  owner.register('service:store', Ember.Model.Store);
 
   var compJson = {
     id:1,
@@ -617,16 +691,24 @@ QUnit.test("unloaded records are removed from hasMany cache", function(assert) {
 });
 
 QUnit.test("belongsTo records created are available from reference cache", function(assert) {
+
   var Company = Ember.Company = Ember.Model.extend({
      id: Ember.attr('string'),
      title: Ember.attr('string'),
-     project: Ember.belongsTo('Ember.Project', {key:'project', embedded: true})
+     project: Ember.belongsTo('project', {key:'project', embedded: true})
   }),
     Project = Ember.Project = Ember.Model.extend({
         id: Ember.attr('string'),
         title: Ember.attr('string'),
-        company: Ember.belongsTo('Ember.Company', {key:'company'})
+        company: Ember.belongsTo('company', {key:'company'})
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+  owner.register('model:company', Company);
+  owner.register('model:project', Project);
+  owner.register('service:store', Ember.Model.Store);
 
   var compJson = {
     id:1,
@@ -687,21 +769,27 @@ QUnit.test("key defaults to model's property key", function(assert) {
   Article.FIXTURES = [{ id: 2 }];
 
   var Comment = Ember.Model.extend({
-    article: Ember.belongsTo(Article)
+    article: Ember.belongsTo('article')
   });
 
-  var comment = Comment.create();
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+
+  var comment = Comment.create(owner.ownerInjection());
+  owner.register('model:article', Article);
+  owner.register('model:comment', Comment);
+  owner.register('service:store', Ember.Model.Store);
 
   Ember.run(comment, comment.load, 1, { article: 2 });
 
   assert.deepEqual(comment.toJSON(), { article: 2 });
 });
 
-QUnit.test("non embedded belongsTo should return a record with an owner", function(assert) {
+QUnit.test("non embedded belongsTo should return a record with a container", function(assert) {
   var App;
   Ember.run(function() {
     App = Ember.Application.create({});
-    App.register('emstore:main', Ember.Model.Store);
   });
   App.Article = Ember.Model.extend({
     id: Ember.attr(String)
@@ -713,11 +801,9 @@ QUnit.test("non embedded belongsTo should return a record with an owner", functi
   App.Article.adapter = Ember.FixtureAdapter.create();
   App.Article.FIXTURES = [{ id: 'first-article' }];
 
-  var store = App.__container__.lookup('emstore:main');
-  var comment = store.createRecord('comment', {});
-
+  var comment = App.Comment.create({container: App.__container__});
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
-  assert.ok(Ember.getOwner(article));
+  assert.ok(article.get('container'));
   Ember.run(App, 'destroy');
 });
