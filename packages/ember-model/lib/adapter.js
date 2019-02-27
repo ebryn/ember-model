@@ -21,3 +21,9 @@ Ember.Adapter = Ember.Object.extend({
     record.load(id, data);
   }
 });
+
+Ember.Adapter.reopenClass({
+  toString() {
+    return `Ember.Adapter`;
+  }
+});

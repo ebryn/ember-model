@@ -53,7 +53,7 @@ function serialize(value, type) {
 }
 
 Ember.attr = function(type, options) {
-  return Ember.Model.computed("_data", {
+  return Ember.computed("_data", {
     get: function(key){
       var data = get(this, '_data'),
           dataKey = this.dataKey(key),

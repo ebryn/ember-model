@@ -18,6 +18,32 @@ QUnit.module("Ember.RecordArray", {
       {id: 2, name: 'Stefan'},
       {id: 3, name: 'Kris'}
     ];
+    owner = buildOwner();
+    store = Ember.Model.Store.create();
+    Ember.setOwner(store, owner);
+    Ember.setOwner(Model, owner);
+    owner.register('model:test', Model);
+    owner.register('service:store', Ember.Model.Store);
+    data = [
+      {id: 1, name: 'Erik'},
+      {id: 2, name: 'Aaron'}
+    ];
+    RESTModel = Ember.Model.extend({
+      id: Ember.attr(),
+      name: Ember.attr(),
+      type: 'test'
+    });
+    var adapter = Ember.RESTAdapter.create();
+    adapter._ajax = function(url, params, method) {
+      return ajaxSuccess(data);
+    };
+    adapter.findMany = function(klass, records, ids) {
+      return adapter.findAll(klass, records);
+    };
+    RESTModel.adapter = adapter;
+    RESTModel.url = '/fake/api';
+    Ember.setOwner(RESTModel, owner);
+    owner.register('model:test', RESTModel);
   }
 });
 
@@ -238,6 +264,7 @@ QUnit.test("RecordArray handles already inserted new models being saved", functi
   assert.equal(records.get('length'), 1);
 
   var newModel = RESTModel.create();
+  Ember.setOwner(newModel, Ember.getOwner(RESTModel));
 
   records.pushObject(newModel);
 

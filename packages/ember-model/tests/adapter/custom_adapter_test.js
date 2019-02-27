@@ -3,8 +3,13 @@ var CustomModel;
 QUnit.module("Ember.CustomAdapter", {
   beforeEach: function() {
     Ember.CustomAdapter = Ember.Adapter.extend();
+    Ember.CustomAdapter.reopenClass({
+      toString() {
+        return 'Ember.CustomAdapter';
+      }
+    });
     CustomModel = Ember.Model.extend({
-      name: Ember.attr()
+      name: Ember.attr(),
     });
     CustomModel.adapter = Ember.CustomAdapter.create();
   }

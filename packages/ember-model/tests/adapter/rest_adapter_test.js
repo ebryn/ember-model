@@ -430,6 +430,7 @@ QUnit.test("createRecord", function(assert) {
   assert.expect(5);
 
   var record = RESTModel.create({name: "Erik"});
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
   // ok(record.get('isDirty'), "Record should be dirty");
   assert.ok(record.get('isNew'), "Record should be new");
 
@@ -451,6 +452,7 @@ QUnit.test("createRecord calls didCreateRecord", function(assert) {
   var record = RESTModel.create({name: "Erik"}),
       args, context, didCreateRecord = adapter.didCreateRecord,
       data = {post: {id: 1, name: "Erik"}};
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
 
   // ok(record.get('isDirty'), "Record should be dirty");
   assert.ok(record.get('isNew'), "Record should be new");
@@ -483,6 +485,8 @@ QUnit.test("createRecord record loads data in response", function(assert) {
     return ajaxSuccess(data);
   };
 
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
+
   Ember.run(record, record.save);
 
   assert.equal(record.get('id'), 1, 'resolved record should have id');
@@ -493,6 +497,7 @@ QUnit.test("saveRecord", function(assert) {
   assert.expect(5);
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false});
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
 
   record.set('name', "Kris");
   assert.ok(record.get('isDirty'), "Record should be dirty");
@@ -514,6 +519,8 @@ QUnit.test("saveRecord calls didSaveRecord after saving record", function(assert
 
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
       data = {id: 1, name: "Erik"}, args, didSaveRecord = adapter.didSaveRecord, context;
+
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
 
   record.set('name', "Kris");
   assert.ok(record.get('isDirty'), "Record should be dirty");
@@ -542,6 +549,8 @@ QUnit.test("saveRecord loads response data if it exists", function(assert) {
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
       responseData = {post: {id: 1, name: "Bill"}};
 
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
+
   record.set('name', 'John');
   assert.ok(record.get('isDirty'), 'Record should be dirty');
 
@@ -560,6 +569,8 @@ QUnit.test("saveRecord does not load empty response", function(assert) {
   assert.expect(4);
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
       responseData = '';
+
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
 
   record.set('name', 'John');
   assert.ok(record.get('isDirty'), 'Record should be dirty');
@@ -580,6 +591,8 @@ QUnit.test("saveRecord does not load HEAD response (undefined response body)", f
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
       responseData = '';
 
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
+
   record.set('name', 'John');
   assert.ok(record.get('isDirty'), 'Record should be dirty');
 
@@ -598,6 +611,8 @@ QUnit.test("saveRecord does not load response if root key is missing", function(
   assert.expect(4);
   var record = Ember.run(RESTModel, RESTModel.create, {id: 1, name: "Erik", isNew: false}),
       responseData = {notRootKey: true};
+
+  Ember.setOwner(record, Ember.getOwner(RESTModel));
 
   record.set('name', 'John');
   assert.ok(record.get('isDirty'), 'Record should be dirty');

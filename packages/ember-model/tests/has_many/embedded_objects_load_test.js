@@ -21,8 +21,15 @@ QUnit.test("derp", function(assert) {
   var Article = Ember.Model.extend({
     title: attr(),
 
-    comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
+    comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+  owner.register('model:comment', Comment);
+  owner.register('model:article', Article);
+  owner.register('service:store', Ember.Model.Store);
 
   var article = Article.create();
   Ember.run(article, article.load, json.id, json);
@@ -58,8 +65,15 @@ QUnit.test("loading embedded data into a parent updates the child records", func
 
   var Post = Ember.Model.extend({
     id: attr(),
-    comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
+    comments: Ember.hasMany('comment', {key: 'comments', embedded: true})
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+  owner.register('model:comment', Comment);
+  owner.register('model:article', Article);
+  owner.register('service:store', Ember.Model.Store);
 
   Post.adapter = {
     find: function(record, id) {

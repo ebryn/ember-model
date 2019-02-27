@@ -104,6 +104,12 @@ QUnit.test("can handle models with ID of zero", function(assert) {
     name: Ember.attr()
   });
 
+  ModelWithZeroID.reopenClass({
+    primaryKey: 'id'
+  });
+
+  Ember.setOwner(ModelWithZeroID, owner);
+
   ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
   ModelWithZeroID.FIXTURES = [
     { id: 0, name: 'Erik' }
@@ -284,7 +290,7 @@ QUnit.test("new records are added to the identity map", function(assert) {
   assert.expect(2);
   var done = assert.async();
 
-  var record = Model.create({token: 2, name: 'Yehuda'});
+  var record = Model.create(owner.ownerInjection(), {token: 2, name: 'Yehuda'});
 
   record.save();
 
@@ -300,7 +306,7 @@ QUnit.test("creating a new record adds it to existing record arrays", function(a
   var done = assert.async();
 
   var records = Model.find();
-  var record = Model.create({token: 'b', name: 'Yehuda'});
+  var record = Model.create(owner.ownerInjection(), {token: 'b', name: 'Yehuda'});
   record.save();
 
   record.on('didSaveRecord', function() {
@@ -329,7 +335,7 @@ QUnit.test("record isNew & isSaving flags", function(assert) {
   assert.expect(5);
   var done = assert.async();
 
-  var record = Model.create();
+  var record = Model.create(owner.ownerInjection());
   assert.ok(record.get('isNew'));
 
   record.save();
@@ -457,7 +463,7 @@ QUnit.test("Model#create() works as expected", function(assert) {
   assert.expect(10);
   var done = assert.async();
 
-  var record = Model.create({name: 'Yehuda'});
+  var record = Model.create(owner.ownerInjection(), {name: 'Yehuda'});
 
   assert.ok(record.get('isNew'), "record isNew upon instantiation");
   assert.ok(record.get('isLoaded'), "record isLoaded upon instantiation");
@@ -476,7 +482,7 @@ QUnit.test("Model#create() works as expected", function(assert) {
   assert.ok(record.get('isSaving'), 'The record isSaving flag is true while saving is in progress');
 });
 
-QUnit.test(".getAttributes() returns the model's attributes", function(assert) {
+QUnit.test(".attributes returns the model's attributes", function(assert) {
   var attr = Ember.attr,
       BaseModel = Ember.Model.extend({
         id: attr()
@@ -498,13 +504,13 @@ QUnit.test(".getAttributes() returns the model's attributes", function(assert) {
         species: attr()
       });
 
-  assert.deepEqual(Employee.getAttributes(), ['id', 'name', 'nationality', 'employeeId']);
-  assert.deepEqual(Person.getAttributes(), ['id', 'name', 'nationality']);
-  assert.deepEqual(Animal.getAttributes(), ['id', 'order', 'family', 'genus', 'species']);
-  assert.deepEqual(BaseModel.getAttributes(), ['id']);
+  assert.deepEqual(Array.from(Employee.attributes.keys()).sort(), ['id', 'name', 'nationality', 'employeeId'].sort());
+  assert.deepEqual(Array.from(Person.attributes.keys()).sort(), ['id', 'name', 'nationality'].sort());
+  assert.deepEqual(Array.from(Animal.attributes.keys()).sort(), ['id', 'order', 'family', 'genus', 'species'].sort());
+  assert.deepEqual(Array.from(BaseModel.attributes.keys()), ['id']);
 });
 
-QUnit.test(".getRelationships() returns the model's relationships", function(assert) {
+QUnit.test(".relationships returns the model's relationships", function(assert) {
   var Comment = Ember.Model.extend(),
       Rating = Ember.Model.extend(),
       Author = Ember.Model.extend(),
@@ -523,9 +529,9 @@ QUnit.test(".getRelationships() returns the model's relationships", function(ass
         source: Ember.belongsTo(Site, { key: 'site' })
       });
 
-  assert.deepEqual(Commentable.getRelationships(), ['comments']);
-  assert.deepEqual(Article.getRelationships(), ['comments', 'author', 'ratings']);
-  assert.deepEqual(News.getRelationships(), ['comments', 'author', 'ratings', 'source']);
+  assert.deepEqual(Array.from(Commentable.relationships.keys()).sort(), ['comments'].sort());
+  assert.deepEqual(Array.from(Article.relationships.keys()).sort(), ['comments', 'author', 'ratings'].sort());
+  assert.deepEqual(Array.from(News.relationships.keys()).sort(), ['comments', 'author', 'ratings', 'source'].sort());
 });
 
 QUnit.test("toJSON includes embedded relationships", function(assert) {
@@ -577,8 +583,9 @@ QUnit.test("toJSON includes non-embedded relationships", function(assert) {
       Article = Ember.Model.extend({
         id: 1,
         title: Ember.attr(),
-        comments: Ember.hasMany(Comment, { key: 'comments' }),
-        author: Ember.belongsTo(Author, { key: 'author' })
+        type: 'test',
+        comments: Ember.hasMany('comment', { key: 'comments' }),
+        author: Ember.belongsTo('author', { key: 'author' })
       });
 
   var articleData = {
@@ -587,6 +594,16 @@ QUnit.test("toJSON includes non-embedded relationships", function(assert) {
     comments: [1, 2, 3],
     author: 1
   };
+  owner = buildOwner();
+  store = Ember.Model.Store.create();
+  Ember.setOwner(store, owner);
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Article, owner);
+  owner.register('model:comment', Comment);
+  owner.register('model:author', Author);
+  owner.register('model:article', Article);
+  owner.register('service:store', Ember.Model.Store);
 
   Author.adapter = Ember.FixtureAdapter.create();
   Comment.adapter = Ember.FixtureAdapter.create();
@@ -600,6 +617,7 @@ QUnit.test("toJSON includes non-embedded relationships", function(assert) {
 
 
   var article = Article.create();
+  Ember.setOwner(article, owner);
   Ember.run(article, article.load, articleData.id, articleData);
 
   var json = Ember.run(article, article.toJSON);

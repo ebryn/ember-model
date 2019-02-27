@@ -1,3 +1,5 @@
+import { start } from "repl";
+
 var Model;
 
 QUnit.module("Ember.FilteredRecordArray", {
@@ -30,7 +32,7 @@ QUnit.test("must be created with a filterFunction property", function(assert) {
 
 QUnit.test("must be created with a filterProperties property", function(assert) {
   assert.throws(function() {
-    Ember.FilteredRecordArray.create({modelClass: Model, filterFunction: function() {} });
+    Ember.FilteredRecordArray.create({modelClass: Model, filterFunction: () => true });
   }, /FilteredRecordArrays must be created with filterProperties/);
 });
 
@@ -83,10 +85,10 @@ QUnit.test("loading a record that doesn't match the filter after creating a Filt
       filterProperties: ['name']
     });
 
-    Model.create({id: 3, name: 'Kris'}).save().then(function(record) {
+    Model.create(owner.ownerInjection(), {id: 3, name: 'Kris'}).save().then(function(record) {
+      start();
       assert.equal(recordArray.get('length'), 1, "There is still 1 record");
       assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
-      done();
     });
   });
 
@@ -105,11 +107,11 @@ QUnit.test("loading a record that matches the filter after creating a FilteredRe
       filterProperties: ['name']
     });
 
-    Model.create({id: 3, name: 'Kris'}).save().then(function(record) {
+    Model.create(owner.ownerInjection(), {id: 3, name: 'Kris'}).save().then(function(record) {
+      start();
       assert.equal(recordArray.get('length'), 2, "There are 2 records");
       assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
       assert.equal(recordArray.get('lastObject.name'), 'Kris', "The record data matches");
-      done();
     });
   });
 });
@@ -156,7 +158,8 @@ QUnit.test("adding a new record and changing a property that matches the filter 
     assert.equal(recordArray.get('length'), 1, "There is 1 record initially");
     assert.equal(recordArray.get('firstObject.name'), 'Erik', "The record data matches");
 
-    Model.create({id: 3, name: 'Kris'}).save().then(function(record) {
+    Model.create(owner.ownerInjection(), {id: 3, name: 'Kris'}).save().then(function(record) {
+      start();
       record.set('name', 'Ekris');
 
       assert.equal(recordArray.get('length'), 2, "There are 2 records after changing the name");
@@ -171,4 +174,6 @@ QUnit.test("adding a new record and changing a property that matches the filter 
       done();
     });
   });
+
+  stop();
 });
