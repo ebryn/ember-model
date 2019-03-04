@@ -525,7 +525,7 @@ Ember.Model.reopenClass({
       }
     }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this});
+    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, content: Ember.A()});
     Ember.setOwner(records, owner);
 
     var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
