@@ -935,6 +935,23 @@ QUnit.test(".clearCache destroys _findAllRecordArray reference", function(assert
     done();
   });
 });
+
+QUnit.test("didCreateRecord does not fail when finding all", function(assert) {
+  var SlowFetchAdapter = Ember.Adapter.extend({
+    findAll: function(klass, records) {
+      return new Ember.RSVP.Promise(function(resolve) {
+        setTimeout(resolve, records, 5000);
+      });
+    }
+  });
+
+  var SlowFetchModel = Ember.Model.extend({}).reopenClass({ adapter: SlowFetchAdapter.create() });
+
+  SlowFetchModel.findAll();
+  SlowFetchModel.create({}).didCreateRecord();
+  assert.ok('No errors thrown');
+});
+
 // // TODO: test that creating a record calls load
 //
 // // QUnit.test('Model#registerRecordArray', function(){
