@@ -15,5 +15,5 @@ QUnit.test("throws an error message with class name", function(assert) {
 
   assert.throws(function() {
     Ember.run(CustomModel, CustomModel.find(1));
-  }, /Ember.CustomAdapter must implement find/);
+  }, /must implement find/);
 });
