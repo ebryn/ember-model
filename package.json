@@ -27,7 +27,7 @@
     "grunt-curl": "~1.1.1",
     "grunt-ember-s3": "~1.0.2",
     "grunt-neuter": "~0.6.0",
-    "grunt-release": "git+https://github.com/trek/grunt-release.git#7b766605c85605",
+    "grunt-release": "~0.14.0",
     "grunt-strip": "~0.2.1",
     "grunt-strip-node": "~0.1.1",
     "grunt-testem-mincer": "patocallaghan/grunt-testem-mincer#patoc/update-testem",
