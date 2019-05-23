@@ -39,7 +39,7 @@ function isDescriptor(value) {
   return value && typeof value === 'object' && value.isDescriptor;
 }
 
-var backburner = new Ember.Backburner(['data']);
+var backburner = new Ember._Backburner(['data']);
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,
