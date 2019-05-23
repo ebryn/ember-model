@@ -553,7 +553,7 @@ function isDescriptor(value) {
   return value && typeof value === 'object' && value.isDescriptor;
 }
 
-Ember.run.queues.push('data');
+var backburner = new Ember._Backburner(['data']);
 
 Ember.Model = Ember.Object.extend(Ember.Evented, {
   isLoaded: true,
@@ -1010,7 +1010,7 @@ Ember.Model.reopenClass({
       this._currentBatchDeferreds.push(deferred);
     }
 
-    Ember.run.scheduleOnce('data', this, this._executeBatch, owner);
+    backburner.scheduleOnce('data', this, this._executeBatch, owner);
 
     return isFetch ? deferred.promise : records;
   },
@@ -1119,7 +1119,7 @@ Ember.Model.reopenClass({
       this._currentBatchDeferreds.push(deferred);
 
       var owner = Ember.getOwner(record);
-      Ember.run.scheduleOnce('data', this, this._executeBatch, owner);
+      backburner.scheduleOnce('data', this, this._executeBatch, owner);
 
       return deferred.promise;
     } else {
