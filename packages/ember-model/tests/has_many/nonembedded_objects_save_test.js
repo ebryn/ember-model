@@ -94,3 +94,50 @@ QUnit.test("saving child objects", function(assert) {
     console.error(error);
   });
 });
+
+test("parent should not be dirty after new child created", function() {
+  expect(3);
+
+  var articleJSON = {
+    id: 76,
+    title: '?',
+    comment_ids: []
+  };
+
+  var commentJSON = {
+    id:111,
+    title:':}}'
+  };
+
+  var Comment = Ember.Model.extend({
+    id: attr(),
+    text: attr()
+  });
+  Comment.adapter = Ember.RESTAdapter.create();
+  Comment.url = '/comments';
+  Comment.adapter._ajax = function() {
+    return new Ember.RSVP.Promise(function(resolve) {
+        resolve(commentJSON);
+    });
+  };
+
+  var Article = Ember.Model.extend({
+    id: attr(),
+    title: attr(),
+    comments: Ember.hasMany(Comment, { key: 'comment_ids' })
+  });
+  Article.adapter = Ember.RESTAdapter.create();
+  Article.url = '/articles';
+
+  var article = Article.create();
+  Ember.run(article, article.load, articleJSON.id, articleJSON);
+
+  Comment.create().save().then(function(record){
+    start();
+    equal(article.get('isDirty'), false);
+    equal(record.get('isDirty'), false);
+    article.get('comments').addObject(record);
+    equal(article.get('isDirty'), false);
+  });
+  stop();
+});
